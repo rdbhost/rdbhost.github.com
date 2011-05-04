@@ -1,0 +1,174 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Three Favorites</title>
+  <script type="text/javascript"
+      src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"> </script>
+  <script type="text/javascript" src="http://www.rdbhost.com/rdbadmin/js/jquery.rdbhost.js"> </script>
+  <style type='text/css'>
+    div#input, div#reply {
+      width: 400px;
+      margin-left:auto;
+      margin-right:auto;
+      margin-top:20px;
+      padding: 20px;
+    }
+    input { margin:5px 20px 5px 20px; padding:5px;  }
+    input#sub {  margin:20px 0 20px 0;  }
+    p { font-family:CURSIVE; font-size: larger; margin-bottom: 0; }
+    p.subtitle { font-size: smaller;  margin: 20px 15px 20px 25px; color: #666; }
+    p.subtext { font-size: smaller;  margin: 0 15px 15px 5px; }
+
+    div.finds { padding:5px; margin: 15px; background: #58f; float:left; }
+    span.likes { padding:5px; margin: 15px; background: #9f9;}
+    hr { margin: 25px 0 25px 0; }
+  </style>
+  <script type="text/javascript">
+    var v1, v2, v3, usrId;
+    // these are queries to operate on remote database
+
+    // we use the concatenation of user IP and a small random number as the usr ID
+    //
+    var insert_sql = 'CREATE OR REPLACE FUNCTION "insert_faves" \n' +
+                     "   (IN usrId varchar, IN fave1 varchar, IN fave2 varchar, IN fave3 varchar) \n" +
+                     "-- use function to avoid repeating parameters in SELECT \n" +
+                     "RETURNS void \n" +
+                     " AS $$ \n" +
+                     "BEGIN \n" +
+                     "  INSERT INTO likes SELECT usrId, fave1 WHERE fave1 NOT IN (SELECT word FROM badwords); \n" +
+                     "  INSERT INTO likes SELECT usrId, fave2 WHERE fave2 NOT IN (SELECT word FROM badwords); \n" +
+                     "  INSERT INTO likes SELECT usrId, fave3 WHERE fave3 NOT IN (SELECT word FROM badwords); \n" +
+                     "END; \n" +
+                     "$$ \n" +
+                     "LANGUAGE plpgsql VOLATILE \n" +
+                     "SECURITY INVOKER; \n" +
+                     "SELECT insert_faves(%[REMOTE_ADDR]||%s,%s,%s,%s);",
+
+        get_matches = "SELECT t3.favorite, COUNT(t3.favorite)  \n" +
+                      "  FROM likes AS t3 \n" +
+                      "     JOIN likes AS t2 ON t2.usrid = t3.usrid \n" +
+                      "     JOIN likes AS t1 ON t1.favorite = t2.favorite \n" +
+                      "     -- left join badwords list for negative filtering \n" +
+                      "     LEFT JOIN badwords ON t3.favorite = badwords.word \n" +
+                      "WHERE t3.favorite NOT IN \n" +
+                      "  ( SELECT favorite FROM likes WHERE usrid = %[REMOTE_ADDR]||%s ) \n" +
+                      "  AND t1.usrid = %[REMOTE_ADDR]||%s \n" +
+                      "  AND badwords.word IS NULL \n" +
+                      "GROUP BY t3.favorite \n" +
+                      "ORDER BY 2 DESC; ",
+
+        mark_badword = "INSERT INTO badwords VALUES(%s) ";
+
+    $(document).ready(function () {
+      // configure rdbhost lib
+      // we use the preauth role, as it will not run free-form queries, but does not need an authcode.
+      $.rdbHostConfig({ 'userName' : "p0000001065",
+                        'authcode' : "-" })
+      $('#reply').hide();
+      $('#sub').click(function() {
+        v1 = $('#like01').val(),
+        v2 = $('#like02').val(),
+        v3 = $('#like03').val();
+        if ( v1 && v2 && v3 ) {
+          usrId = Math.floor(Math.random()*1000);
+          $.postData( { q : insert_sql,
+                        args : [ usrId, v1, v2, v3 ],
+                        callback : reload,
+                        errback : function () {
+                           alert('error, maybe a dupe entry?')
+                        }});
+        }
+        else {
+          alert('please tell us three things you like, thank you.');
+        }
+        return false; // prevent true form submit
+      });
+      // click handler for [x] bad-word marker
+      $('div.finds a').live('click', function () {
+        var $span = $(this).closest('div').find('span');
+        var badword = $span.html();
+        $.postData( { q : mark_badword,
+                      args : [ badword ],
+                      callback : reload,
+                      errback : function () {} }); // ignore errors
+        return false; // prevent true form submit
+      });
+      // function to reload finds into display
+      function reload() {
+        $.postData( { q : get_matches,
+                      args : [ usrId, usrId ],
+                      callback : display_found,
+                      errback : function () {
+                        alert('error, maybe a dupe entry?')
+                      }});
+      }
+    });
+    // display found data
+    function display_found(data) {
+      $('#input').hide();
+      $('#reply').show();
+      $('#reply div:first span').first().html(v1)
+                           .next('span').html(v2)
+                           .next('span').html(v3);
+      if (data.row_count[0] == 0) {
+        $('#finds').hide();
+        $('#notfound').show();
+      }
+      else {
+        $('#notfound').hide();
+        $('#finds').show();
+        var $find = $('#finds div:first').remove();
+        $('#finds div').remove();
+        for (var _t in data.records.rows) {
+          var t = data.records.rows[_t];
+          var $nextTerm = $find.clone().show();
+          $nextTerm.find('span').html(t['favorite']);
+          $('#finds p:first').after($nextTerm);
+        }
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div id="input">
+    <form action='#'>
+      <p>Enter three things you like:</p>
+      <p class="subtitle">These can be musical groups, colors, celebrities, foods, sports teams, etc..
+        Keep it clean, please.</p>
+      <div><input type="text" id="like01" size="25"></div>
+      <div><input type="text" id="like02" size="25"></div>
+      <div><input type="text" id="like03" size="25"></div>
+
+      <p class="subtitle">When you submit your three choices, we will show you other favorites submitted by
+        anyone who entered any of your three.</p>
+
+      <div><input type="submit" id="sub" value="Here you go!"></div>
+    </form>
+  </div>
+
+  <div id="reply">
+    <p>We searched for these three things:</p>
+    <p class="subtitle"> </p>
+    <div>
+      <span class="likes"></span> <span class="likes"></span> <span class="likes"></span>
+    </div>
+
+    <hr />
+    <div id="finds">
+      <p class="subtext">Other users who entered one or more of those three, also entered the following.</p>
+      <div class="finds"><span> </span><a href="#"> [x]</a></div>
+      <br clear="both" />
+      <p class="subtext" style="margin-top:50px;">If any item above is in poor taste, click the [x] to
+        filter it for all users.</p>
+    </div>
+    <div id="notfound">
+      <span>We looked, and looked, and looked.  It seems that nobody else has entered any of those
+        phrases as their favorite things. </span>
+    </div>
+
+  </div>
+
+</body>
+</html>
