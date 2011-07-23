@@ -99,8 +99,8 @@
         $.postData( { q : get_matches,
                       namedArgs : { 'usrId': usrId },
                       callback : display_found,
-                      errback : function () {
-                        alert('error, maybe a dupe entry?')
+                      errback : function (err) {
+                        alert('error, maybe a dupe entry?'+err)
                       }});
       }
     });
