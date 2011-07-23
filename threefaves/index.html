@@ -52,8 +52,8 @@
                       "     -- left join badwords list for negative filtering \n" +
                       "     LEFT JOIN badwords ON t3.favorite = badwords.word \n" +
                       "WHERE t3.favorite NOT IN \n" +
-                      "  ( SELECT favorite FROM likes WHERE usrid = %[REMOTE_ADDR]||%s ) \n" +
-                      "  AND t1.usrid = %[REMOTE_ADDR]||%s \n" +
+                      "  ( SELECT favorite FROM likes WHERE usrid = %[REMOTE_ADDR]||%(usrId) ) \n" +
+                      "  AND t1.usrid = %[REMOTE_ADDR]||%(usrId) \n" +
                       "  AND badwords.word IS NULL \n" +
                       "GROUP BY t3.favorite \n" +
                       "ORDER BY 2 DESC; ",
@@ -97,7 +97,7 @@
       // function to reload finds into display
       function reload() {
         $.postData( { q : get_matches,
-                      args : [ usrId, usrId ],
+                      namedArgs : { 'usrId': usrId },
                       callback : display_found,
                       errback : function () {
                         alert('error, maybe a dupe entry?')
