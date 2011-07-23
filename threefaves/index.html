@@ -31,11 +31,11 @@
     // we use the concatenation of user IP and a small random number as the usr ID
     //
     var insert_sql = "  INSERT INTO likes SELECT %[REMOTE_ADDR]||%(usrId), %(fave1) "+
-                     "    WHERE fave1 NOT IN (SELECT word FROM badwords); \n" +
+                     "    WHERE %(fave1) NOT IN (SELECT word FROM badwords); \n" +
                      "  INSERT INTO likes SELECT %[REMOTE_ADDR]||%(usrId), %(fave2) "+
-                     "    WHERE fave2 NOT IN (SELECT word FROM badwords); \n" +
+                     "    WHERE %(fave2) NOT IN (SELECT word FROM badwords); \n" +
                      "  INSERT INTO likes SELECT %[REMOTE_ADDR]||%(usrId), %(fave3) "+
-                     "    WHERE fave3 NOT IN (SELECT word FROM badwords); \n";
+                     "    WHERE %(fave3) NOT IN (SELECT word FROM badwords); \n";
 
         get_matches = "SELECT t3.favorite, COUNT(t3.favorite)  \n" +
                       "  FROM likes AS t3 \n" +
