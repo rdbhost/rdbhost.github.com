@@ -30,20 +30,12 @@
 
     // we use the concatenation of user IP and a small random number as the usr ID
     //
-    var insert_sql = 'CREATE OR REPLACE FUNCTION "insert_faves" \n' +
-                     "   (IN usrId varchar, IN fave1 varchar, IN fave2 varchar, IN fave3 varchar) \n" +
-                     "-- use function to avoid repeating parameters in SELECT \n" +
-                     "RETURNS void \n" +
-                     " AS $$ \n" +
-                     "BEGIN \n" +
-                     "  INSERT INTO likes SELECT usrId, fave1 WHERE fave1 NOT IN (SELECT word FROM badwords); \n" +
-                     "  INSERT INTO likes SELECT usrId, fave2 WHERE fave2 NOT IN (SELECT word FROM badwords); \n" +
-                     "  INSERT INTO likes SELECT usrId, fave3 WHERE fave3 NOT IN (SELECT word FROM badwords); \n" +
-                     "END; \n" +
-                     "$$ \n" +
-                     "LANGUAGE plpgsql VOLATILE \n" +
-                     "SECURITY INVOKER; \n" +
-                     "SELECT insert_faves(%[REMOTE_ADDR]||%s,%s,%s,%s);",
+    var insert_sql = "  INSERT INTO likes SELECT %[REMOTE_ADDR]||%(usrId), %(fave1) "+
+                     "    WHERE fave1 NOT IN (SELECT word FROM badwords); \n" +
+                     "  INSERT INTO likes SELECT %[REMOTE_ADDR]||%(usrId), %(fave2) "+
+                     "    WHERE fave2 NOT IN (SELECT word FROM badwords); \n" +
+                     "  INSERT INTO likes SELECT %[REMOTE_ADDR]||%(usrId), %(fave3) "+
+                     "    WHERE fave3 NOT IN (SELECT word FROM badwords); \n";
 
         get_matches = "SELECT t3.favorite, COUNT(t3.favorite)  \n" +
                       "  FROM likes AS t3 \n" +
@@ -73,7 +65,7 @@
         if ( v1 && v2 && v3 ) {
           usrId = Math.floor(Math.random()*1000);
           $.postData( { q : insert_sql,
-                        args : [ usrId, v1, v2, v3 ],
+                        namedArgs : { 'usrId' : userId, 'fave1' : v1, 'fave2' : v2, 'fave3' : v3 },
                         callback : reload,
                         errback : function (err,msg) {
                            alert('error, maybe a dupe entry?'+err+msg)
