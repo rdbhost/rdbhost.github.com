@@ -75,8 +75,8 @@
           $.postData( { q : insert_sql,
                         args : [ usrId, v1, v2, v3 ],
                         callback : reload,
-                        errback : function () {
-                           alert('error, maybe a dupe entry?')
+                        errback : function (err) {
+                           alert('error, maybe a dupe entry?'+err)
                         }});
         }
         else {
