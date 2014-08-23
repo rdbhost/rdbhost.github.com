@@ -68,7 +68,7 @@
         if ( v1 && v2 && v3 ) {
           usrId = Math.floor(Math.random()*1000);
           $.postData( { q : insert_sql,
-                        namedArgs : { 'usrId' : usrId, 'fave1' : v1, 'fave2' : v2, 'fave3' : v3 },
+                        namedParams : { 'usrId' : usrId, 'fave1' : v1, 'fave2' : v2, 'fave3' : v3 },
                         callback : reload,
                         errback : function (err) {
                            alert('error, maybe a dupe entry?'+err[0]+err[1])
