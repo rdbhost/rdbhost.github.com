@@ -67,8 +67,8 @@
           $.postData( { q : insert_sql,
                         namedArgs : { 'usrId' : usrId, 'fave1' : v1, 'fave2' : v2, 'fave3' : v3 },
                         callback : reload,
-                        errback : function (err,msg) {
-                           alert('error, maybe a dupe entry?'+err+msg)
+                        errback : function (err) {
+                           alert('error, maybe a dupe entry?'+err[0]+err[1])
                         }});
         }
         else {
@@ -91,8 +91,8 @@
         $.postData( { q : get_matches,
                       namedArgs : { 'usrId': usrId },
                       callback : display_found,
-                      errback : function (err, msg) {
-                        alert('error, maybe a dupe entry?'+err+msg)
+                      errback : function (err) {
+                        alert('error, maybe a dupe entry?'+err[0]+err[1])
                       }});
       }
     });
