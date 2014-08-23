@@ -92,7 +92,7 @@
       // function to reload finds into display
       function reload() {
         $.postData( { q : get_matches,
-                      namedArgs : { 'usrId': usrId },
+                      namedParams : { 'usrId': usrId },
                       callback : display_found,
                       errback : function (err) {
                         alert('error, maybe a dupe entry?'+err[0]+err[1])
