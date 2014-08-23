@@ -53,6 +53,9 @@
         mark_badword = "INSERT INTO badwords VALUES(%s) ";
 
     $(document).ready(function () {
+            
+      var usrId;
+      
       // configure rdbhost lib
       // we use the preauth role, as it will not run free-form queries, but does not need an authcode.
       $.rdbHostConfig({ 'userName' : "p0000001065",
