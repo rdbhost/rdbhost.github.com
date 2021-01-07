@@ -1,0 +1,3 @@
+Doesn't need to work like EXCEL, just a good computation table with fixed columns
+Needs to export data as JSON object DONE
+Needs FS Capability (UPLOAD IN HTML) EZ CLAPS WITH FS

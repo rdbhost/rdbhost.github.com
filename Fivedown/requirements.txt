@@ -1,0 +1,52 @@
+See this Facebook post, and the video linked therein for a working example of the product I want.
+
+https://www.facebook.com/589809051/videos/10158996458259052/
+
+For some reason, the Facebook video recently lost its audio. I attached the video to this listing, 
+also. See the Facebook post for the Google Spreadsheet link (it is too verbose to include here).
+
+The example 'prototype' was implemented on Google Sheets, and inherits serious limitations from that. 
+I would like you to implement a web application that works in the way shown and described, but without the unpleasant side affects.
+
+There should be a button to add Alt columns, and close buttons to remove them, with no ability 
+to make other column additions or removals. Rows should be manipulatable in spreadsheet style, allowing insertions, 
+deletions, and relocations anywhere. cut and paste would be good here.
+
+I will attach a file to this post, with a list of essential functions that should available for formulas within the app.
+
+Basically, FiveDown is a spreadsheet with fixed specific purpose columns, where
+each row is a data item (a variable, you might say) with a name and a value. (actually a value for each Alt column).
+
+The columns are:
+================
+Description : free form description
+Name : the name of the variable, as a case sensitive, no whitespace identifier
+Definition : a formula defining how the value is to be computed. This formula refers to other rows by NAME, not row/column notation.
+
+Alt , Alt1, etc: each row can contain raw input data (typed in), or the result of the formula calculating from other rows. 
+Each Alt column is independent, with no cross referencing. Each cell should be color coded as to whether it shows a raw input value, 
+or a computation.
+
+Unit : another free form field, to label what unit is in use for that row.
+
+There should be error checking, and some sort of notification if a definition and raw input are both provided. DONE!
+=================
+
+Technology options:
+------------
+1) JavaScript, with a Spreadsheet library for data presentation, and IndexedDB for storing data. URLS should be human-readable, 
+closely related to the project name. Provide tools (accessed via buttons in app) for exporting and importing sheets as json to and 
+from the file system. //NEED IMPORT AND EXPORT
+
+
+In either case, there should be no internet server dependency. The Jupiter option would run on my local machine, and the //RUN OFFLINE
+JavaScript option could be hosted on localhost or on a free static host, such as GitHub Pages.
+
+Tell me what approach you prefer in your proposal.
+
+The app does not need to be beautiful, but should not be ugly either. Bootstrap styling is fine.
+
+Do not use any compiled development system such as React or TypeScript. 
+The source code needs to be readable in its operational form in order to bugfix and maintain it. 
+Libraries are great, such as jQuery-datatables and jEditable. Even GPL libraries are ok, as this is not a product for resale, 
+and the source can be disclosed.
