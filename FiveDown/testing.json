@@ -1,0 +1,15 @@
+
+    {   "Alts": "0",
+        "variables":
+        {
+            },
+            "rowData":
+            [{"name": "h","description": "","alt":"4","unit": "m","definition":""}],
+                    "columnDefs":[
+                        {"headerName":"Description","field":"description","rowDrag":true,"editable":true,"resizable":true,"suppressMovable": true}
+                        ,{"headerName":"Name","field":"name","editable":true,"resizable":true},
+                        {"headerName":"Definition","field":"definition","editable":true,"resizable":true},
+                        {"headerName":"Alt","field":"alt","editable":true,"resizable":true},
+                        {"headerName":"Unit","field":"unit","editable":true,"resizable":true}]}
+
+

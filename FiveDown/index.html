@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/x-data-spreadsheet@1.1.5/dist/xspreadsheet.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/handsontable@8.2.0/dist/handsontable.full.min.css"
+      rel="stylesheet"
+      media="screen"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <title>FiveDown</title>
+  </head>
+  <body>
+    <div id="creator-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" id="creator-close">&times;</span>
+        <p id="creator-text">Project Name:</p>
+        <input type="text" id="proj-name" />
+        <button id="creator-submit">Create</button>
+      </div>
+    </div>
+    <section id="home"></section>
+    <div id="error-modal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="error-text"></p>
+      </div>
+    </div>
+    <div id="json-modal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <span class="close" onclick="jsonModal.style.display = 'none'"
+          >&times;</span
+        >
+        <p id="json-prompt">This is the current configuration</p>
+        <textarea id="json-text"></textarea>
+        <button id="submit-json">Submit</button>
+      </div>
+    </div>
+    <div
+      id="myGrid"
+      style="height: 80vh; width: 100%; margin: auto"
+      class="ag-theme-alpine"
+    ></div>
+    <button id="json-set" class="json-config action">
+      Paste a custom project JSON
+    </button>
+    <button id="json-get" class="json-config action">
+      Get current project JSON
+    </button>
+
+    <button class="action" id="new-column">Add alt column</button>
+    <button class="action" id="new-row">Add a blank row</button>
+    <script src="parser.min.js"></script>
+    <script type="text/javascript" src="browserfs.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ag-grid/24.1.0/ag-grid-community.min.js"
+      integrity="sha512-bZ35rMZ8Gqu3aVkPgAnOV4UsiJArExqIrU/PSyg21hNpGNiI2pfQiAAcwfAJ37lxry2tZ9Qj5mPcmQfbYNer2Q=="
+      crossorigin="anonymous"
+    ></script>
+    <script src="functions.js"></script>
+    <script src="home.js"></script>
+    <script src="server.js"></script>
+    <script src="objects.js"></script>
+  </body>
+</html>
