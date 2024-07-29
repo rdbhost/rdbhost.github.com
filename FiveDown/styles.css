@@ -1,0 +1,54 @@
+thead {
+    color: darkgrey;
+    background: lightgray;
+}
+table {
+    width: 95%;
+}
+th {
+    padding: 5px;
+}
+/*-- th.desc {
+    width: 20%;
+} --*/
+th.name {
+    width: 10%;
+}
+th.formula {
+    width: 20%;
+}
+th.result {
+    width: 50px;
+}
+th.result span {
+    font-size: small;
+}
+th.unit {
+    width: 25px;
+}
+th.alt-add {
+    max-width: 1em;
+}
+th.min {
+    max-width: 1em;
+    padding: 0px;
+}
+
+td {
+    padding: 5px;
+}
+td.readonly {
+    background: #f8f8f8;
+}
+td.output {
+    background: lavender;
+}
+td.error {
+    color: red;
+    text-wrap: nowrap;
+    position: absolute;
+    overflow-x: visible;
+}
+td.handle, td.delete, td.alt-add {
+    background: #f8f8f8;
+}

@@ -1,0 +1,23 @@
+<html>
+    <head>
+        <link rel="stylesheet" href="styles.css">
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    </head>
+    <body>
+        <p data-alt="0">abc</p>
+    </body>
+    <script>
+        $().ready(
+            function() {
+                let p = $('p');
+                alert('data alt is '+Number(p.attr('data-alt')));
+                //p.data('alt', p.data('alt')+1);
+                p.attr('data-alt', Number(p.attr('data-alt'))+1);
+                setTimeout(function() {
+                    let q = $('p');
+                    alert('data alt is now '+Number(q.attr('data-alt')));
+                }, 1);
+            }
+        )
+    </script>
+</html>

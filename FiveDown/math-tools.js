@@ -1,0 +1,129 @@
+
+import { parse, EvalAstFactory } from './jexpr.js'
+
+// This is a fake Map object that uses name keys to track
+//   result cells (<td>s wrapped in jQuery objects), and get and set
+//   result values for given keys
+//
+class MapScope {
+  
+    constructor () {
+      this.localScope = new Map()
+    }
+  
+    // add adds a key and cell pair
+    //
+    add (key, td) {
+      if (!name_valid(key)) { return undefined; }
+      return this.localScope.set(key, td)
+    }
+
+    // removes, and returns, the cell for a given key
+    remove (key) {
+      if (!name_valid(key)) { return undefined; }
+      let tmp = this.localScope.get(key);
+      this.localScope.delete(key);
+      return tmp;
+    }
+
+    // gets the value of the $(td) object stored for key
+    get (key) {
+      if (!name_valid(key)) {
+        return undefined;
+      }
+      let td = this.localScope.get(key);
+      if (td && td.data) {
+        return td.data('value');
+      }
+      return undefined;
+    }
+  
+    // sets value into $(td) object stored.
+    //
+    set (key, value) {
+
+        if (!name_valid(key)) { return undefined; }
+        if (!this.localScope.has(key)) { return undefined; }
+        let td = this.localScope.get(key);
+        if (td === undefined) { return undefined; }
+
+        // if value is an Error object, apply error style, and use error message
+        if (typeof value == 'object' && value.message !== undefined) {
+
+          td.data('value', '');
+          td.text(value.message);
+          td.addClass('error');
+        }
+        else {
+
+          td.data('value', value);
+          td.text(formatter(value));
+          td.removeClass('error');
+        }
+        return this;
+    }
+  
+    has (key) {
+        if (!name_valid(key)) { return undefined; }
+        return this.localScope.has(key)
+    }
+  
+    keys () {
+      return this.localScope.keys()
+    }
+
+    delete (key) {
+      return this.localScope.delete(key)
+    }
+
+    clear () {
+      return this.localScope.clear()
+    }
+  };
+
+  class MyMath {
+
+      constructor(math) {
+
+        this.astf = new EvalAstFactory()
+      }
+
+      evaluate(exp, scope) {
+        
+        try {
+
+          // evaluate() with a scope object
+          let result = exp.evaluate(scope);
+
+          if (isNaN(result)) {
+
+            return new Error('Error - bad result')
+          }          
+
+          return result;
+
+        } catch (e) {
+
+          return e;
+        }
+      }
+
+      parse (expr) {
+
+          // parse() returns the AST
+          return parse(expr, this.astf);
+      }
+
+   }
+
+  const re = new RegExp("^[a-zA-Z_$][a-zA-Z_$0-9]*$");
+  function name_valid(name) {
+    return re.test(name)
+  }
+
+  function formatter(d) {
+    return Number(d).toPrecision(3);
+  }
+
+  export { MapScope, MyMath, name_valid, formatter }
+
