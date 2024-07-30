@@ -12,7 +12,12 @@ class DataManager {
     
     add_row(name, $tds) {
 
+        var _this = this;
 
+        $tds.each(function(i, td) {
+
+            _this.VALUES[i].add(name, $(td));
+        })
     }
 
     rename_row(prev, now) {

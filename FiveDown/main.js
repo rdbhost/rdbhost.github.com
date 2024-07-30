@@ -55,7 +55,9 @@ $().ready(function() {
         });
 
         // pad end with 5 blank lines
-        ensure_five_blank();
+        if (ensure_five_blank()) { 
+            setup_draggable()
+        };
 
         // push formulas from initial sheet into FORMULAS Map, and recalc
         DM.populate_formulas();
@@ -80,12 +82,12 @@ $().ready(function() {
         if ($formula.text() != "") {  // formula non-blank
             $results.attr('contenteditable', 'false')
                 .addClass('output').removeClass('readonly').attr('tabindex', -1);
-            $formula.attr('tabindex', 1);
+            $formula.attr('tabindex', 0);
         } else {  // formula is blank
         
             if ($results.text() != "") {
                 $results.attr('contenteditable', 'true')
-                    .removeClass('output readonly').attr('tabindex', 1);
+                    .removeClass('output readonly').attr('tabindex', 0);
                 $formula.attr('contenteditable', 'false')
                     .addClass('readonly').attr('tabindex', -1);
             }
@@ -121,15 +123,18 @@ $().ready(function() {
     //
     function ensure_five_blank() {
 
+        var changed = false;
         // pad to length 5
         let $lastfive = $('tbody > tr').slice(-5);
         while ($lastfive.length < 5) {
             $('tbody').append($blank_row.clone());
+            changed = true;
             $lastfive = $('tbody > tr').slice(-5);
         };
         // add blanks so that last five are blank
         while (!rows_are_blank($lastfive)) {
             $('tbody').append($blank_row.clone());
+            changed = true;
             $lastfive = $('tbody > tr').slice(-5);
         };
         // prune off extra blanks at end
@@ -140,6 +145,7 @@ $().ready(function() {
                 $sixth = $('tbody > tr').slice(-6,-5);
             };
         }
+        return changed
     }
 
     // make all rows draggable to reorder
@@ -164,6 +170,7 @@ $().ready(function() {
                 let t = $(event.target);
                 t.before(ui.draggable);    // drop inserts row before target row
                 $(ui.draggable).css({'left': "", 'top': ""}); // remove spurious attributes
+                $('table').trigger('row:pad-end');
             }
         });    
     }
@@ -244,7 +251,6 @@ $().ready(function() {
             
             let tds = $(_row).find('.result');
             tds.each(function(i, td) {
-
                 $(td).data('alt', i);
             });
         });
@@ -274,12 +280,28 @@ $().ready(function() {
         t.remove();
     });
 
+
+    // focusout handler on description column checks for data entry, and 
+    //  fires table-padding signal if any description was left
+    //
+    $('tbody').on("focusout", '.description', function(evt) {
+
+        let $td = $(evt.target);                // $td is jquery obj for td element
+        if (!$td.text()) { return }
+
+        if (!$td.data('prev-val')) {            // if there was no prior value, 
+
+            $td.data("prev-val", $td.text())    // store description in data
+            $('table').trigger('row:pad-end')   // and pad end of table
+        } 
+    });
+
     // focusout handler on name column checks for name change, and 
     //  fires global rename event if name was changed.
     //
     $('tbody').on("focusout", '.name', function(evt) {
 
-        let $td = $(evt.target);                 // t is $<td>
+        let $td = $(evt.target);                 // $td is $(<td>)
         let $tr = $td.closest('tr')
         let name = $td.text()
 
@@ -312,27 +334,43 @@ $().ready(function() {
             }
             $td.data("prev-val", name)      // store new name in data
             $td.text(name)
+
+            $('table').trigger('row:pad-end')
         } 
     });
 
     $('tbody').on('focusout', '.formula', function(evt) {
-        let $t = $(evt.target);                 // t is $<td>
-        if ($t.text() !== $t.data("prev-val")) { // is formula diff from stored?
-            $t.data("prev-val", $t.text());      // store new formula in data
+        
+        let $t = $(evt.target);                    // t is $<td>
+        if ($t.text() !== $t.data("prev-val")) {   // is formula diff from stored?
+            $t.data("prev-val", $t.text());        // store new formula in data
             let $tr = $t.closest('tr');
-            $tr.find('td.result').text('');                         // clear non-calced result value
+            let $res = $tr.find('td.result');
+            $res.text('');                         // clear non-calced result value
 
             set_contenteditable_cols($tr)
 
             let name = $tr.find('td.name').text();
-            $('table').trigger("row:formula-change", [name, $t.text()]);            
+            $('table').trigger("row:formula-change", [name, $t.text()]);       
         } 
     })
 
     $('tbody').on('focusout', '.result', function(evt) {
 
-        let $tr = $(evt.target).closest('tr')
+        let $t = $(evt.target),
+            $tr = $t.closest('tr');
+        
         set_contenteditable_cols($tr)
+        $t.data('value', $t.text())
+
+        if ($t.attr('contenteditable') == 'false') {
+            return;
+        }
+
+        if ($t.data('prev-val') != $t.text()) {
+            $('table').trigger('table:global-recalc')  // TODO: change to column recalc
+            $t.data('prev-val', $t.text())
+        }
     })
 
     // table events to keep calculations current
@@ -346,31 +384,38 @@ $().ready(function() {
     }).on('row:add', function(event, name, $tds) {
         console.log('row add '+name);
         setTimeout(function() {
-            DM.add_row(name, $td);
+            DM.add_row(name, $tds);
             $('table').trigger('table:global-recalc');
+        }, 0)
+    }).on('row:pad-end', function(event) {
+        console.log('add blanks')
+        setTimeout(function() {
+            if (ensure_five_blank()) {
+                setup_draggable()
+            }
         }, 0)
     }).on('row:formula-change', function(event, name, formula) {
-        console.log('row formula change '+formula);
+        console.log('row formula change '+formula)
         setTimeout(function () {
-            DM.change_formula(name, formula);
-            $('table').trigger('table:global-recalc');
+            DM.change_formula(name, formula)
+            $('table').trigger('table:global-recalc')
         }, 0)
     }).on("table:alt-update", function() {
-        console.log('alt-update requested');
+        console.log('alt-update requested')
         setTimeout(function () {
 
             DM.VALUES.length = 0
             $('thead th.result').each(function(z,th) {
-                let i = $(th).data('alt');
-                DM.populate_values_for_alt(i);
+                let i = $(th).data('alt')
+                DM.populate_values_for_alt(i)
             })
         })
     }).on("table:global-recalc", function() {
         console.log('global-recalc requested');
         setTimeout(function () {
             $('thead th.result').each(function(z,th) {
-                let i = $(th).data('alt');
-                DM.update_calculated_rows(i);
+                let i = $(th).data('alt')
+                DM.update_calculated_rows(i)
             })
         }, 0);
     });

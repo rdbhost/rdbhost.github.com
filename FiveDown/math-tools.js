@@ -60,6 +60,7 @@ class MapScope {
           td.text(formatter(value));
           td.removeClass('error');
         }
+        td.data('prev-val', undefined);
         return this;
     }
   
