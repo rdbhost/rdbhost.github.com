@@ -20,6 +20,16 @@ class DataManager {
         })
     }
 
+    remove_row(name) {
+
+        this.VALUES.forEach(function(vals, i) {
+            if (vals.has(name)) {
+                vals.remove(name);
+            }
+        })
+        this.FORMULAS.delete(name);    
+    }
+
     rename_row(prev, now) {
 
         let need_update = false;

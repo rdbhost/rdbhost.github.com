@@ -276,8 +276,11 @@ $().ready(function() {
     // click on right-column deletes row
     //
     $('tbody').on("click", '.delete', function(evt) {
-        let t = $(evt.target).closest('tr');
-        t.remove();
+
+        let $tr = $(evt.target).closest('tr')
+        let name = $tr.find('.name')
+        DM.remove_row(name)
+        $tr.remove();
     });
 
 
@@ -342,13 +345,18 @@ $().ready(function() {
     $('tbody').on('focusout', '.formula', function(evt) {
         
         let $t = $(evt.target);                    // t is $<td>
+        let $tr = $t.closest('tr');
+
+        set_contenteditable_cols($tr)
+
+        if ($t.attr('contenteditable') == 'false') {
+            return;
+        }
+
         if ($t.text() !== $t.data("prev-val")) {   // is formula diff from stored?
             $t.data("prev-val", $t.text());        // store new formula in data
-            let $tr = $t.closest('tr');
             let $res = $tr.find('td.result');
             $res.text('');                         // clear non-calced result value
-
-            set_contenteditable_cols($tr)
 
             let name = $tr.find('td.name').text();
             $('table').trigger("row:formula-change", [name, $t.text()]);       
@@ -361,12 +369,12 @@ $().ready(function() {
             $tr = $t.closest('tr');
         
         set_contenteditable_cols($tr)
-        $t.data('value', $t.text())
 
         if ($t.attr('contenteditable') == 'false') {
             return;
         }
 
+        $t.data('value', $t.text())
         if ($t.data('prev-val') != $t.text()) {
             $('table').trigger('table:global-recalc')  // TODO: change to column recalc
             $t.data('prev-val', $t.text())
