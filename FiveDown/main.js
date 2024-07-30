@@ -65,25 +65,29 @@ $().ready(function() {
 
     function set_contenteditable_cols($row) {
 
-        if ($row.find('.name').text() != "") {
-            $row.find('.formula, .result, .unit').attr('contenteditable', 'true')
+        let name = $row.find('.name').text(),
+            $formula = $row.find('.formula'),
+            $results = $row.find('.result'),
+            $rcols = $row.find('.formula, .result, .unit');
+
+        if (name != "") { // name non-blank
+            $rcols.attr('contenteditable', 'true')
                 .removeClass('output readonly');
-        } else {
-            $row.find('.formula, .result, .unit').attr('contenteditable', 'false')
+        } else {  // name blank
+            $rcols.attr('contenteditable', 'false')
                 .addClass('readonly');            
         }
-        if ($row.find('.formula').text() != "") {
-            $row.find('.result').attr('contenteditable', 'false')
-                .addClass('output').removeClass('readonly');
-        } else {
-//            $row.find('.result').attr('contenteditable', 'true')
-//                .removeClass('readonly output')
+        if ($formula.text() != "") {  // formula non-blank
+            $results.attr('contenteditable', 'false')
+                .addClass('output').removeClass('readonly').attr('tabindex', -1);
+            $formula.attr('tabindex', 1);
+        } else {  // formula is blank
         
-            if ($row.find('.result').text() != "") {
-                $row.find('.result').attr('contenteditable', 'true')
-                    .removeClass('output readonly');
-                $row.find('.formula').attr('contenteditable', 'false')
-                    .addClass('readonly').removeClass('output');
+            if ($results.text() != "") {
+                $results.attr('contenteditable', 'true')
+                    .removeClass('output readonly').attr('tabindex', 1);
+                $formula.attr('contenteditable', 'false')
+                    .addClass('readonly').attr('tabindex', -1);
             }
         }
     }
@@ -281,6 +285,8 @@ $().ready(function() {
 
         if ($td.text() !== $td.data("prev-val")) { // is name diff from stored?
 
+            set_contenteditable_cols($tr)
+
             if ($td.text() === "") {
                 $tr.find('.formula').text("");
                 $tr.find('.result').each(function(i, td) {
@@ -294,11 +300,18 @@ $().ready(function() {
                 }
             }
 
+            // if prev-val is defined, send a row:rename signal
             if ($td.data('prev-val') !== "" && $td.data('prev-val') !== undefined) {
+
                 $('table').trigger("row:rename", [$td.data("prev-val"), name]);
             }
-            $td.data("prev-val", name);      // store new name in data
-            set_contenteditable_cols($tr)
+            // otherwise, send a row:add signal
+            else {
+
+                $('table').trigger("row:add", [name, $tr.find('.result')])
+            }
+            $td.data("prev-val", name)      // store new name in data
+            $td.text(name)
         } 
     });
 
@@ -306,23 +319,20 @@ $().ready(function() {
         let $t = $(evt.target);                 // t is $<td>
         if ($t.text() !== $t.data("prev-val")) { // is formula diff from stored?
             $t.data("prev-val", $t.text());      // store new formula in data
-
             let $tr = $t.closest('tr');
-            let name = $tr.find('td.name').text();
-            let $res = $tr.find('td.result');
-            if ($t.text() !== "") {
-                $res.attr('contenteditable', 'false'); // make result column non-editable
-                $res.addClass('output').removeClass('error readonly');
-                $('table').trigger('row:formula-change', [name, $t.text()])
-            }
-            else {
-                $res.attr('contenteditable', 'true');  // make result column editable
-                $res.removeClass('readonly error output');    
-            }
-            $res.text('');                         // clear non-calced result value
+            $tr.find('td.result').text('');                         // clear non-calced result value
 
+            set_contenteditable_cols($tr)
+
+            let name = $tr.find('td.name').text();
             $('table').trigger("row:formula-change", [name, $t.text()]);            
         } 
+    })
+
+    $('tbody').on('focusout', '.result', function(evt) {
+
+        let $tr = $(evt.target).closest('tr')
+        set_contenteditable_cols($tr)
     })
 
     // table events to keep calculations current
@@ -333,6 +343,12 @@ $().ready(function() {
             DM.rename_row(prev, now);
             $('table').trigger('table:global-recalc');
         }, 0)
+    }).on('row:add', function(event, name, $tds) {
+        console.log('row add '+name);
+        setTimeout(function() {
+            DM.add_row(name, $td);
+            $('table').trigger('table:global-recalc');
+        }, 0)
     }).on('row:formula-change', function(event, name, formula) {
         console.log('row formula change '+formula);
         setTimeout(function () {
@@ -341,6 +357,14 @@ $().ready(function() {
         }, 0)
     }).on("table:alt-update", function() {
         console.log('alt-update requested');
+        setTimeout(function () {
+
+            DM.VALUES.length = 0
+            $('thead th.result').each(function(z,th) {
+                let i = $(th).data('alt');
+                DM.populate_values_for_alt(i);
+            })
+        })
     }).on("table:global-recalc", function() {
         console.log('global-recalc requested');
         setTimeout(function () {

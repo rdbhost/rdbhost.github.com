@@ -10,6 +10,11 @@ class DataManager {
         this.math = new MyMath();
     }
     
+    add_row(name, $tds) {
+
+
+    }
+
     rename_row(prev, now) {
 
         let need_update = false;
@@ -38,6 +43,8 @@ class DataManager {
                 vals.add(now, tmp);
             }
         })
+
+        return need_update
     }
 
     populate_values_for_alt(altnum) {
@@ -98,10 +105,9 @@ class DataManager {
         if (!name_valid(name)) { return };
         
         if (this.FORMULAS.has(name)) {
-
             this.FORMULAS.delete(name);
-            this.FORMULAS.set(name, formula);
         }
+        this.FORMULAS.set(name, formula);
     }
 }
 

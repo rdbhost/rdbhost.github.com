@@ -110,8 +110,15 @@ class MapScope {
 
       parse (expr) {
 
+        try {
+
           // parse() returns the AST
           return parse(expr, this.astf);
+        }
+        catch( e ) {
+
+          return e;
+        }
       }
 
    }

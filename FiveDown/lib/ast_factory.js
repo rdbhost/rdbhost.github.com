@@ -86,12 +86,11 @@ export class DefaultAstFactory {
             items,
         };
     }
-    arrowFunction(params, body) {
+/*    arrowFunction(params, body) {
         return {
             type: 'ArrowFunction',
             params,
             body,
         };
-    }
-}
-//# sourceMappingURL=ast_factory.js.map
+    } */
+} 

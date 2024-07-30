@@ -21,7 +21,8 @@ export class Parser {
     }
     _advance(kind, value) {
         if (!this._matches(kind, value)) {
-            throw new Error(`Expected kind ${kind} (${value}), was ${this._token?.kind} (${this._token?.value})`);
+ //           throw new Error(`Expected kind ${kind} (${value}), was ${this._token?.kind} (${this._token?.value})`);
+            throw new Error(`Expected '${value}', was ${this._token?.kind} (${this._token?.value})`);
         }
         const t = this._tokenizer.nextToken();
         this._token = t;
@@ -252,15 +253,15 @@ export class Parser {
     }
     _parseParenOrFunction() {
         const expressions = this._parseArguments();
-        if (this._matches(Kind.ARROW)) {
+/*        if (this._matches(Kind.ARROW)) {
             this._advance();
             const body = this._parseExpression();
             const params = expressions?.map((e) => e.value) ?? [];
             return this._ast.arrowFunction(params, body);
         }
-        else {
+        else { */
             return this._ast.paren(expressions[0]);
-        }
+      /*  } */
     }
     _parseString() {
         const value = this._ast.literal(this._value);
@@ -278,4 +279,3 @@ export class Parser {
         return value;
     }
 }
-//  # sourceMappingURL=parser.js.map

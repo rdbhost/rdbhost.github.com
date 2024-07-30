@@ -10,8 +10,8 @@ const _BINARY_OPERATORS = {
     '%': (a, b) => a % b,
     '==': (a, b) => a == b,
     '!=': (a, b) => a != b,
-    '===': (a, b) => a === b,
-    '!==': (a, b) => a !== b,
+//    '===': (a, b) => a === b,
+//    '!==': (a, b) => a !== b,
     '>': (a, b) => a > b,
     '>=': (a, b) => a >= b,
     '<': (a, b) => a < b,
@@ -19,6 +19,7 @@ const _BINARY_OPERATORS = {
     '||': (a, b) => a || b,
     '&&': (a, b) => a && b,
     '??': (a, b) => a ?? b,
+    '^': (a, b) => a ^ b,
  //   '|': (a, f) => f(a),
  //   '|>': (a, f) => f(a),
 };
@@ -27,6 +28,7 @@ const _UNARY_OPERATORS = {
     '-': (a) => -a,
     '!': (a) => !a,
 };
+
 export class EvalAstFactory {
     empty() {
         // TODO(justinfagnani): return null instead?
@@ -291,4 +293,3 @@ export class EvalAstFactory {
         };
     } */
 }
-//   # sourceMappingURL=eval.js.map

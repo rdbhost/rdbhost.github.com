@@ -1,21 +1,25 @@
 
 
-import { parse, EvalAstFactory } from './jexpr.js'
+import { MyMath } from './math-tools.js'
 
-var sam = 1;
-function ben() { return 5; }
-
-// An EvalAstFactory produces an AST that can be evaluated
-const astFactory = new EvalAstFactory();
+var m = new MyMath();
 
 // parse() returns the AST
-const expr = parse('(a + b([1, 2, 3]) * c)', astFactory);
+//const expr = m.parse('(a + b');
+const expr = m.parse('a+b');
 
-// evaluate() with a scope object
-const result = expr.evaluate({
-  a: 42,
-  b: 5, //ben,
-  c: 2,
-});
+if (typeof expr == 'object' && expr.name == 'Error') {
 
-console.log(result); // 48
+  console.log('bad formula '+expr);
+}
+else {
+
+  // evaluate() with a scope object
+  const result = expr.evaluate(new Map([
+    ['a', 42],
+    ['b', 5], 
+    ['c', 2],
+  ]));
+  console.log(result); // 48
+}
+
