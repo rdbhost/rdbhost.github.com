@@ -336,8 +336,8 @@ $().ready(function() {
 
                 $('table').trigger("row:rename", [$td.data("prev-val"), name]);
             }
-            // otherwise, send a row:add signal
-            else {
+            // otherwise, if name defined, send a row:add signal
+            else if (name) {
 
                 $('table').trigger("row:add", [name, $tr.find('.result')])
             }

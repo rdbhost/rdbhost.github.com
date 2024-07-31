@@ -39,9 +39,18 @@ const FunctionMap = new Map([
     ['min', Math.min],
     ['random', Math.random],
     ['abs', Math.abs],
-    ['sign', Math.sign]
+    ['sign', Math.sign],
+
+    ['PI', free_td(Math.PI)],
+    ['E', free_td(Math.E)]
 
 ])
+
+function free_td(val) {
+    let t = $('<td>')
+    t.data('value', val)
+    return t
+}
 
 export { FunctionMap }
 

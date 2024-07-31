@@ -131,6 +131,12 @@ class DataManager {
         // else save formula in FORMULAS
         } else {
             this.FORMULAS.set(name, formula);
+            this.VALUES.forEach(function(scope, _i) {
+
+                let exp = _this.math.parse(formula)
+                let res = _this.math.evaluate(exp, scope);
+                scope.set(name, res);
+            })
         }
     }
 }
