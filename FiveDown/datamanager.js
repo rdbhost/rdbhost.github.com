@@ -45,7 +45,7 @@ class DataManager {
         else {
             need_update = true;
         }
-        if (!name_valid(now)) { return };
+        if (!name_valid(now)) { throw new Error(`invalid name ${now}`) };
 
         if (this.FORMULAS.has(prev)) {
             let tmp = this.FORMULAS.get(prev);
@@ -71,8 +71,7 @@ class DataManager {
     
             let $row = $(row);
             let name = $row.find('.name').text();
-            if (name == "") { return };
-            if (!name_valid(name)) { return };
+            if (!name_valid(name)) { throw new Error(`invalid name ${name}`) };
     
             $row.find('.result').each(function(i, td) {
                 let $td = $(td);
@@ -90,12 +89,12 @@ class DataManager {
         $('tbody > tr').each(function(z, row) {
     
             let $row = $(row);
-            let name = $row.find('.name').text();
-            if (name == "") { return };
-            if (!name_valid(name)) { return };
             let formula = $row.find('.formula').text();
             if (formula == "") { return };
-    
+
+            let name = $row.find('.name').text();
+            if (!name_valid(name)) { throw new Error(`invalid name ${name}`) };
+
             _this.FORMULAS.set(name, formula);
         })
     }
@@ -119,7 +118,7 @@ class DataManager {
 
         let _this = this;
 
-        if (!name_valid(name)) { return };
+        if (!name_valid(name)) { throw new Error(`Error - invalid name ${name}`) };
         
         if (this.FORMULAS.has(name)) {
             this.FORMULAS.delete(name);

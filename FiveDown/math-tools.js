@@ -9,6 +9,8 @@ class MapScope {
   
     constructor () {
       this.localScope = new Map()
+      this.diagnostics = undefined // new Map([['missing', []]])
+      this.reset_diagnostics()
     }
   
     // add adds a key and cell pair
@@ -31,8 +33,8 @@ class MapScope {
     // gets the value of the $(td) object stored for key
     get (key) {
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
-      let td = this.localScope.get(key);
-      if (td && td.data) {
+      if (this.has(key)) {
+        let td = this.localScope.get(key);
         return td.data('value');
       }
       return undefined;
@@ -69,7 +71,7 @@ class MapScope {
   
     has (key) {
         if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
-        if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+        if (!this.localScope.has(key)) { this.diagnostics.missing.push(key) }
         return this.localScope.has(key)
     }
   
@@ -84,6 +86,15 @@ class MapScope {
     clear () {
       return this.localScope.clear()
     }
+
+    get_diagnostics() {
+      return this.diagnostics
+    }
+
+    reset_diagnostics() {
+      this.diagnostics = new Map()
+      this.diagnostics['missing'] = []
+    }
   };
 
   class MyMath {
@@ -93,16 +104,29 @@ class MapScope {
         this.astf = new EvalAstFactory()
       }
 
+      evaluate_diagnostics (scope) {
+
+        let missing = scope.get_diagnostics().missing
+        if (missing.length) {
+          let first = missing[0]
+          return `Error - ${first} is not available`
+        }
+        return 'Error - bad result'
+      }
+
       evaluate(exp, scope) {
         
         try {
+
+          scope.reset_diagnostics()
 
           // evaluate() with a scope object
           let result = exp.evaluate(scope);
 
           if (isNaN(result)) {
 
-            return new Error('Error - bad result')
+            let msg = this.evaluate_diagnostics(scope)
+            return new Error(msg)
           }          
 
           return result;
@@ -141,10 +165,17 @@ class MapScope {
   function name_valid(name) {
     return re.test(name)
   }
+  function clean_name(name) {
+    var nxt = name.replace(/[^a-zA-Z_$0-9]/gi, '_')
+    if (name.match(/^[0-9]/)) {
+      nxt = '_'.nxt
+    }
+    return nxt
+  }
 
   function formatter(d) {
     return Number(d).toPrecision(3);
   }
 
-  export { MapScope, MyMath, name_valid, formatter }
+  export { MapScope, MyMath, name_valid, clean_name, formatter }
 

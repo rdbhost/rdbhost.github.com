@@ -1,4 +1,5 @@
 import { DataManager } from './datamanager.js'
+import { name_valid, clean_name } from './math-tools.js';
 
 
 $().ready(function() {
@@ -308,6 +309,11 @@ $().ready(function() {
         let $tr = $td.closest('tr')
         let name = $td.text()
 
+        if (!name_valid(name)) {
+            name = clean_name(name)
+            $td.text(name)
+        }
+
         if ($td.text() !== $td.data("prev-val")) { // is name diff from stored?
 
             set_contenteditable_cols($tr)
@@ -319,7 +325,7 @@ $().ready(function() {
                 })
                 
             } else {
-
+            
                 while (DM.VALUES[0].has(name)) {
                     name = name+'_';
                 }
@@ -353,7 +359,7 @@ $().ready(function() {
             return;
         }
 
-        if ($t.text() !== $t.data("prev-val")) {   // is formula diff from stored?
+        if ($t.text() !== ($t.data("prev-val") || '')) {   // is formula diff from stored?
             $t.data("prev-val", $t.text());        // store new formula in data
             let $res = $tr.find('td.result');
             $res.text('');                         // clear non-calced result value
@@ -393,7 +399,6 @@ $().ready(function() {
         console.log('row add '+name);
         setTimeout(function() {
             DM.add_row(name, $tds);
-            $('table').trigger('table:global-recalc');
         }, 0)
     }).on('row:pad-end', function(event) {
         console.log('add blanks')
