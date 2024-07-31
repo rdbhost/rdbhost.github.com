@@ -1,5 +1,5 @@
 
-import { parse, EvalAstFactory } from './jexpr.js'
+import { parse as jexpr_parse, EvalAstFactory } from './jexpr.js'
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set
@@ -50,7 +50,7 @@ class MapScope {
         // if value is an Error object, apply error style, and use error message
         if (typeof value == 'object' && value.message !== undefined) {
 
-          td.data('value', '');
+          td.data('value', undefined);
           td.text(value.message);
           td.addClass('error');
         }
@@ -114,12 +114,21 @@ class MapScope {
         try {
 
           // parse() returns the AST
-          return parse(expr, this.astf);
+          return jexpr_parse(expr, this.astf);
         }
         catch( e ) {
 
           return e;
         }
+      }
+
+      expression_error(expr) {
+
+        let t = this.parse(expr, this.astf)
+        if (t?.name == 'Error') {
+          return t.message || "bad formula"
+        }
+        return false
       }
 
    }

@@ -117,12 +117,22 @@ class DataManager {
 
     change_formula(name, formula) {
 
+        let _this = this;
+
         if (!name_valid(name)) { return };
         
         if (this.FORMULAS.has(name)) {
             this.FORMULAS.delete(name);
         }
-        this.FORMULAS.set(name, formula);
+
+        // if formula is invalid, put error message in first result column
+        let errmsg = _this.math.expression_error(formula)
+        if (errmsg) {
+            this.VALUES[0].set(name, new Error(errmsg))
+        // else save formula in FORMULAS
+        } else {
+            this.FORMULAS.set(name, formula);
+        }
     }
 }
 
