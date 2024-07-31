@@ -107,10 +107,10 @@ class MapScope {
 
       evaluate_diagnostics (scope) {
 
-        let missing = scope.get_diagnostics().missing
+        let missing = scope.get_diagnostics().get('missing')
         if (missing.length) {
           let first = missing[0]
-          return `Error - ${first} is not available`
+          return `Error - ${first} is not found`
         }
         return 'Error - bad result'
       }
@@ -170,7 +170,7 @@ class MapScope {
   function clean_name(name) {
     var nxt = name.replace(/[^a-zA-Z_$0-9]/gi, '_')
     if (name.match(/^[0-9]/)) {
-      nxt = '_'.nxt
+      nxt = '_'+nxt
     }
     return nxt
   }
