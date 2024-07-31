@@ -15,11 +15,13 @@ class MapScope {
     //
     add (key, td) {
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
       return this.localScope.set(key, td)
     }
 
     // removes, and returns, the cell for a given key
     remove (key) {
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
       let tmp = this.localScope.get(key);
       this.localScope.delete(key);
@@ -39,6 +41,9 @@ class MapScope {
     // sets value into $(td) object stored.
     //
     set (key, value) {
+
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found`); }
 
         if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
         if (!this.localScope.has(key)) { throw new Error(`key ${key} not found`); }
@@ -63,6 +68,7 @@ class MapScope {
     }
   
     has (key) {
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
         if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
         return this.localScope.has(key)
     }
