@@ -14,13 +14,13 @@ class MapScope {
     // add adds a key and cell pair
     //
     add (key, td) {
-      if (!name_valid(key)) { return undefined; }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
       return this.localScope.set(key, td)
     }
 
     // removes, and returns, the cell for a given key
     remove (key) {
-      if (!name_valid(key)) { return undefined; }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
       let tmp = this.localScope.get(key);
       this.localScope.delete(key);
       return tmp;
@@ -28,9 +28,7 @@ class MapScope {
 
     // gets the value of the $(td) object stored for key
     get (key) {
-      if (!name_valid(key)) {
-        return undefined;
-      }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
       let td = this.localScope.get(key);
       if (td && td.data) {
         return td.data('value');
@@ -42,10 +40,10 @@ class MapScope {
     //
     set (key, value) {
 
-        if (!name_valid(key)) { return undefined; }
-        if (!this.localScope.has(key)) { return undefined; }
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found`); }
+
         let td = this.localScope.get(key);
-        if (td === undefined) { return undefined; }
 
         // if value is an Error object, apply error style, and use error message
         if (typeof value == 'object' && value.message !== undefined) {
@@ -65,7 +63,7 @@ class MapScope {
     }
   
     has (key) {
-        if (!name_valid(key)) { return undefined; }
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
         return this.localScope.has(key)
     }
   
