@@ -3,7 +3,7 @@
  * Portions Copyright (c) 2013, the Dart project authors.
  */
 import { KEYWORDS, POSTFIX_PRECEDENCE, PRECEDENCE } from './constants.js';
-const _TWO_CHAR_OPS = ['==', '!=', '<=', '>=', '||', '&&', '??', '|>'];
+const _TWO_CHAR_OPS = ['==', '!=', '<=', '>=', '||', '&&' /*, '??', '|>' */];
 const _THREE_CHAR_OPS = ['===', '!=='];
 export var Kind;
 (function (Kind) {
