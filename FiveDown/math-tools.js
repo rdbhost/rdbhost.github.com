@@ -14,15 +14,15 @@ class MapScope {
     // add adds a key and cell pair
     //
     add (key, td) {
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
       return this.localScope.set(key, td)
     }
 
     // removes, and returns, the cell for a given key
     remove (key) {
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
       let tmp = this.localScope.get(key);
       this.localScope.delete(key);
       return tmp;
@@ -30,7 +30,7 @@ class MapScope {
 
     // gets the value of the $(td) object stored for key
     get (key) {
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
       let td = this.localScope.get(key);
       if (td && td.data) {
         return td.data('value');
@@ -42,11 +42,11 @@ class MapScope {
     //
     set (key, value) {
 
-        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
-        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found`); }
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found in MapScope`) }
 
         if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
-        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found`); }
+        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found in MapScope`) }
 
         let td = this.localScope.get(key);
 
@@ -68,8 +68,8 @@ class MapScope {
     }
   
     has (key) {
-        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
-        if (!name_valid(key)) { throw new Error(`invalid key ${key}`); }
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+        if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
         return this.localScope.has(key)
     }
   
