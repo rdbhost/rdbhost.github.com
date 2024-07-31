@@ -66,7 +66,7 @@ class MapScope {
   
     has (key) {
         if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
-        if (!this.localScope.has(key)) { this.diagnostics.missing.push(key) }
+        if (!this.localScope.has(key)) { this.diagnostics.get('missing').push(key) }
         return this.localScope.has(key)
     }
   
