@@ -92,8 +92,8 @@ class MapScope {
     }
 
     reset_diagnostics() {
-      this.diagnostics = new Map()
-      this.diagnostics['missing'] = []
+      const input = [['missing', []],]
+      this.diagnostics = new Map(input)
     }
   };
 
@@ -165,6 +165,7 @@ class MapScope {
   function name_valid(name) {
     return re.test(name)
   }
+
   function clean_name(name) {
     var nxt = name.replace(/[^a-zA-Z_$0-9]/gi, '_')
     if (name.match(/^[0-9]/)) {
@@ -177,5 +178,10 @@ class MapScope {
     return Number(d).toPrecision(3);
   }
 
-  export { MapScope, MyMath, name_valid, clean_name, formatter }
+  const dre = new RegExp("^[0-9][0-9\.,e]*$");
+  function data_valid(data) {
+    return dre.test(data)
+  }
+
+  export { MapScope, MyMath, name_valid, clean_name, data_valid, formatter }
 

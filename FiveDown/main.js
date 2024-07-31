@@ -75,10 +75,10 @@ $().ready(function() {
 
         if (name != "") { // name non-blank
             $rcols.attr('contenteditable', 'true')
-                .removeClass('output readonly');
+                .removeClass('output readonly') //.attr('tabindex', 0);
         } else {  // name blank
             $rcols.attr('contenteditable', 'false')
-                .addClass('readonly');            
+                .addClass('readonly') //.attr('tabindex', -1);            
         }
         if ($formula.text() != "") {  // formula non-blank
             $results.attr('contenteditable', 'false')
@@ -86,9 +86,9 @@ $().ready(function() {
             $formula.attr('tabindex', 0);
         } else {  // formula is blank
         
+            $results.attr('contenteditable', 'true')
+                .removeClass('output readonly').attr('tabindex', 0);
             if ($results.text() != "") {
-                $results.attr('contenteditable', 'true')
-                    .removeClass('output readonly').attr('tabindex', 0);
                 $formula.attr('contenteditable', 'false')
                     .addClass('readonly').attr('tabindex', -1);
             }
