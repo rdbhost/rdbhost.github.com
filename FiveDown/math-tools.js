@@ -1,5 +1,6 @@
 
 import { parse as jexpr_parse, EvalAstFactory } from './jexpr.js'
+import { FunctionMap } from './functions.js'
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set
@@ -8,7 +9,7 @@ import { parse as jexpr_parse, EvalAstFactory } from './jexpr.js'
 class MapScope {
   
     constructor () {
-      this.localScope = new Map()
+      this.localScope = new Map(FunctionMap)
       this.diagnostics = undefined // new Map([['missing', []]])
       this.reset_diagnostics()
     }
@@ -28,12 +29,17 @@ class MapScope {
       return tmp;
     }
 
-    // gets the value of the $(td) object stored for key
+    // gets the value of the $(td) object stored for key, or a named function
+    //   if the name refers to a predefined function
     get (key) {
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
       if (this.has(key)) {
-        let td = this.localScope.get(key);
-        return td.data('value');
+        let val = this.localScope.get(key);
+        if (typeof val === 'function') {
+          return val
+        } else {
+          return val.data('value'); 
+        }
       }
       return undefined;
     }
