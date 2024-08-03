@@ -19,6 +19,9 @@ const FunctionMap = new Map([
     ['asinh', Math.asinh],
     ['atanh', Math.atanh],
     
+    ['degrees', (r) => r*180/Math.PI],
+    ['radians', (d) => d*Math.PI/180],
+    
     ['round', Math.round],
     ['ceil', Math.ceil],
     ['floor', Math.floor],
