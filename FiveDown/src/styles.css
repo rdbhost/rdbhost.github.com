@@ -62,6 +62,12 @@ th {
 th.min, th.alt-add {
   width: 3rem;
   text-align: center;
+  background-color: transparent;
+}
+
+th.min:hover {
+  background-color: transparent;
+  /* 保持背景透明 */
 }
 
 th.result {
@@ -117,7 +123,7 @@ td {
 
 /* Redesign for left and right columns */
 
-td.handle, td.delete {
+td.handle {
   cursor: pointer;
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
@@ -126,18 +132,55 @@ td.handle, td.delete {
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
   border-radius: 0.375rem;
+  width: 4rem;
+  /* Larger width for handle */
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  /* Larger height for handle */
 }
 
 td.handle::before {
   content: "≡";
   /* Replaced with icon symbol */
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  /* Larger icon size */
 }
 
-td.delete::before {
-  content: "✕";
-  /* Replaced with icon symbol */
+/* Adjusted delete button design using Tailwind */
+
+td.delete {
+  display: flex;
+  width: 4rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+td.delete:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+}
+
+td.delete {
+  border-radius: 0.375rem;
+  text-align: center;
+  font-weight: 700;
   --tw-text-opacity: 1;
-  color: rgb(239 68 68 / var(--tw-text-opacity));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
+}
+
+td.delete::after {
+  content: '×';
+  /* 使用 × 符号作为删除按钮 */
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  /* 设置文字大小 */
+  margin: auto;
 }
 
 /* Add column button */
@@ -180,7 +223,7 @@ td:hover {
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
 }
 
-th:hover, td.handle:hover, td.delete:hover, td.alt-add:hover {
+th:hover, td.handle:hover, td.alt-add:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
 }
