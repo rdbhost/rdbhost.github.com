@@ -1,17 +1,74 @@
-<html>
-    <head>
-        <link rel="stylesheet" href="styles.css">
-        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-        <script src="jexpr.js" type="module"></script>
-        <script src="math-tools.js" type="module"></script>
-        <script src="module1.js" type="module"></script>
-    </head>
-    <body>
-        <p data-alt="0">abc</p>
-    </body>
-    <script>
-        $().ready(
-  
-        )
-    </script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./src/styles.css">
+    <link rel="stylesheet" href="./src/reset.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <script src="jexpr.js" type="module"></script>
+    <script src="functions.js" type="module"></script>
+    <script src="math-tools.js" type="module"></script>
+    <script src="datamanager.js" type="module"></script>
+    <script src="main.js" type="module"></script>
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th class="min"></th>
+                <th class="desc">Description</th>
+                <th class="name">Name</th>
+                <th class="formula">Formula</th>
+                <th class="result"><div>Result</div><span>-</span></th>
+                <th class="alt-add"><span>+</span></th>
+                <th class="unit">Unit</th>
+                <th class="min"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="handle"></td>
+                <td class="desc" contenteditable="true"></td>
+                <td class="name" contenteditable="true"></td>
+                <td class="formula" tabindex="0"></td>
+                <td class="result" tabindex="0"></td>
+                <td class="alt-add"></td>
+                <td class="unit"></td>
+                <td class="delete"></td>
+            </tr>
+            <tr>
+                <td class="handle"></td>
+                <td class="desc" contenteditable="true">height</td>
+                <td class="name" contenteditable="true">h</td>
+                <td class="formula" tabindex="-1"></td>
+                <td class="result" tabindex="0" contenteditable="true">3.0</td>
+                <td class="alt-add"></td>
+                <td class="unit">cm</td>
+                <td class="delete"></td>
+            </tr>
+            <tr>
+                <td class="handle"></td>
+                <td class="desc" contenteditable="true">radius</td>
+                <td class="name" contenteditable="true">rad</td>
+                <td class="formula" tabindex="-1"></td>
+                <td class="result" tabindex="0" contenteditable="true">2.5</td>
+                <td class="alt-add"></td>
+                <td class="unit">cm</td>
+                <td class="delete"></td>
+            </tr>
+            <tr>
+                <td class="handle"></td>
+                <td class="desc" contenteditable="true">volume of cylinder</td>
+                <td class="name" contenteditable="true">vol</td>
+                <td class="formula" tabindex="0" contenteditable="true">h*3.14*rad*rad</td>
+                <td class="result" tabindex="-1"></td>
+                <td class="alt-add"></td>
+                <td class="unit">cm</td>
+                <td class="delete"></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
 </html>
