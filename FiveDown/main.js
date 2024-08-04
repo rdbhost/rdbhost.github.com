@@ -6,7 +6,6 @@ $().ready(function() {
 
     let MAX_ALTS = 8;
     let $blank_row;
-    let draggables_installed = false;
     const DM = new DataManager();
 
     function clean(itm) {
@@ -56,9 +55,7 @@ $().ready(function() {
         });
 
         // pad end with 5 blank lines
-        if (ensure_five_blank()) { 
-            setup_draggable()
-        };
+        ensure_five_blank()
 
         // push formulas from initial sheet into FORMULAS Map, and recalc
         DM.populate_formulas();
@@ -124,48 +121,45 @@ $().ready(function() {
     //
     function ensure_five_blank() {
 
-        var changed = false;
         // pad to length 5
         let $lastfive = $('tbody > tr').slice(-5);
         while ($lastfive.length < 5) {
-            $('tbody').append($blank_row.clone());
-            changed = true;
+            let $br = $blank_row.clone(true)
+            $('tbody').append($br);
+            setup_draggable($br)
             $lastfive = $('tbody > tr').slice(-5);
         };
         // add blanks so that last five are blank
         while (!rows_are_blank($lastfive)) {
-            $('tbody').append($blank_row.clone());
-            changed = true;
+            let $br = $blank_row.clone(true)
+            $('tbody').append($br);
+            setup_draggable($br)
             $lastfive = $('tbody > tr').slice(-5);
         };
         // prune off extra blanks at end
         if ($('tbody > tr').length > 5) {
             let $sixth = $('tbody > tr').slice(-6,-5);
             while (row_is_blank($sixth)) {
-                $('tbody > tr').last().remove();
+                let $tr = $('tbody > tr').last()
+                $tr.draggable('destroy').droppable('destroy')
+                $tr.remove();
                 $sixth = $('tbody > tr').slice(-6,-5);
             };
         }
-        return changed
     }
 
     // make all rows draggable to reorder
     //  all rows are both draggable and also drop targets.
     //
-    function setup_draggable() {
+    function setup_draggable($rows) {
 
-        if (draggables_installed) {
-            $('tbody > tr').draggable('destroy');
-            $('tbody > tr').droppable('destroy');
-            draggables_installed = true;
-        };
-
-        $('tbody > tr').draggable({
+        let drag_opts = {
             axis: "y",              // only vertical dragging
             handle: '.handle',      // grip on left-column only
             revert: "invalid",      // revert if drag-n-drop not valid
             containment: "parent"   // keep dragging within table
-        }).droppable({  
+        }
+        let drop_opts = {  
             accept: 'tr',           // only rows are droppable
             drop: function( event, ui ) {
                 let t = $(event.target);
@@ -173,14 +167,16 @@ $().ready(function() {
                 $(ui.draggable).css({'left': "", 'top': ""}); // remove spurious attributes
                 $('table').trigger('row:pad-end');
             }
-        });    
+        }    
+
+        $rows.draggable(drag_opts).droppable(drop_opts)
     }
 
     // double click on left-column duplicates row
     //
     $('.handle').on("dblclick", function(evt) {
         let $tr = $(evt.target).closest('tr');
-        let $tr2 = $tr.clone()
+        let $tr2 = $tr.clone(true, true)
         let name = $tr.find('td.name').text()
         while (DM.VALUES[0].has(name)) {
             name = name+'_';
@@ -188,7 +184,7 @@ $().ready(function() {
         $tr.find('td.name').text(name)
         $tr.find('td.name').data('prev-val',name)
         $tr.after($tr2);
-        setup_draggable();
+        // setup_draggable();
     });
 
     // click on header '+' adds alt 
@@ -217,12 +213,12 @@ $().ready(function() {
 
         // add additional header column, named Alt #
         let h = $('th.result').last();
-        h.after(h.clone());
+        h.after(h.clone(true, true));
 
         // in each row, add one result column
         $('tbody > tr').each(function (i, row) {
             let last = $(row).find('td.result').last();
-            last.after(last.clone());
+            last.after(last.clone(true, true));
         });
 
         update_alts();
@@ -279,9 +275,11 @@ $().ready(function() {
     $('tbody').on("click", '.delete', function(evt) {
 
         let $tr = $(evt.target).closest('tr')
-        let name = $tr.find('.name')
-        DM.remove_row(name)
-        $tr.remove();
+        let name = $tr.find('.name').text()
+        if (name) { DM.remove_row(name) }
+        $tr.draggable('destroy').droppable('destroy')
+        $tr.remove()
+        ensure_five_blank()
     });
 
 
@@ -348,6 +346,9 @@ $().ready(function() {
         } 
     });
 
+    // handler on formula cells changes the contenteditable and styling
+    //   of formula and result cells 
+    //
     $('tbody').on('focusout', '.formula', function(evt) {
         
         let $t = $(evt.target);                    // t is $<td>
@@ -369,6 +370,9 @@ $().ready(function() {
         } 
     })
 
+    // handler on result cells pushes data changes into data() and calls
+    //   for global recalc
+    //   
     $('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
@@ -403,9 +407,7 @@ $().ready(function() {
     }).on('row:pad-end', function(event) {
         console.log('add blanks')
         setTimeout(function() {
-            if (ensure_five_blank()) {
-                setup_draggable()
-            }
+            ensure_five_blank() 
         }, 0)
     }).on('row:formula-change', function(event, name, formula) {
         console.log('row formula change '+formula)
@@ -434,6 +436,6 @@ $().ready(function() {
     });
 
     initialize();
-    setup_draggable();
+    setup_draggable($('tbody > tr'));
 
 })

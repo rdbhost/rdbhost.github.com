@@ -71,6 +71,7 @@ class DataManager {
     
             let $row = $(row);
             let name = $row.find('.name').text();
+            if (!name) { return }
             if (!name_valid(name)) { throw new Error(`invalid name ${name}`) };
     
             $row.find('.result').each(function(i, td) {
