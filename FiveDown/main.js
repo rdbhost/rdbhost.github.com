@@ -140,7 +140,9 @@ $().ready(function() {
         if ($('tbody > tr').length > 5) {
             let $sixth = $('tbody > tr').slice(-6,-5);
             while (row_is_blank($sixth)) {
-                $('tbody > tr').last().remove();
+                let $tr = $('tbody > tr').last()
+                $tr.draggable('destroy').droppable('destroy')
+                $tr.remove();
                 $sixth = $('tbody > tr').slice(-6,-5);
             };
         }
@@ -273,9 +275,11 @@ $().ready(function() {
     $('tbody').on("click", '.delete', function(evt) {
 
         let $tr = $(evt.target).closest('tr')
-        let name = $tr.find('.name')
-        DM.remove_row(name)
-        $tr.remove();
+        let name = $tr.find('.name').text()
+        if (name) { DM.remove_row(name) }
+        $tr.draggable('destroy').droppable('destroy')
+        $tr.remove()
+        ensure_five_blank()
     });
 
 
@@ -342,6 +346,9 @@ $().ready(function() {
         } 
     });
 
+    // handler on formula cells changes the contenteditable and styling
+    //   of formula and result cells 
+    //
     $('tbody').on('focusout', '.formula', function(evt) {
         
         let $t = $(evt.target);                    // t is $<td>
@@ -363,6 +370,9 @@ $().ready(function() {
         } 
     })
 
+    // handler on result cells pushes data changes into data() and calls
+    //   for global recalc
+    //   
     $('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
@@ -397,9 +407,7 @@ $().ready(function() {
     }).on('row:pad-end', function(event) {
         console.log('add blanks')
         setTimeout(function() {
-            if (ensure_five_blank()) {
-//                setup_draggable()
-            }
+            ensure_five_blank() 
         }, 0)
     }).on('row:formula-change', function(event, name, formula) {
         console.log('row formula change '+formula)
