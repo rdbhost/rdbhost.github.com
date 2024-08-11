@@ -271,9 +271,12 @@ $().ready(function() {
         remove_draggable_columns()
 
         // add additional header column, named Alt #
-        let h = $('th.result').last()
-        let $new = h.clone(true, true)
-        h.after($new)
+        let $pluscol = $('th.alt-add').first()
+        let $h = $('th.result').last().remove()
+        $pluscol.before($h.clone(true))  // restores starting col set
+
+        let $new = $h.clone(true)
+        $pluscol.before($new)
 
         // in each row, add one result column
         $('tbody > tr').each(function (i, row) {
