@@ -250,7 +250,7 @@ $().ready(function() {
         let altnum = $hdr.data('alt');
         $hdr.remove()
 
-        // in each row, add one result column
+        // in each row, remove one td
         $('tbody > tr').each(function (i, row) {
             let $results = $(row).find('td.result');
             $results.each(function(i, td){
@@ -260,6 +260,15 @@ $().ready(function() {
                 }
             })
         });
+
+        // remove one td from blank_row
+        let $blank_res = $blank_row.find('td.result');
+        $blank_res.each(function(i, td){
+            let $td = $(td);
+            if ($td.data('alt') == altnum) {
+                $td.remove()
+            }
+        })
 
         update_alts();
         apply_draggable_columns()
@@ -284,6 +293,10 @@ $().ready(function() {
             $last.after($last.clone(true, true));
         });
 
+        // in blank_row, add one result column
+        let $last = $blank_row.find('td.result').last()
+        $last.after($last.clone(true, true));
+
         update_alts();
         apply_draggable_columns()
 
@@ -291,7 +304,7 @@ $().ready(function() {
     }        
     $('th.alt-add').click(addalt_func);
 
-    // updates header to show Result, Alt 1, Alt 2 etc
+    // updates header to show Result, Result 1, Result 2 etc
     //   and header and each row to have data('alt') in sequential order
     //   starting at 0;
     //
@@ -303,7 +316,7 @@ $().ready(function() {
 
             let th = $(_th);
             let altnm = 'Result '+i;
-            if (i == 0 && headers.length===1 ) { altnm = 'Result'};
+            if (i == 0 && headers.length===1 ) { altnm = 'Result' };
             th.find('div').text(altnm);
             th.data('alt', i);
         })
