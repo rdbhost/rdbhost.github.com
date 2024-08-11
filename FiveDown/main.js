@@ -190,6 +190,32 @@ $().ready(function() {
         $('tbody > tr').draggable('destroy').droppable('destroy')
     }
 
+    // move one result column, including th.  column `num` is moved to just before column `before`
+    //
+    function move_result_column(num, before) {
+
+        // move `num` column to before `before`
+        let $results = $('thead th.result, thead th.alt-add')
+        let $before = $results.get(before)
+        let $num = $results.get(num); $num.remove()
+        $before.before($num)
+
+        // for each row in table, move one result col
+        $('tbody > tr').each(function(i, row) {
+
+            let $row = $(row)
+            let $results = $row.find('td.result, td.alt-add')
+            if ($results.length < before) { throw new Error(`bad before $(before) in alt drag `) }
+
+            let $before = $results.get(before)
+            let $num = $results.get(num); $num.remove()
+
+            $before.before($num)
+        })
+
+        update_alts()
+    }
+    
     // make result columns, draggable to reorder
     //  all result columns are both draggable and droppable targets.
     //  the add-alt column is droppable, not draggable
@@ -206,7 +232,11 @@ $().ready(function() {
             drop: function( event, ui ) {
                 let t = $(event.target);
                 $(ui.draggable).css({'left': "", 'top': ""}); // remove spurious attributes
+                let from = $(ui.draggable).data('alt')
+                let to = t.data('alt')
+                console.log(`header ${from} to before ${to}`)
                 // TODO - reorder cells in every row to match header
+                move_result_column(from, to)
             }
         }    
 
@@ -310,7 +340,7 @@ $().ready(function() {
     //
     function update_alts() {
 
-        let headers = $('th.result');
+        let headers = $('th.result')
 
         headers.each(function(i, _th) {
 
@@ -320,6 +350,7 @@ $().ready(function() {
             th.find('div').text(altnm);
             th.data('alt', i);
         })
+        $('th.alt-add').data('alt', headers.length)
 
         // in each row, add one result column
         $('tbody > tr').each(function (z, _row) {
