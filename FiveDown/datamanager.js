@@ -34,6 +34,8 @@ class DataManager {
 
         let need_update = false;
 
+        if (now == " ") { now = "" }
+
         if (now == "") { 
             this.VALUES.forEach(function(vals, i) {
                 if (vals.has(prev)) {
@@ -44,21 +46,21 @@ class DataManager {
         }
         else {
             need_update = true;
-        }
-        if (!name_valid(now)) { throw new Error(`invalid name ${now}`) };
 
-        if (this.FORMULAS.has(prev)) {
-            let tmp = this.FORMULAS.get(prev);
-            this.FORMULAS.delete(prev);
-            this.FORMULAS.set(now, tmp);
-        }
-        this.VALUES.forEach(function(vals, i) {
-            if (vals.has(prev)) {
-                let tmp = vals.remove(prev);
-                vals.add(now, tmp);
+            if (!name_valid(now)) { throw new Error(`invalid name ${now}`) };
+
+            if (this.FORMULAS.has(prev)) {
+                let tmp = this.FORMULAS.get(prev);
+                this.FORMULAS.delete(prev);
+                this.FORMULAS.set(now, tmp);
             }
-        })
-
+            this.VALUES.forEach(function(vals, i) {
+                if (vals.has(prev)) {
+                    let tmp = vals.remove(prev);
+                    vals.add(now, tmp);
+                }
+            })
+        }
         return need_update
     }
 

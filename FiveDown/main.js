@@ -54,15 +54,20 @@ $().ready(function() {
             DM.populate_values_for_alt(altnum);
         });
 
-        // pad end with 5 blank lines
-        ensure_five_blank()
-
         // push formulas from initial sheet into FORMULAS Map, and recalc
         DM.populate_formulas();
-        $('table').trigger("table:global-recalc"); // be column specific
 
+        ensure_five_blank()
+        apply_draggable_rows()
+        apply_draggable_columns()
+
+        $('table').trigger("table:global-recalc"); // be column specific
     }
 
+    // set_contenteditable_cols -- function to examine a row, and set 
+    //   style and editability of formula, result, and unit cells
+    //   based on content of row.
+    //
     function set_contenteditable_cols($row) {
 
         let name = $row.find('.name').text(),
@@ -70,24 +75,29 @@ $().ready(function() {
             $results = $row.find('.result'),
             $rcols = $row.find('.formula, .result, .unit');
 
-        if (name != "") { // name non-blank
-            $rcols.attr('contenteditable', 'true')
-                .removeClass('output readonly') //.attr('tabindex', 0);
-        } else {  // name blank
+        if (name == "") { // if name not given, formula and results noteditable
             $rcols.attr('contenteditable', 'false')
-                .addClass('readonly') //.attr('tabindex', -1);            
-        }
-        if ($formula.text() != "") {  // formula non-blank
-            $results.attr('contenteditable', 'false')
-                .addClass('output').removeClass('readonly').attr('tabindex', -1);
+                .addClass('readonly')
+            $row.find('.result, .unit').attr('tabindex', -1)      
             $formula.attr('tabindex', 0);
-        } else {  // formula is blank
+                
+        } else {    // if name provided, then formula and results are either/or
+            $rcols.attr('contenteditable', 'true')
+                .removeClass('output readonly').attr('tabindex', 0)
         
-            $results.attr('contenteditable', 'true')
-                .removeClass('output readonly').attr('tabindex', 0);
-            if ($results.text() != "") {
-                $formula.attr('contenteditable', 'false')
-                    .addClass('readonly').attr('tabindex', -1);
+            if ($formula.text() != "") {  // formula non-blank
+                $results.attr('contenteditable', 'false')
+                    .addClass('output').removeClass('readonly').attr('tabindex', -1);
+                $formula.attr('tabindex', 0);
+
+            } else {  // formula is blank
+            
+                $results.attr('contenteditable', 'true')
+                    .removeClass('output readonly').attr('tabindex', 0);
+                if ($results.text() != "") {
+                    $formula.attr('contenteditable', 'false')
+                        .addClass('readonly').attr('tabindex', -1);
+                }
             }
         }
     }
@@ -100,6 +110,8 @@ $().ready(function() {
                  &&  ($row.find('.name').text() == "")
                  &&  ($row.find('.formula').text() == "")
                  &&  ($row.find('.unit').text() == ""));
+
+        if (!blank) { return false }
 
         $row.find('.result').each(function(i, td) {
             if ($(td).find('div').text() !== "") {
@@ -126,14 +138,13 @@ $().ready(function() {
         while ($lastfive.length < 5) {
             let $br = $blank_row.clone(true)
             $('tbody').append($br);
-            setup_draggable($br)
             $lastfive = $('tbody > tr').slice(-5);
-        };
+        }
+        
         // add blanks so that last five are blank
         while (!rows_are_blank($lastfive)) {
             let $br = $blank_row.clone(true)
             $('tbody').append($br);
-            setup_draggable($br)
             $lastfive = $('tbody > tr').slice(-5);
         };
         // prune off extra blanks at end
@@ -141,7 +152,6 @@ $().ready(function() {
             let $sixth = $('tbody > tr').slice(-6,-5);
             while (row_is_blank($sixth)) {
                 let $tr = $('tbody > tr').last()
-                $tr.draggable('destroy').droppable('destroy')
                 $tr.remove();
                 $sixth = $('tbody > tr').slice(-6,-5);
             };
@@ -151,7 +161,7 @@ $().ready(function() {
     // make all rows draggable to reorder
     //  all rows are both draggable and also drop targets.
     //
-    function setup_draggable($rows) {
+    function apply_draggable_rows() {
 
         let drag_opts = {
             axis: "y",              // only vertical dragging
@@ -169,12 +179,54 @@ $().ready(function() {
             }
         }    
 
+        let $rows = $('tbody > tr')
         $rows.draggable(drag_opts).droppable(drop_opts)
+    }
+
+    // remove draggable handlers from all rows
+    //
+    function remove_draggable_rows() {
+
+        $('tbody > tr').draggable('destroy').droppable('destroy')
+    }
+
+    // make result columns, draggable to reorder
+    //  all result columns are both draggable and droppable targets.
+    //  the add-alt column is droppable, not draggable
+    //
+    function apply_draggable_columns() {
+
+        let drag_opts = {
+            axis: "x",              // only horizontal dragging
+            revert: "invalid",      // revert if drag-n-drop not valid
+            containment: "parent"   // keep dragging within table header
+        }
+        let drop_opts = {  
+            accept: 'th',           // only header cells are droppable
+            drop: function( event, ui ) {
+                let t = $(event.target);
+                $(ui.draggable).css({'left': "", 'top': ""}); // remove spurious attributes
+                // TODO - reorder cells in every row to match header
+            }
+        }    
+
+        // let $t = $('thead th.result')
+        $('thead th.result').draggable(drag_opts).droppable(drop_opts)
+        $('thead th.alt-add').droppable(drop_opts)
+    }
+
+    function remove_draggable_columns() {
+
+        $('thead > th.result').draggable('destroy').droppable('destroy')
+        $('thead > th.alt-add').droppable('destroy')
     }
 
     // double click on left-column duplicates row
     //
     $('.handle').on("dblclick", function(evt) {
+
+        remove_draggable_columns()
+
         let $tr = $(evt.target).closest('tr');
         let $tr2 = $tr.clone(true, true)
         let name = $tr.find('td.name').text()
@@ -184,16 +236,19 @@ $().ready(function() {
         $tr.find('td.name').text(name)
         $tr.find('td.name').data('prev-val',name)
         $tr.after($tr2);
-        // setup_draggable();
+
+        apply_draggable_columns()
     });
 
     // click on header '+' adds alt 
     //
     function remove_alt(evt) {
 
+        remove_draggable_columns()
+
         let $hdr = $(evt.target).closest('th');
         let altnum = $hdr.data('alt');
-        $hdr.remove();
+        $hdr.remove()
 
         // in each row, add one result column
         $('tbody > tr').each(function (i, row) {
@@ -201,27 +256,34 @@ $().ready(function() {
             $results.each(function(i, td){
                 let $td = $(td);
                 if ($td.data('alt') == altnum) {
-                    $td.remove();
+                    $td.remove()
                 }
             })
         });
 
         update_alts();
+        apply_draggable_columns()
+
         $('table').trigger("table:alt-update");
     }
     function addalt_func() {
 
+        remove_draggable_columns()
+
         // add additional header column, named Alt #
-        let h = $('th.result').last();
-        h.after(h.clone(true, true));
+        let h = $('th.result').last()
+        let $new = h.clone(true, true)
+        h.after($new)
 
         // in each row, add one result column
         $('tbody > tr').each(function (i, row) {
-            let last = $(row).find('td.result').last();
-            last.after(last.clone(true, true));
+            let $last = $(row).find('td.result').last()
+            $last.after($last.clone(true, true));
         });
 
         update_alts();
+        apply_draggable_columns()
+
         $('table').trigger("table:alt-update");
     }        
     $('th.alt-add').click(addalt_func);
@@ -237,8 +299,8 @@ $().ready(function() {
         headers.each(function(i, _th) {
 
             let th = $(_th);
-            let altnm = 'Alt '+i;
-            if (i == 0) { altnm = 'Result'};
+            let altnm = 'Result '+i;
+            if (i == 0 && headers.length===1 ) { altnm = 'Result'};
             th.find('div').text(altnm);
             th.data('alt', i);
         })
@@ -274,12 +336,15 @@ $().ready(function() {
     //
     $('tbody').on("click", '.delete', function(evt) {
 
+        remove_draggable_rows()
+
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('.name').text()
         if (name) { DM.remove_row(name) }
-        $tr.draggable('destroy').droppable('destroy')
         $tr.remove()
-        ensure_five_blank()
+
+        apply_draggable_rows()
+        $('table').trigger('row:pad-end')   // and pad end of table
     });
 
 
@@ -407,7 +472,9 @@ $().ready(function() {
     }).on('row:pad-end', function(event) {
         console.log('add blanks')
         setTimeout(function() {
+            remove_draggable_rows()
             ensure_five_blank() 
+            apply_draggable_rows()
         }, 0)
     }).on('row:formula-change', function(event, name, formula) {
         console.log('row formula change '+formula)
@@ -436,6 +503,5 @@ $().ready(function() {
     });
 
     initialize();
-    setup_draggable($('tbody > tr'));
 
 })
