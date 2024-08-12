@@ -4,7 +4,7 @@
  */
 import { KEYWORDS, POSTFIX_PRECEDENCE, PRECEDENCE } from './constants.js';
 const _TWO_CHAR_OPS = ['==', '!=', '<=', '>=', '||', '&&' /*, '??', '|>' */];
-const _THREE_CHAR_OPS = ['===', '!=='];
+const _THREE_CHAR_OPS = [] // DVK: no 3 char ops useful ['===', '!=='];
 export var Kind;
 (function (Kind) {
     Kind[Kind["STRING"] = 1] = "STRING";
@@ -105,6 +105,12 @@ export class Tokenizer {
             return this._tokenizeOperator();
         if (_isGrouper(this._next))
             return this._tokenizeGrouper();
+
+        // DVK : fail on invalid char
+        if (this._next !== undefined) { 
+            throw new Error(`invalid char ${String.fromCharCode(this._next)} in formula`) 
+        }
+
         // no match, should be end of input
         this._advance();
         if (this._next !== undefined) {
@@ -213,6 +219,10 @@ export class Tokenizer {
             }
         }
         op = this._getValue();
+
+        // DVK: check for assignment, throw exception
+        if (op === '=') { throw new Error('= is not operator') }
+
         return token(Kind.OPERATOR, op, PRECEDENCE[op]);
     }
     _tokenizeGrouper() {

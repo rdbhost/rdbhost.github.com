@@ -5,7 +5,7 @@
 export const KEYWORDS = ['this'];
 export const UNARY_OPERATORS = ['+', '-', '!'];
 export const BINARY_OPERATORS = [
-    '=',
+ //   '=',
     '+',
     '-',
     '*',
@@ -22,8 +22,8 @@ export const BINARY_OPERATORS = [
     '&&',
     '??',
  //   '&',
-    '===',
-    '!==',
+ //   '===',
+ //   '!==',
  //   '|',
  //   '|>',
 ];
@@ -44,8 +44,8 @@ export const PRECEDENCE = {
     // equality
     '!=': 9,
     '==': 9,
-    '!==': 9,
-    '===': 9,
+ //   '!==': 9,
+ //   '===': 9,
     // relational
     '>=': 10,
     '>': 10,

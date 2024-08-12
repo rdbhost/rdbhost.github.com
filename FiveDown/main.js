@@ -317,6 +317,10 @@ $().ready(function() {
         let $new = $h.clone(true)
         $pluscol.before($new)
 
+        // this may seem klunky to do a .remove and two .clone operations, rather
+        //  than just .before( .clone), but .clone without remove has deleterious
+        //  impact on the draggable UI handler. 
+
         // in each row, add one result column
         $('tbody > tr').each(function (i, row) {
             let $last = $(row).find('td.result').last()
