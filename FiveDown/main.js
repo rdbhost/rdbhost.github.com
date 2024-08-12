@@ -17,7 +17,7 @@ $().ready(function() {
         // setup initial sheet
         let $headers = $('th.result');
         $headers.data('alt', 0);
-        $headers.find('span').hide().off();
+        $headers.find('button.close-res').hide().off();
 
         // grab copy of first row, presumed blank.
         $blank_row = $('tbody > tr').first().remove();
@@ -114,7 +114,7 @@ $().ready(function() {
         if (!blank) { return false }
 
         $row.find('.result').each(function(i, td) {
-            if ($(td).find('div').text() !== "") {
+            if ($(td).find('span').text() !== "") {
                 blank = false;
             }
         })
@@ -347,7 +347,7 @@ $().ready(function() {
             let th = $(_th);
             let altnm = 'Result '+i;
             if (i == 0 && headers.length===1 ) { altnm = 'Result' };
-            th.find('div').text(altnm);
+            th.find('span').text(altnm);
             th.data('alt', i);
         })
         $('th.alt-add').data('alt', headers.length)
@@ -363,19 +363,20 @@ $().ready(function() {
 
         // if at maximum column count, hide and disable add-alt button
         if (headers.length >= MAX_ALTS) {
-            $('th.alt-add span').hide();
+            $('th.alt-add button.close-res').hide();
             $('th.alt-add').off();            
         }
 
         // if multiple alts avail, reveal '-' remove buttons to each
         if (headers.length>1) {
-            headers.find('span').show();
-            headers.find('span').click(remove_alt)
+            headers.find('button.close-res').show();
+            headers.find('button.close-res').on();
+            headers.find('button.close-res').click(remove_alt)
         }
         // otherwise, hide and disable '-' buttons 
         else {
-            headers.find('span').hide();
-            headers.find('span').off();
+            headers.find('button.close-res').hide();
+            headers.find('button.close-res').off();
         }
     }
 
