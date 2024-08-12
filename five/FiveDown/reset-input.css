@@ -1,0 +1,41 @@
+@tailwind base;
+
+/* 重置全局样式 */
+html,
+body {
+  @apply m-0 p-0;
+  @apply font-sans;
+  @apply text-gray-900;
+}
+
+* {
+  @apply box-border;
+}
+
+ol,
+ul {
+  @apply list-none;
+}
+
+table {
+  @apply border-collapse border-spacing-0;
+}
+
+img {
+  @apply max-w-full h-auto;
+}
+
+/* 基础表格样式 */
+table {
+  @apply w-full bg-white shadow-lg rounded-lg;
+  table-layout: auto;
+}
+
+th, td {
+  @apply px-4 py-2 text-center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 可根据需要添加其他重置规则 */
