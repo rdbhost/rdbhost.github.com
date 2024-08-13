@@ -9,6 +9,7 @@ import { FunctionMap } from './functions.js'
 class MapScope {
   
     constructor () {
+
       this.localScope = new Map(FunctionMap)
       this.diagnostics = undefined // new Map([['missing', []]])
       this.reset_diagnostics()
@@ -17,13 +18,17 @@ class MapScope {
     // add adds a key and cell pair
     //
     add (key, td) {
+
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+
       return this.localScope.set(key, td)
     }
 
     // removes, and returns, the cell for a given key
     remove (key) {
+
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+
       let tmp = this.localScope.get(key);
       this.localScope.delete(key);
       return tmp;
@@ -32,8 +37,11 @@ class MapScope {
     // gets the value of the $(td) object stored for key, or a named function
     //   if the name refers to a predefined function
     get (key) {
+
       if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+
       if (this.has(key)) {
+
         let val = this.localScope.get(key);
         if (typeof val === 'function') {
           return val
@@ -41,6 +49,7 @@ class MapScope {
           return val.data('value'); 
         }
       }
+
       return undefined;
     }
   
@@ -52,25 +61,25 @@ class MapScope {
         if (!this.localScope.has(key)) { throw new Error(`key ${key} not found in MapScope`) }
 
         let td = this.localScope.get(key);
+        td.data('value', value)
+        td.data('prev-val', undefined)
 
         // if value is an Error object, apply error style, and use error message
         if (typeof value == 'object' && value.message !== undefined) {
 
-          td.data('value', undefined);
-          td.text(value.message);
-          td.addClass('error');
+          td.text(`Error: ${value.message}`)
+          td.addClass('error')
         }
         else {
 
-          td.data('value', value);
-          td.text(formatter(value));
-          td.removeClass('error');
+          td.text(formatter(value))
+          td.removeClass('error')
         }
-        td.data('prev-val', undefined);
-        return this;
+        return this
     }
   
     has (key) {
+      
         if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
         if (!this.localScope.has(key)) { this.diagnostics.get('missing').push(key) }
         return this.localScope.has(key)
@@ -93,6 +102,7 @@ class MapScope {
     }
 
     reset_diagnostics() {
+
       const input = [['missing', []],]
       this.diagnostics = new Map(input)
     }
@@ -110,9 +120,9 @@ class MapScope {
         let missing = scope.get_diagnostics().get('missing')
         if (missing.length) {
           let first = missing[0]
-          return `Error - ${first} is not found`
+          return `${first} is not available`
         }
-        return 'Error - bad result'
+        return 'bad result'
       }
 
       evaluate(exp, scope) {
@@ -133,6 +143,10 @@ class MapScope {
           return result;
 
         } catch (e) {
+
+          if (e.message.substr(0,35) === 'Cannot read properties of undefined') {
+            return new Error('formula seems incomplete')
+          }
 
           return e;
         }
@@ -168,6 +182,7 @@ class MapScope {
   }
 
   function clean_name(name) {
+
     var nxt = name.replace(/[^a-zA-Z_$0-9]/gi, '_')
     if (name.match(/^[0-9]/)) {
       nxt = '_'+nxt
