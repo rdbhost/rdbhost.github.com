@@ -263,8 +263,8 @@ $().ready(function() {
         while (DM.VALUES[0].has(name)) {
             name = name+'_';
         }
-        $tr.find('td.name').text(name)
-        $tr.find('td.name').data('prev-val',name)
+        $tr2.find('td.name').text(name)
+        $tr2.find('td.name').data('prev-val',name)
         $tr.after($tr2);
 
         apply_draggable_columns()
