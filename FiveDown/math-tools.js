@@ -76,7 +76,7 @@ class MapScope {
         // if value is an Error object, apply error style, and use error message
         if (typeof value == 'object' && value.message !== undefined) {
 
-          td.text(`Error: ${value.message}`)
+          td.text(`${value.message}`)
           td.addClass('error')
         }
         else {
@@ -155,7 +155,7 @@ class MapScope {
           // evaluater handles a variety of input issues by returning NaN, so
           //  if we get a NaN, we inspect the scope records to diagnose reason
           //
-          if (isNaN(result)) {
+          if ( !data_valid(result) ) {
 
             let msg = this.evaluate_diagnostics(scope)
             return new Error(msg)
@@ -209,6 +209,27 @@ class MapScope {
         }
       }
 
+      // data_input_evaluater evaluates an expression with a scope, and returns
+      //  either a valid expression (number, boolean, 2or3 element vector)
+      //  or an Error object with the input text as it's message
+      //
+      data_input_evaluater(expr, scope) {
+
+        let exp = this.parse(expr)
+        let res = this.evaluate(exp, scope)
+
+        if (typeof res === 'object' && res?.name === 'Error') {
+          return new Error(expr)
+        }
+        else {
+
+          if (data_valid(res)) {
+            return res
+          }
+          return new Error(expr)
+        }
+      }
+
    }
 
    // test functions for validating some input forms
@@ -229,13 +250,45 @@ class MapScope {
   }
 
   function formatter(d) {
-    return Number(d).toPrecision(3);
+    if (Array.isArray(d)) {
+
+      let r = []
+      for (let i=0; i<d.length; i++) {
+
+        r.push(Number(d[i]).toPrecision(2))
+      }
+      return '[' + r.join(',') + ']'
+
+    } else {
+
+      return Number(d).toPrecision(3);
+    }
   }
 
   const dre = new RegExp("^[0-9][0-9\.,e]*$");
-  function data_valid(data) {
+  function data_valid_re(data) {
     return dre.test(data)
   }
 
-  export { MapScope, MyMath, name_valid, clean_name, data_valid, formatter }
+  function data_valid(data) {
+    
+    if (Array.isArray(data)) {
+      if (data.length > 1 && data.length < 4) {
+        for (let i=0; i<data.length; i++) {
+          if (!data_valid_re(data[i])) { return false }
+        }
+        return true
+      }
+      return false
+    }
+    else {
+
+      if (data_valid_re(data)) {
+        return true
+      }
+      return false
+    }
+  }
+
+  export { MapScope, MyMath, name_valid, clean_name, data_valid_re as data_valid, formatter }
 

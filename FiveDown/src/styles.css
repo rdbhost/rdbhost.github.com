@@ -173,6 +173,11 @@ td.output {
   /* border-radius: 0.375rem; */
 }
 
+td.error {
+  background-color: pink;
+  color: red;
+}
+
 /* Hover effects */
 
 td:hover {
