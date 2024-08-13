@@ -32,6 +32,7 @@ $().ready(function() {
                 $td.data('value', val);
             }
         })
+        $blank_row.find('.result').data('alt', 0)
 
         // for each name cell, set data[prev-val]
         $('tbody > tr').find('.name').each(function(i, td) {
@@ -489,19 +490,27 @@ $().ready(function() {
     $('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
-            $tr = $t.closest('tr');
-        
+            $tr = $t.closest('tr'),
+            name = $tr.find('.name').text()
+
         set_contenteditable_cols($tr)
 
-        if ($t.attr('contenteditable') == 'false') {
+        if ($t.attr('contenteditable') === 'false') {
             return;
         }
 
-        $t.data('value', $t.text())
-        if ($t.data('prev-val') != $t.text()) {
-            $('table').trigger('table:global-recalc')  // TODO: change to column recalc
-            $t.data('prev-val', $t.text())
+        let scope = DM.VALUES[$t.data('alt')]
+        let input_val = $t.text()
+
+        if ($t.data('prev-val') === input_val) {
+            return
+        } else {
+            $t.data('prev-val', input_val)
         }
+
+        let res = DM.math.data_input_evaluater(input_val, scope)
+        scope.set(name, res)
+        $('table').trigger('table:global-recalc')  // TODO: change to column recalc
     })
 
     // table events to keep calculations current
