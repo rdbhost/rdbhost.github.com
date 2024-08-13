@@ -187,11 +187,18 @@ class MapScope {
 
       expression_error(expr) {
 
-        let t = this.parse(expr, this.astf)
-        if (t?.name == 'Error') {
-          return t.message || "bad formula"
+        try {
+
+          let t = this.parse(expr, this.astf)
+          if (t?.name == 'Error') {
+            return t.message || "bad formula"
+          }
+          return false
         }
-        return false
+        catch (e) {
+          
+          return 'bad formula'
+        }
       }
 
    }
