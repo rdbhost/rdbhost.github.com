@@ -8,8 +8,8 @@ const _BINARY_OPERATORS = {
     '*': (a, b) => a * b,
     '/': (a, b) => a / b,
     '%': (a, b) => a % b,
-    '==': (a, b) => a == b,
-    '!=': (a, b) => a != b,
+    '==': (a, b) => a === b, // use shorter symbol, but stricter compare
+    '!=': (a, b) => a !== b, // ditto
 //    '===': (a, b) => a === b,
 //    '!==': (a, b) => a !== b,
     '>': (a, b) => a > b,

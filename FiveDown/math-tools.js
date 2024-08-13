@@ -11,7 +11,7 @@ class MapScope {
     constructor () {
 
       this.localScope = new Map(FunctionMap)
-      this.diagnostics = undefined // new Map([['missing', []]])
+      this.diagnostics = undefined 
       this.reset_diagnostics()
     }
   
@@ -44,9 +44,18 @@ class MapScope {
 
         let val = this.localScope.get(key);
         if (typeof val === 'function') {
+
           return val
         } else {
-          return val.data('value'); 
+
+          let ret = val.data('value')
+          
+          // if stored value is an Error object, add key to foundbad list
+          if (typeof ret === 'object' && ret.message !== undefined) {
+
+            this.diagnostics.get('foundbad').push(key)
+          }
+          return ret 
         }
       }
 
@@ -103,7 +112,8 @@ class MapScope {
 
     reset_diagnostics() {
 
-      const input = [['missing', []],]
+      const input = [['missing', []],
+                     ['foundbad', []]]
       this.diagnostics = new Map(input)
     }
   };
@@ -122,6 +132,12 @@ class MapScope {
           let first = missing[0]
           return `${first} is not available`
         }
+        let foundbad = scope.get_diagnostics().get('foundbad')
+        if (foundbad.length) {
+          let first = foundbad[0]
+          return `${first} is not valid`
+        }
+
         return 'bad result'
       }
 
