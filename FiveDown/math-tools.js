@@ -127,11 +127,13 @@ class MapScope {
 
       evaluate_diagnostics (scope) {
 
+        // if scope recorded any key misses, report one of them
         let missing = scope.get_diagnostics().get('missing')
         if (missing.length) {
           let first = missing[0]
           return `${first} is not available`
         }
+        // else if scope recorded any Error object retrievals, report one
         let foundbad = scope.get_diagnostics().get('foundbad')
         if (foundbad.length) {
           let first = foundbad[0]
@@ -150,6 +152,9 @@ class MapScope {
           // evaluate() with a scope object
           let result = exp.evaluate(scope);
 
+          // evaluater handles a variety of input issues by returning NaN, so
+          //  if we get a NaN, we inspect the scope records to diagnose reason
+          //
           if (isNaN(result)) {
 
             let msg = this.evaluate_diagnostics(scope)
@@ -160,6 +165,7 @@ class MapScope {
 
         } catch (e) {
 
+          // if the evaluation itself throws an Error, check for certain errors
           if (e.message.substr(0,35) === 'Cannot read properties of undefined') {
             return new Error('formula seems incomplete')
           }
@@ -185,6 +191,8 @@ class MapScope {
         }
       }
 
+      // expression_error checks formulas for parsing errors
+      //
       expression_error(expr) {
 
         try {
@@ -196,12 +204,15 @@ class MapScope {
           return false
         }
         catch (e) {
-          
+
           return 'bad formula'
         }
       }
 
    }
+
+   // test functions for validating some input forms
+   //
 
   const re = new RegExp("^[a-zA-Z_$][a-zA-Z_$0-9]*$");
   function name_valid(name) {
