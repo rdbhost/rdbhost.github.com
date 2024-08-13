@@ -177,6 +177,10 @@ class MapScope {
         }
         catch( e ) {
 
+          if (e.message.substr(-27) === ', was undefined (undefined)') {
+            return new Error(e.message.substr(0,e.message.length-27))
+          }
+
           return e;
         }
       }

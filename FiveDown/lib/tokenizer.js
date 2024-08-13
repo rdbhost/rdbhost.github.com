@@ -56,9 +56,9 @@ const _isOperator = (ch) => ch === 43 /* + */ ||
 const _isGrouper = (ch) => ch === 40 /* ( */ ||
     ch === 41 /* ) */ ||
     ch === 91 /* [ */ ||
-    ch === 93 /* ] */ ||
-    ch === 123 /* { */ ||
-    ch === 125; /* } */
+    ch === 93 /* ] */ // ||
+//    ch === 123 /* { */ ||
+//    ch === 125; /* } */
 const _escapeString = (str) => str.replace(/\\(.)/g, (_match, group) => {
     switch (group) {
         case 'n':
