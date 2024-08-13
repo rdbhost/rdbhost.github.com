@@ -67,8 +67,8 @@ th.min, th.alt-add {
 th.result {
   cursor: pointer;
   text-align: center;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
+  border-top-left-radius: 1.2rem;
+  border-top-right-radius: 1.2rem;
   --tw-bg-opacity: 1;
   background-color: rgb(239 246 255 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
@@ -82,8 +82,8 @@ th.result {
 th.alt-add {
   cursor: pointer;
   text-align: center;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
+  border-top-left-radius: 1.2rem;
+  border-top-right-radius: 1.2rem;
   --tw-bg-opacity: 1;
   background-color: rgb(239 246 255 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
@@ -125,7 +125,7 @@ td.handle, td.delete {
   font-weight: 700;
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
-  border-radius: 0.375rem;
+  /* border-radius: 0.375rem; */
 }
 
 td.handle::before {
@@ -149,7 +149,7 @@ td.alt-add {
   text-align: center;
   --tw-text-opacity: 1;
   color: rgb(37 99 235 / var(--tw-text-opacity));
-  border-radius: 0.375rem;
+  /* border-radius: 0.375rem; */
 }
 
 /* Non-editable cells */
@@ -159,7 +159,7 @@ td.readonly {
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity));
-  border-radius: 0.375rem;
+  /* border-radius: 0.375rem; */
 }
 
 /* Output result cells */
@@ -170,7 +170,7 @@ td.output {
   font-weight: 600;
   --tw-text-opacity: 1;
   color: rgb(22 163 74 / var(--tw-text-opacity));
-  border-radius: 0.375rem;
+  /* border-radius: 0.375rem; */
 }
 
 /* Hover effects */
