@@ -249,22 +249,6 @@ class MapScope {
     return nxt
   }
 
-  function formatter(d) {
-    if (Array.isArray(d)) {
-
-      let r = []
-      for (let i=0; i<d.length; i++) {
-
-        r.push(Number(d[i]).toPrecision(2))
-      }
-      return '[' + r.join(',') + ']'
-
-    } else {
-
-      return Number(d).toPrecision(3);
-    }
-  }
-
   const dre = new RegExp("^[0-9][0-9\.,e]*$");
   function data_valid_re(data) {
     return dre.test(data)
@@ -287,6 +271,25 @@ class MapScope {
         return true
       }
       return false
+    }
+  }
+
+  // formatter - formats data entered into result columns. returns formatted string
+  //
+  function formatter(d) {
+
+    if (Array.isArray(d)) {
+
+      let r = []
+      for (let i=0; i<d.length; i++) {
+
+        r.push(Number(d[i]).toPrecision(2))
+      }
+      return '[' + r.join(',') + ']'
+
+    } else {
+
+      return Number(d).toPrecision(3);
     }
   }
 

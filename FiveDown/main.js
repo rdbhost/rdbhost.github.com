@@ -19,34 +19,21 @@ $().ready(function() {
         $headers.data('alt', 0);
         $headers.find('button.close-res').hide().off();
 
+        $('tbody > tr').each(function(i, tr) {
+
+            let $row = $(tr)
+            set_contenteditable_cols($row);
+
+            // for name cell, set data[prev-val]
+            let name = $row.find('.name').text()
+            $row.find('.name').data('prev-val', name);
+
+            // for result cell, set alt val in data
+            $row.find('.result').first().data('alt', 0)
+        })
+
         // grab copy of first row, presumed blank.
         $blank_row = $('tbody > tr').first().remove();
-        set_contenteditable_cols($blank_row);
-
-        // for each result cell, set data[alt]=0, and push value to data[value]
-        $('tbody > tr').find('.result').each(function(i, td) {
-            let $td = $(td);
-            $td.data('alt', 0);
-            if ($td.text() !== "") {
-                let val = clean($td.text());
-                $td.data('value', val);
-            }
-        })
-        $blank_row.find('.result').data('alt', 0)
-
-        // for each name cell, set data[prev-val]
-        $('tbody > tr').find('.name').each(function(i, td) {
-            let $td = $(td);
-            $td.data('prev-val', $td.text());
-        })
-
-        // iterate over initial sheet content, and set contenteditable and style
-        //   for each column after name
-        $('tbody > tr').each(function(i, row) {
-
-            let $row = $(row);
-            set_contenteditable_cols($row);
-        })
 
         // push values from initial sheet into VALUES[0] MapScope
         $headers.each(function(i, th) {

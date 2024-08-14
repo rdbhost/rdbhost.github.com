@@ -80,6 +80,8 @@ class DataManager {
                 let $td = $(td);
                 if ($td.data('alt') == altnum) {
                     _this.VALUES[altnum].add(name, $td);
+                    let val = _this.math.data_input_evaluater($td.text(), _this.VALUES[altnum]);
+                    _this.VALUES[altnum].set(name, val);
                 }
             })
         })

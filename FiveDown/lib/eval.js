@@ -5,7 +5,7 @@
 const _BINARY_OPERATORS = {
     '+': (a, b) => a + b,
     '-': (a, b) => a - b,
-    '*': (a, b) => a * b,
+    '*': (a, b) => product(a, b),
     '/': (a, b) => a / b,
     '%': (a, b) => a % b,
     '^': (a, b) => Math.pow(a,b),
@@ -298,5 +298,35 @@ export class EvalAstFactory {
 
 function dot_product(a, b) {
 
-    throw new Error('dot product not yet implemented')
+    if (!Array.isArray(a)) { throw new Error('dot product operates on vectors') }
+    if (!Array.isArray(b)) { throw new Error('dot product operates on vectors') }
+    if (a.length !== b.length) { throw new Error('vectors must be equal length') }
+
+    return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
+}
+
+function cross_product(a, b) {
+
+    throw new Error('cross product not yet implemented')
+}
+
+function scalar_multiply(a, b) {
+
+    return b.map(function(v) { return a*v })
+}
+
+function product(a, b) {
+
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return cross_product(a,b)
+    }
+    else if (Array.isArray(a) && Number.isFinite(b)) {
+        return scalar_multiply(b,a)
+    }
+    else if (Number.isFinite(a) && Array.isArray(b)) {
+        return scalar_multiply(a,b)
+    }
+    else if (Number.isFinite(a) && Number.isFinite(b)) {
+        return a * b
+    }
 }
