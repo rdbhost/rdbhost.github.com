@@ -33,7 +33,9 @@ $().ready(function() {
         })
 
         // grab copy of first row, presumed blank.
-        $blank_row = $('tbody > tr').first().remove();
+        $blank_row = $('tbody > tr').first()
+        $blank_row.remove();
+        $blank_row.find('.result').data('alt', 0)
 
         // push values from initial sheet into VALUES[0] MapScope
         $headers.each(function(i, th) {
@@ -144,6 +146,8 @@ $().ready(function() {
                 $sixth = $('tbody > tr').slice(-6,-5);
             };
         }
+
+        update_alts()
     }
 
     // make all rows draggable to reorder
@@ -308,12 +312,12 @@ $().ready(function() {
         // in each row, add one result column
         $('tbody > tr').each(function (i, row) {
             let $last = $(row).find('td.result').last()
-            $last.after($last.clone(true, true));
+            $last.after($last.clone(true));
         });
 
         // in blank_row, add one result column
         let $last = $blank_row.find('td.result').last()
-        $last.after($last.clone(true, true));
+        $last.after($last.clone(true));
 
         update_alts();
         apply_draggable_columns()
@@ -340,7 +344,7 @@ $().ready(function() {
         })
         $('th.alt-add').data('alt', headers.length)
 
-        // in each row, add one result column
+        // in each row, push alt value into data
         $('tbody > tr').each(function (z, _row) {
             
             let tds = $(_row).find('.result');
@@ -495,8 +499,15 @@ $().ready(function() {
             $t.data('prev-val', input_val)
         }
 
-        let res = DM.math.data_input_evaluater(input_val, scope)
-        scope.set(name, res)
+        if (input_val === "") {
+
+            scope.set(name, "")
+        }
+        else {
+
+            let res = DM.math.data_input_evaluater(input_val, scope)
+            scope.set(name, res)
+        }
         $('table').trigger('table:global-recalc')  // TODO: change to column recalc
     })
 

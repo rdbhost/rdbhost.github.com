@@ -287,10 +287,16 @@ class MapScope {
       }
       return '[' + r.join(',') + ']'
 
-    } else if (d === false || d === true) {
+    } 
+    else if (d === false || d === true) {
 
       return d.toString()
-    } else {
+    } 
+    else if (d === "") {
+
+      return ""
+    } 
+    else {
 
       return Number(d).toPrecision(3);
     }
