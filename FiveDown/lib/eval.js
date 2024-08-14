@@ -3,8 +3,8 @@
  * Portions Copyright (c) 2013, the Dart project authors.
  */
 const _BINARY_OPERATORS = {
-    '+': (a, b) => a + b,
-    '-': (a, b) => a - b,
+    '+': (a, b) => add(a, b),
+    '-': (a, b) => subtract(a, b),
     '*': (a, b) => product(a, b),
     '/': (a, b) => a / b,
     '%': (a, b) => a % b,
@@ -295,11 +295,34 @@ export class EvalAstFactory {
     } */
 }
 
+function add(a, b) {
+
+    if (Array.isArray(a) && Array.isArray(b)) {
+
+        if (a.length !== b.length) { throw new Error('vectors to add must be same length') }
+        return a.map(function(_v, i) { return a[i]+b[i] })
+    }
+    else if (Number.isFinite(a) && Number.isFinite(b)) {
+        return a + b
+    }
+    throw new Error('+ needs two numbers or two vectors')
+}
+function subtract(a, b) {
+
+    if (Array.isArray(a) && Array.isArray(b)) {
+
+        if (a.length !== b.length) { throw new Error('vectors to subtract must be same length') }
+        return a.map(function(_v, i) { return a[i]-b[i] })
+    }
+    else if (Number.isFinite(a) && Number.isFinite(b)) {
+        return a - b
+    }
+    throw new Error('- needs two numbers or two vectors')
+}
 
 function dot_product(a, b) {
 
-    if (!Array.isArray(a)) { throw new Error('dot product operates on vectors') }
-    if (!Array.isArray(b)) { throw new Error('dot product operates on vectors') }
+    if (!Array.isArray(a) || !Array.isArray(b)) { throw new Error('dot product operates on vectors') }
     if (a.length !== b.length) { throw new Error('vectors must be equal length') }
 
     return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
@@ -307,10 +330,8 @@ function dot_product(a, b) {
 
 function cross_product(a, b) {
 
-    if (!Array.isArray(a)) { throw new Error('cross product operates on vectors') }
-    if (!Array.isArray(b)) { throw new Error('cross product operates on vectors') }
-    if (a.length !== 3) { throw new Error('vectors must be length 3') }
-    if (b.length !== 3) { throw new Error('vectors must be length 3') }
+    if (!Array.isArray(a) || !Array.isArray(b)) { throw new Error('cross product operates on vectors') }
+    if (a.length !== 3 || b.length !== 3) { throw new Error('vectors must be length 3') }
 
     return [
         a[1]*b[2] - a[2]*b[1],

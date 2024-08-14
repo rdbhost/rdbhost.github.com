@@ -249,7 +249,7 @@ class MapScope {
     return nxt
   }
 
-  const dre = new RegExp("^[0-9][0-9\.,e]*$");
+  const dre = new RegExp("^-?[0-9][0-9\.,e]*$");
   function data_valid_re(data) {
     return dre.test(data)
   }
@@ -265,12 +265,12 @@ class MapScope {
       }
       return false
     }
+    else if (data === false || data === true) {
+      return true
+    }
     else {
 
-      if (data_valid_re(data)) {
-        return true
-      }
-      return false
+      return data_valid_re(data)
     }
   }
 
@@ -287,6 +287,9 @@ class MapScope {
       }
       return '[' + r.join(',') + ']'
 
+    } else if (d === false || d === true) {
+
+      return d.toString()
     } else {
 
       return Number(d).toPrecision(3);
