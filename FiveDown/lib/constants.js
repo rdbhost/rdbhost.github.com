@@ -9,6 +9,7 @@ export const BINARY_OPERATORS = [
     '+',
     '-',
     '*',
+    '@',
     '/',
     '%',
     '^',
@@ -20,7 +21,7 @@ export const BINARY_OPERATORS = [
     '<=',
     '||',
     '&&',
-    '??',
+ //   '??',
  //   '&',
  //   '===',
  //   '!==',
@@ -36,7 +37,7 @@ export const PRECEDENCE = {
     '}': 0,
  //   '|>': 1,
     '?': 2,
-    '??': 3,
+ //   '??': 3,
     '||': 4,
     '&&': 5,
  //   '|': 6,
@@ -58,6 +59,7 @@ export const PRECEDENCE = {
     '%': 12,
     '/': 12,
     '*': 12,
+    '@': 12,  // DVK: assumed
     '^': 13,
     // postfix
     '(': 13,

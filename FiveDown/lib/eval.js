@@ -8,6 +8,8 @@ const _BINARY_OPERATORS = {
     '*': (a, b) => a * b,
     '/': (a, b) => a / b,
     '%': (a, b) => a % b,
+    '^': (a, b) => Math.pow(a,b),
+    '@': (a, b) => dot_product(a, b), 
     '==': (a, b) => a === b, // use shorter symbol, but stricter compare
     '!=': (a, b) => a !== b, // ditto
 //    '===': (a, b) => a === b,
@@ -18,8 +20,7 @@ const _BINARY_OPERATORS = {
     '<=': (a, b) => a <= b,
     '||': (a, b) => a || b,
     '&&': (a, b) => a && b,
-    '??': (a, b) => a ?? b,
-    '^': (a, b) => Math.pow(a,b),
+ //   '??': (a, b) => a ?? b,
  //   '|': (a, f) => f(a),
  //   '|>': (a, f) => f(a),
 };
@@ -292,4 +293,10 @@ export class EvalAstFactory {
             },
         };
     } */
+}
+
+
+function dot_product(a, b) {
+
+    throw new Error('dot product not yet implemented')
 }
