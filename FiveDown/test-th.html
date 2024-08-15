@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="./src/reset.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-    <script src="drag.js"></script>
+    <script src="persistance.js" type="module"></script>
+    <script src="main.js" type="module"></script>
 </head>
 <body>
     <table>
@@ -17,7 +18,8 @@
                 <th class="desc">Description</th>
                 <th class="name">Name</th>
                 <th class="formula">Formula</th>
-                <th class="result"><div>Result</div><span>-</span></th>
+                <th class="result"><span>Result</span><button class="close-res">-</button></th>
+                <!-- th class="result"><div>Result</div><span>-</span></th -->
                 <th class="alt-add"><span>+</span></th>
                 <th class="unit">Unit</th>
                 <th class="min"></th>
