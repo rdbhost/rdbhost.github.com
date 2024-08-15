@@ -59,8 +59,8 @@ function replace_table_from_json($table, rows) {
     //  basing on longest row
     //
     let altct = rows.reduce(function(m, v) {
-        if (v && Array.isArray(v[2])) {
-            return Math.max(m, v[2].length)
+        if (v && Array.isArray(v[3])) {
+            return Math.max(m, v[3].length)
         }
         return m
     }, 0)

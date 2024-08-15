@@ -1,5 +1,7 @@
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name } from './math-tools.js';
+import { name_valid, clean_name } from './math-tools.js'
+import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
+
 
 const MAX_ALTS = 8;
     
@@ -563,6 +565,20 @@ function initialize($table) {
 $().ready(function() {
 
     let $table = $('table')
+
+    let saved = get_storable('main')
+    if (saved) {
+        replace_table_from_json($table, saved)
+    }
+
     initialize($table);
 
+    $(window).on('unload', function() {
+
+        let rows = gather_storable($table)
+        save_storable('main', rows)
+    })
+
 })
+
+export { row_is_blank } 
