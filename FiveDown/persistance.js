@@ -59,13 +59,13 @@ function replace_table_from_json($table, rows) {
     //  basing on longest row
     //
     let altct = rows.reduce(function(m, v) {
-        if (v && Array.isArray(v[3])) {
-            return Math.max(m, v[3].length)
+        if (v && Array.isArray(v[v.length-1])) {
+            return Math.max(m, v[v.length-1].length)
         }
         return m
     }, 0)
 
-    // if there are multiple columns, expand the header row
+    // if there are multiple result columns, expand the header row
     //   and also the blank row, to include enough result columns
     //
     if (altct > 1) {
