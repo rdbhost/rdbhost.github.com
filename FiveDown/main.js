@@ -1,5 +1,5 @@
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter } from './math-tools.js'
 import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
 
 
@@ -331,6 +331,10 @@ function initialize($table) {
 
         // for result cell, set alt val in data
         $row.find('.result').first().data('alt', 0)
+
+        let $form_cell = $row.find('.formula')
+        $form_cell.data('value', $form_cell.text())
+        $form_cell.text(formula_formatter($form_cell.text()))
     })
 
     // grab copy of first row, presumed blank.
@@ -452,24 +456,31 @@ function initialize($table) {
     // handler on formula cells changes the contenteditable and styling
     //   of formula and result cells 
     //
+    $table.find('tbody').on('focusin', '.formula', function(evt) {
+
+        let $td = $(evt.target);                    // $td is $<td>
+        if ($td.attr('contenteditable') == 'false') { return }
+        $td.text($td.data('value'))
+    })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
         
-        let $t = $(evt.target);                    // t is $<td>
-        let $tr = $t.closest('tr');
+        let $td = $(evt.target);                    // t is $<td>
+        let $tr = $td.closest('tr');
 
         set_contenteditable_cols($tr)
 
-        if ($t.attr('contenteditable') == 'false') {
-            return;
-        }
+        if ($td.attr('contenteditable') == 'false') { return }
 
-        if ($t.text() !== ($t.data("prev-val") || '')) {   // is formula diff from stored?
-            $t.data("prev-val", $t.text());        // store new formula in data
+        let formula = $td.text()
+        $td.text(formula_formatter(formula))
+
+        if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
+            $td.data("prev-val", formula).data('value', formula);  // store new formula in data
             let $res = $tr.find('td.result');
             $res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
-            $table.trigger("row:formula-change", [name, $t.text()]);       
+            $table.trigger("row:formula-change", [name, $td.data('value')]);       
         } 
     })
 
@@ -579,6 +590,10 @@ $().ready(function() {
         save_storable('main', rows)
     })
 
+    $('.min').on('click', function() {
+        let d = gather_storable($table)
+        save_storable('main', d)
+    })
 })
 
 export { row_is_blank } 

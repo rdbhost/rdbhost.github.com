@@ -1,5 +1,5 @@
 
-import { MapScope, MyMath, name_valid, formatter } from './math-tools.js'
+import { MapScope, MyMath, name_valid } from './math-tools.js'
 
 class DataManager {
 
@@ -94,7 +94,7 @@ class DataManager {
         $('tbody > tr').each(function(z, row) {
     
             let $row = $(row);
-            let formula = $row.find('.formula').text();
+            let formula = $row.find('.formula').data('value');
             if (formula == "") { return };
 
             let name = $row.find('.name').text();

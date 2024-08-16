@@ -1,4 +1,6 @@
 
+import { name_valid, clean_name, formula_formatter, result_formatter } from './math-tools.js'
+
 // gather_storable - iterates over html table, extracting data to store
 //   returns an array; each element is either null or an array
 //   the row array is description, name, unit, formula or results array
@@ -20,7 +22,7 @@ function gather_storable($table) {
             let unit = $tr.find('.unit').text()
             row.push(description, name, unit)
 
-            let formula = $tr.find('.formula').text()
+            let formula = $tr.find('.formula').data('value')
             if (formula) {
                 row.push(formula)
             } 
@@ -100,15 +102,17 @@ function replace_table_from_json($table, rows) {
             $new.find('.unit').text(unit).data('prev-val', unit)
 
             if (!Array.isArray(other)) {
+
                 $new.find('.formula').text(other).data('prev-val', other)
             }
             else {
+
                 let $res = $new.find('.result')
                 if ($res.length !== other.length) { throw new Error('result ct mismatch') }
                     
                 $res.each(function(i, v) {
                     let $td = $(v)
-                    $td.text(other[i]).data('value', other[i]).data('prev-val', other[i])
+                    $td.text(result_formatter(other[i])).data('value', other[i]).data('prev-val', other[i])
                 })
             }
         }
