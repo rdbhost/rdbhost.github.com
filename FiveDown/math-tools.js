@@ -81,7 +81,7 @@ class MapScope {
         }
         else {
 
-          td.text(formatter(value))
+          td.text(result_formatter(value))
           td.removeClass('error')
         }
         return this
@@ -249,8 +249,9 @@ class MapScope {
     return nxt
   }
 
-  const dre = new RegExp("^-?[0-9][0-9\.,e]*$");
   function data_valid_re(data) {
+  
+    const dre = new RegExp("^-?[0-9][0-9\.,e]*$");
     return dre.test(data)
   }
 
@@ -276,7 +277,7 @@ class MapScope {
 
   // formatter - formats data entered into result columns. returns formatted string
   //
-  function formatter(d) {
+  function result_formatter(d) {
 
     if (Array.isArray(d)) {
 
@@ -302,5 +303,10 @@ class MapScope {
     }
   }
 
-  export { MapScope, MyMath, name_valid, clean_name, data_valid_re as data_valid, formatter }
+  function formula_formatter(formula) {
+  
+    return formula.replaceAll('@', '•').replaceAll('*', '×');
+  }
+
+  export { MapScope, MyMath, name_valid, clean_name, data_valid_re, result_formatter, formula_formatter }
 
