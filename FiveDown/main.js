@@ -1,5 +1,6 @@
 import { DataManager } from './datamanager.js'
 import { name_valid, clean_name, formula_formatter } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter } from './math-tools.js'
 import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
 
 
@@ -462,6 +463,12 @@ function initialize($table) {
         if ($td.attr('contenteditable') == 'false') { return }
         $td.text($td.data('value'))
     })
+    $table.find('tbody').on('focusin', '.formula', function(evt) {
+
+        let $td = $(evt.target);                    // $td is $<td>
+        if ($td.attr('contenteditable') == 'false') { return }
+        $td.text($td.data('value'))
+    })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
         
         let $td = $(evt.target);                    // t is $<td>
@@ -480,6 +487,7 @@ function initialize($table) {
             $res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
+            $table.trigger("row:formula-change", [name, $td.data('value')]);       
             $table.trigger("row:formula-change", [name, $td.data('value')]);       
         } 
     })
@@ -590,6 +598,10 @@ $().ready(function() {
         save_storable('main', rows)
     })
 
+    $('.min').on('click', function() {
+        let d = gather_storable($table)
+        save_storable('main', d)
+    })
     $('.min').on('click', function() {
         let d = gather_storable($table)
         save_storable('main', d)
