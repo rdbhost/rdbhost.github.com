@@ -276,8 +276,9 @@ function update_alts($table) {
         let th = $(_th);
         let altnm = 'Result '+i;
         if (i == 0 && headers.length===1 ) { altnm = 'Result' };
-        th.find('span').text(altnm);
-        th.data('alt', i);
+        let $span = th.find('span')
+        $span.text($span.data('custom_name') || altnm)
+        th.data('alt', i)
     })
     $table.find('th.alt-add').data('alt', headers.length)
 
@@ -317,7 +318,7 @@ function initialize($table) {
 
     // setup initial sheet
     let $headers = $table.find('th.result');
-    $headers.data('alt', 0);
+    // $headers.data('alt', 0);   // todo 
     $headers.find('button.close-res').hide().off();
 
     $table.find('tbody > tr').each(function(i, tr) {
@@ -527,6 +528,19 @@ function initialize($table) {
         $table.trigger('table:global-recalc')  // TODO: change to column recalc
     })
 
+    $table.find('thead').on('dblclick', 'th.result', function(evt) {
+
+        let $span = $(evt.target).closest('th').find('span');
+        $span.attr('contenteditable', 'true')
+        $span.trigger('focus')
+
+        $span.one('focusout', function() {
+            $span.data('custom_name', $span.text())
+            $span.attr('contenteditable', 'false')
+        })
+
+    })
+
     // table events to keep calculations current
     //
     $table.on('row:rename', function(event, prev, now) {
@@ -588,23 +602,23 @@ $().ready(function() {
     if (saved) {
         replace_table_from_json($table, saved)
     }
+    else {
+        let $headers = $table.find('th.result');
+        $headers.data('alt', 0);   
+    }
 
     initialize($table);
 
     $(window).on('unload', function() {
 
-        let rows = gather_storable($table)
-        save_storable('main', rows)
+        //let rows = gather_storable($table)
+        //save_storable('main', rows)
     })
 
     $('.min').on('click', function() {
         let d = gather_storable($table)
         save_storable('main', d)
     })
-    $('.min').on('click', function() {
-        let d = gather_storable($table)
-        save_storable('main', d)
-    })
-})
+ })
 
 export { row_is_blank } 

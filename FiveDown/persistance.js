@@ -74,14 +74,18 @@ function replace_table_from_json($table, rows) {
         
         let $res = $table.find('thead th.result')
         let $resplus = $res.next(); $res.remove()
-        for (i=0; i<altct; i++) {
-            $resplus.before($res.clone(true))
+        for (let i=0; i<altct; i++) {
+            let $t = $res.clone(true)
+            $resplus.before($t)
+            $t.data('alt', i)
         }
 
         $res = $blank_row.find('.result')
         $resplus = $res.next(); $res.remove()
-        for (i=0; i<altct; i++) {
-            $resplus.before($res.clone(true))
+        for (let i=0; i<altct; i++) {
+            let $t = $res.clone(true)
+            $resplus.before($t)
+            $t.data('alt', i)
         }
     }
 
