@@ -1,6 +1,5 @@
 import { DataManager } from './datamanager.js'
 import { name_valid, clean_name, formula_formatter } from './math-tools.js'
-import { name_valid, clean_name, formula_formatter } from './math-tools.js'
 import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
 
 
@@ -336,6 +335,10 @@ function initialize($table) {
         let $form_cell = $row.find('.formula')
         $form_cell.data('value', $form_cell.text())
         $form_cell.text(formula_formatter($form_cell.text()))
+
+        let $form_cell = $row.find('.formula')
+        $form_cell.data('value', $form_cell.text())
+        $form_cell.text(formula_formatter($form_cell.text()))
     })
 
     // grab copy of first row, presumed blank.
@@ -471,6 +474,8 @@ function initialize($table) {
     })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
         
+        let $td = $(evt.target);                    // t is $<td>
+        let $tr = $td.closest('tr');
         let $td = $(evt.target);                    // t is $<td>
         let $tr = $td.closest('tr');
 
