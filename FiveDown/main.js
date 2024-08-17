@@ -233,6 +233,7 @@ function remove_alt(evt, $table) {
 
     $table.trigger("table:alt-update");
 }
+
 function addalt_func(evt) {
 
     let $table = evt.data
@@ -273,12 +274,12 @@ function update_alts($table) {
 
     headers.each(function(i, _th) {
 
-        let th = $(_th);
+        let $th = $(_th);
         let altnm = 'Result '+i;
         if (i == 0 && headers.length===1 ) { altnm = 'Result' };
-        let $span = th.find('span')
-        $span.text($span.data('custom_name') || altnm)
-        th.data('alt', i)
+        let $span = $th.find('span')
+        $span.text($th.data('custom_name') || altnm)
+        $th.data('alt', i)
     })
     $table.find('th.alt-add').data('alt', headers.length)
 
@@ -354,7 +355,8 @@ function initialize($table) {
     // push formulas from initial sheet into FORMULAS Map, and recalc
     DM.populate_formulas();
 
-    $table.find('th.alt-add').on('click', $table, addalt_func);
+    // $table becomes available on event obj as evt.data
+    $table.find('th.alt-add').on('click', $table, addalt_func);  
 
     // double click on left-column duplicates row
     //
@@ -530,12 +532,20 @@ function initialize($table) {
 
     $table.find('thead').on('dblclick', 'th.result', function(evt) {
 
-        let $span = $(evt.target).closest('th').find('span');
+        let $th = $(evt.target).closest('th')
+        let $span = $th.find('span');
         $span.attr('contenteditable', 'true')
         $span.trigger('focus')
 
         $span.one('focusout', function() {
-            $span.data('custom_name', $span.text())
+            if ($span.text()) {
+                $th.data('custom_name', $span.text())
+            }
+            else {
+                let append = $table.find('thead th.result').length > 1 ? $span.closest('th').data('alt') : ""
+                $span.text('Result '+append)
+                $th.data('custom_name', null)
+            }
             $span.attr('contenteditable', 'false')
         })
 
@@ -602,10 +612,7 @@ $().ready(function() {
     if (saved) {
         replace_table_from_json($table, saved)
     }
-    else {
-        let $headers = $table.find('th.result');
-        $headers.data('alt', 0);   
-    }
+    update_alts($table)
 
     initialize($table);
 

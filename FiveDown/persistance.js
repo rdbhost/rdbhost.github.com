@@ -9,6 +9,10 @@ function gather_storable($table) {
 
     let itms = []
 
+    let columns = $table.find('thead th.result').get().map(function(v, _i) { 
+        return $(v).data('custom_name') || null 
+    })
+
     // iterate over table rows
     $table.find('tbody > tr').each(function(_i, tr) {
 
@@ -42,50 +46,64 @@ function gather_storable($table) {
         }
     })
 
-    return itms
+    return {'header': columns,
+            'rows': itms}
 }
 
 // replace_table_from_json - removes all rows from table, and generates
 //   new set of rows from provided data
 //
-function replace_table_from_json($table, rows) {
+function replace_table_from_json($table, data) {
 
-    if (!rows) { throw new Error('data not provided') }
+    if (!data) { throw new Error('data not provided') }
+    if (!data['rows']) { return }
 
     let $trs = $table.find('tbody > tr')
     let $blank_row = $trs.first(); $blank_row.remove()
     $trs.remove()
     $table.find('tbody').append($blank_row.clone(true))
 
-    // count how many result columns are in source data,
-    //  basing on longest row
-    //
-    let altct = rows.reduce(function(m, v) {
-        if (v && Array.isArray(v[v.length-1])) {
-            return Math.max(m, v[v.length-1].length)
-        }
-        return m
-    }, 0)
+    let rows = data['rows']
+    let result_cols = data['header']
+    let altct;
+
+    if (result_cols) {
+
+        altct = result_cols.length
+    }
+    else {
+
+        // count how many result columns are in source data,
+        //  basing on longest row
+        //
+        altct = rows.reduce(function(m, v) {
+            if (v && Array.isArray(v[v.length-1])) {
+                return Math.max(m, v[v.length-1].length)
+            }
+            return m
+        }, 0)
+    }
 
     // if there are multiple result columns, expand the header row
     //   and also the blank row, to include enough result columns
     //
-    if (altct > 1) {
+    if (altct > 1 || result_cols[0]) {
         
         let $res = $table.find('thead th.result')
         let $resplus = $res.next(); $res.remove()
         for (let i=0; i<altct; i++) {
             let $t = $res.clone(true)
             $resplus.before($t)
-            $t.data('alt', i)
+            if (result_cols[i]) {
+                $t.data('custom_name', result_cols[i])
+                $t.find('span').text(result_cols[i])
+            }
         }
 
         $res = $blank_row.find('.result')
         $resplus = $res.next(); $res.remove()
         for (let i=0; i<altct; i++) {
-            let $t = $res.clone(true)
-            $resplus.before($t)
-            $t.data('alt', i)
+            $resplus.before($res.clone(true))
         }
     }
 
