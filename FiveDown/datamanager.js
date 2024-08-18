@@ -24,6 +24,7 @@ class DataManager {
 
         this.VALUES.forEach(function(vals, i) {
             if (vals.has(name)) {
+                vals.set(prev, undefined);
                 vals.remove(name);
             }
         })
@@ -39,7 +40,8 @@ class DataManager {
         if (now == "") { 
             this.VALUES.forEach(function(vals, i) {
                 if (vals.has(prev)) {
-                    vals.remove(prev);
+                    vals.set(prev, undefined);
+                    vals.remove(prev)
                 }
             })
             this.FORMULAS.delete(prev);
@@ -129,19 +131,35 @@ class DataManager {
             this.FORMULAS.delete(name);
         }
 
-        // if formula is invalid, put error message in first result column
-        let errmsg = _this.math.expression_error(formula)
-        if (errmsg) {
-            this.VALUES[0].set(name, new Error(errmsg))
-        // else save formula in FORMULAS
-        } else {
-            this.FORMULAS.set(name, formula);
+        // if formula is blank, clear values
+        let exp = _this.math.parse(formula)
+        if (exp.type === 'Empty') {
+
             this.VALUES.forEach(function(scope, _i) {
 
-                let exp = _this.math.parse(formula)
-                let res = _this.math.evaluate(exp, scope);
-                scope.set(name, res);
+                scope.set(name, "")
             })
+        } 
+        else {
+
+            // else if formula is invalid, put error message in first result column
+            let errmsg = _this.math.expression_error(formula)
+            if (errmsg) {
+
+                this.VALUES.forEach(function(scope, _i) { scope.set(name, "") })
+                this.VALUES[0].set(name, new Error(errmsg))
+            } 
+            
+            // else formula valid and non-blank, so save, and update result cols
+            else {
+
+                this.FORMULAS.set(name, formula);
+                this.VALUES.forEach(function(scope, _i) {
+    
+                    let res = _this.math.evaluate(exp, scope);
+                    scope.set(name, res);
+                })
+            }
         }
     }
 }

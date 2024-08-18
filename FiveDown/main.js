@@ -465,31 +465,24 @@ function initialize($table) {
         if ($td.attr('contenteditable') == 'false') { return }
         $td.text($td.data('value'))
     })
-    $table.find('tbody').on('focusin', '.formula', function(evt) {
-
-        let $td = $(evt.target);                    // $td is $<td>
-        if ($td.attr('contenteditable') == 'false') { return }
-        $td.text($td.data('value'))
-    })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
         
         let $td = $(evt.target);                    // t is $<td>
         let $tr = $td.closest('tr');
 
-        set_contenteditable_cols($tr)
-
         if ($td.attr('contenteditable') == 'false') { return }
+        set_contenteditable_cols($tr)
 
         let formula = $td.text()
         $td.text(formula_formatter(formula))
 
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
+
             $td.data("prev-val", formula).data('value', formula);  // store new formula in data
-            let $res = $tr.find('td.result');
-            $res.text('');                         // clear non-calced result value
+            // let $res = $tr.find('td.result');
+            //$res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
-            $table.trigger("row:formula-change", [name, $td.data('value')]);       
             $table.trigger("row:formula-change", [name, $td.data('value')]);       
         } 
     })
@@ -607,11 +600,21 @@ function initialize($table) {
 $().ready(function() {
 
     let $table = $('table')
+    let sheet = 'default'
 
-    let saved = get_storable('main')
-    if (saved) {
-        replace_table_from_json($table, saved)
+    let status = get_storable('status')
+    if (status) {
+
+        sheet = status['active_sheet']
+        let saved = get_storable(sheet)
+        if (saved) {
+            replace_table_from_json($table, saved)
+        }
     }
+    else {
+        save_storable('status', {'active_sheet': sheet})
+    }
+
     update_alts($table)
 
     initialize($table);
@@ -619,12 +622,12 @@ $().ready(function() {
     $(window).on('unload', function() {
 
         //let rows = gather_storable($table)
-        //save_storable('main', rows)
+        //save_storable('default', rows)
     })
 
     $('.min').on('click', function() {
         let d = gather_storable($table)
-        save_storable('main', d)
+        save_storable(sheet, d)
     })
  })
 

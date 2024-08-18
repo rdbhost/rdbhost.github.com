@@ -79,6 +79,10 @@ class MapScope {
           td.text(`${value.message}`)
           td.addClass('error')
         }
+        else if (value === undefined) {
+          td.text("")
+          td.removeClass('error output').addClass('readonly')
+        }
         else {
 
           td.text(result_formatter(value))

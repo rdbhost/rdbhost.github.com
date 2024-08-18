@@ -6,6 +6,13 @@
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 
+.outer-box {
+  margin-left: auto;
+  margin-right: auto;
+  width: 92%;
+
+}
+
 /* Overall table style */
 
 table {
@@ -13,7 +20,7 @@ table {
   margin-right: auto;
   margin-top: 1.25rem;
   margin-bottom: 1.25rem;
-  width: 91.666667%;
+  width: 100%; /* 91.666667%; */
   border-collapse: collapse;
   border-radius: 0.5rem;
   --tw-bg-opacity: 1;
