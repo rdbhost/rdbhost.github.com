@@ -1,11 +1,23 @@
 
 import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
-import { row_is_blank, update_alts, ensure_five_blank, initialize, remove_draggable_rows, apply_draggable_rows } from './sheet.js'
+import { update_alts, ensure_five_blank, initialize, remove_draggable_rows, apply_draggable_rows } from './sheet.js'
+
+function project_initialize() {
+
+    $('.project-menu').on('click', '.sheet-selecter', function(event) {
+
+        console.log('sheet selected')
+    })
+    $('.project-menu').on('click', '#new-sheet', function(event) {
+
+        console.log('new sheet requested')
+    })
+}
 
 
 function table_initialize($table) {    
 
-    let DM = $('table').data('DM')
+    let DM = $table.data('DM')
 
     // table events to keep calculations current
     //
@@ -58,7 +70,7 @@ function table_initialize($table) {
 $().ready(function() {
 
     let $table = $('table')
-    let sheet = 'default'
+    let sheet = 'sheet-00'
 
     let status = get_storable('status')
     if (status) {
@@ -77,6 +89,7 @@ $().ready(function() {
 
     initialize($table);
     table_initialize($table)
+    project_initialize()
 
     $(window).on('unload', function() {
 
@@ -90,4 +103,4 @@ $().ready(function() {
     })
  })
 
-export { row_is_blank } 
+
