@@ -46,6 +46,8 @@ function set_contenteditable_cols($row) {
 //
 function row_is_blank($row) {
 
+    if ($row.length === 0) { return false }
+    
     let blank = (($row.find('.desc').text() == "")
                 &&  ($row.find('.name').text() == "")
                 &&  ($row.find('.formula').text() == "")
@@ -309,11 +311,21 @@ function update_alts($table) {
     }
 }
 
-function initialize($table) {
+function pre_initialize($table) {
+
+    // grab copy of first row, presumed blank.
+    let $blank_row = $table.find('tbody > tr').first()
+    $blank_row.remove();
+    $blank_row.find('.result').data('alt', 0)
+    $table.data('blank_row', $blank_row)
 
     const DM = new DataManager();
     $table.data('DM', DM)
-    $table.data('blank_row', null)  // populate later
+}
+
+function initialize($table) {
+
+    const DM = $table.data('DM')
 
     // setup initial sheet
     let $headers = $table.find('th.result');
@@ -336,12 +348,6 @@ function initialize($table) {
         $form_cell.data('value', $form_cell.text())
         $form_cell.text(formula_formatter($form_cell.text()))
     })
-
-    // grab copy of first row, presumed blank.
-    let $blank_row = $table.find('tbody > tr').first()
-    $blank_row.remove();
-    $blank_row.find('.result').data('alt', 0)
-    $table.data('blank_row', $blank_row)
 
     // push values from initial sheet into VALUES[0] MapScope
     $headers.each(function(i, th) {
@@ -550,6 +556,6 @@ function initialize($table) {
 
 }
 
-export { initialize, set_contenteditable_cols, addalt_func, update_alts, 
+export { pre_initialize, initialize, set_contenteditable_cols, addalt_func, update_alts, 
          ensure_five_blank, row_is_blank, rows_are_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }

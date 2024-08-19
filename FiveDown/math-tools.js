@@ -124,7 +124,7 @@ class MapScope {
 
   class MyMath {
 
-      constructor(math) {
+      constructor() {
 
         this.astf = new EvalAstFactory()
       }

@@ -1,5 +1,5 @@
 
-import { name_valid, clean_name, formula_formatter, result_formatter } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter, result_formatter, MyMath, MapScope } from './math-tools.js'
 
 // gather_storable - iterates over html table, extracting data to store
 //   returns an array; each element is either null or an array
@@ -7,7 +7,10 @@ import { name_valid, clean_name, formula_formatter, result_formatter } from './m
 //
 function gather_storable($table) {
 
+    const DM = $table.data('DM')
+
     let itms = []
+    var scope = new MapScope()
 
     let columns = $table.find('thead th.result').get().map(function(v, _i) { 
         return $(v).data('custom_name') || null 
@@ -26,15 +29,18 @@ function gather_storable($table) {
             let unit = $tr.find('.unit').text()
             row.push(description, name, unit)
 
-            let formula = $tr.find('.formula').data('value')
+            let formula = $tr.find('.formula').data('value') || $tr.find('.formula').text()
             if (formula) {
+
                 row.push(formula)
             } 
             else {
+                
                 let results = []
                 $tr.find('.result').each(function(_j, td) {
     
-                    results.push($(td).data('value'))
+                    let d = $(td).data('value') || DM.math.data_input_evaluater($(td).text(), scope)
+                    results.push(d)
                 })
     
                 row.push(results)
@@ -59,7 +65,7 @@ function replace_table_from_json($table, data) {
     if (!data['rows']) { return }
 
     let $trs = $table.find('tbody > tr')
-    let $blank_row = $trs.first(); $blank_row.remove()
+    let $blank_row = $table.data('blank_row')
     $trs.remove()
     $table.find('tbody').append($blank_row.clone(true))
 
@@ -156,9 +162,42 @@ function get_storable(id) {
 //
 function save_storable(id, data) {
 
+    if (!id) { throw new Error('bad id ${id} in save_storable') }
+
     let j = JSON.stringify(data)
     window.localStorage.setItem(id, j)
 }
 
-export { save_storable, get_storable, gather_storable, replace_table_from_json }
+function get_next_sheet_name() {
+
+    for (let i=0; i<100; i++) {
+        let num = '00'+i
+        let name = 'sheet_'+num.substring(num.length-2)
+        if (!window.localStorage.getItem(name)) { 
+            return name
+        }
+    }
+    throw new Error('no next sheet number found')
+}
+
+function get_all_sheet_names() {
+
+    let names = []
+    for (let i=0; i<window.localStorage.length; i++) {
+        if (window.localStorage.key(i).substring(0,5).toLowerCase() === 'sheet') {
+
+            names.push(window.localStorage.key(i))
+        }
+    }
+    return names
+}
+
+function remove_sheet_from_storage(sheet_id) {
+
+    if (!window.localStorage.getItem(sheet_id)) { throw new Error(`sheet ${sheet_id} not found in storage`) }
+    let s = window.localStorage.removeItem(sheet_id)
+}
+
+export { save_storable, get_storable, gather_storable, replace_table_from_json, 
+         get_next_sheet_name, get_all_sheet_names, remove_sheet_from_storage }
 

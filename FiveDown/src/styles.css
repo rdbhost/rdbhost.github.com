@@ -14,7 +14,8 @@
 }
 
 .project-menu span {
-  background-color: blanchedalmond;  / * ugly, choose better */
+  background-color: blanchedalmond  /* ugly, choose better */;
+  margin: 0.5rem;
 }
 
 /* Overall table style */
