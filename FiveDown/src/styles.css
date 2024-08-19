@@ -13,6 +13,10 @@
 
 }
 
+.project-menu span {
+  background-color: blanchedalmond;  / * ugly, choose better */
+}
+
 /* Overall table style */
 
 table {
