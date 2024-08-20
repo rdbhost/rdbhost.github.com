@@ -1,5 +1,6 @@
 
 import { name_valid, clean_name, formula_formatter, result_formatter, MyMath, MapScope } from './math-tools.js'
+import { set_contenteditable_cols } from './sheet.js'
 
 // gather_storable - iterates over html table, extracting data to store
 //   returns an array; each element is either null or an array
@@ -67,7 +68,7 @@ function replace_table_from_json($table, data) {
     let $trs = $table.find('tbody > tr')
     let $blank_row = $table.data('blank_row')
     $trs.remove()
-    $table.find('tbody').append($blank_row.clone(true))
+    // $table.find('tbody').append($blank_row.clone(true))
 
     let rows = data['rows']
     let result_cols = data['header']
@@ -144,6 +145,8 @@ function replace_table_from_json($table, data) {
                 })
             }
         }
+
+        set_contenteditable_cols($new)
     })
 }
 

@@ -311,10 +311,11 @@ function update_alts($table) {
     }
 }
 
-function pre_initialize($table) {
+function initialize($table) {
 
     // grab copy of first row, presumed blank.
     let $blank_row = $table.find('tbody > tr').first()
+    set_contenteditable_cols($blank_row)
     $blank_row.remove();
     $blank_row.find('.result').data('alt', 0)
     $table.data('blank_row', $blank_row)
@@ -323,7 +324,7 @@ function pre_initialize($table) {
     $table.data('DM', DM)
 }
 
-function initialize($table) {
+function table_initialize($table) {
 
     const DM = $table.data('DM')
 
@@ -552,10 +553,8 @@ function initialize($table) {
     apply_draggable_rows($table)
     apply_draggable_columns($table)
 
-    $table.trigger("table:global-recalc"); // be column specific
-
 }
 
-export { pre_initialize, initialize, set_contenteditable_cols, addalt_func, update_alts, 
+export { initialize, table_initialize, set_contenteditable_cols, addalt_func, update_alts, 
          ensure_five_blank, row_is_blank, rows_are_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }

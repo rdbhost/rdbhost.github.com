@@ -1,7 +1,7 @@
 
 import { save_storable, get_storable, gather_storable, replace_table_from_json, 
          get_next_sheet_name, get_all_sheet_names, remove_sheet_from_storage } from './persistance.js'
-import { update_alts, ensure_five_blank, initialize, pre_initialize,
+import { update_alts, ensure_five_blank, table_initialize, initialize,
          remove_draggable_rows, apply_draggable_rows } from './sheet.js'
 
 
@@ -16,7 +16,7 @@ function load_sheet($table, sheet_name) {
         ensure_five_blank($table)
 }
 
-function project_initialize(sheet_names, current) {
+function menu_initialize(sheet_names, current) {
 
     // add names to sheet menu
     //
@@ -35,8 +35,8 @@ function project_initialize(sheet_names, current) {
             $projs.last().before($new)
         })
 
-        $projs.find('span.sheet-selecter').removeClass('active')
-        $projs.find('#'+current).addClass('active')
+        $('span.sheet-selecter').removeClass('active')
+        $('#'+current).addClass('active')
     }
     else {
 
@@ -45,7 +45,7 @@ function project_initialize(sheet_names, current) {
 
     // handler for click on a project button
     //
-    $('.project-menu').on('click', 'span:not(.active)', function(event) {
+    $('.project-menu').on('click', 'span.sheet-selecter:not(.active)', function(event) {
 
         let $btn = $(event.target).closest('span.sheet-selecter')
         let target_sheet = $btn.attr('id')
@@ -64,6 +64,11 @@ function project_initialize(sheet_names, current) {
         // save new sheet selection to localStorage status
         save_storable('status', {'active_sheet': target_sheet})
 
+        // set active on active page btn, remove from others
+        let $projs = $('.project-menu')
+        $projs.find('span.sheet-selecter').removeClass('active')
+        $projs.find('#'+target_sheet).addClass('active')
+        
         // load sheet for new sheet chosen
         load_sheet($table, target_sheet)
  
@@ -96,7 +101,12 @@ function project_initialize(sheet_names, current) {
         $projs.prepend($first.clone(true))
         let $new = $first.clone(true)
         $new.find('span').text(target_sheet)
+        $new.attr('id', target_sheet)
         $newsheet.before($new)
+
+        // set active on active page btn, remove from others
+        $projs.find('span.sheet-selecter').removeClass('active')
+        $projs.find('#'+target_sheet).addClass('active')
 
         // get default page data from localStorage
         //
@@ -114,7 +124,7 @@ function project_initialize(sheet_names, current) {
 }
 
 
-function table_initialize($table) {    
+function events_initialize($table) {    
 
     let DM = $table.data('DM')
 
@@ -170,7 +180,7 @@ $().ready(function() {
 
     let $table = $('table')
 
-    pre_initialize($table)
+    initialize($table)
 
     // if there is no status object in localStorage,
     //   create one and add it
@@ -205,18 +215,26 @@ $().ready(function() {
 
     update_alts($table)
 
-    initialize($table);
-    table_initialize($table)
+    table_initialize($table);
+    events_initialize($table)
 
     let names = get_all_sheet_names()
-    project_initialize(names, status['active_sheet'])
+    menu_initialize(names, status['active_sheet'])
 
+    // recalculate all values
+    //
+    $table.trigger("table:global-recalc"); // be column specific
+
+
+    // when user exits page, save current table state to localStorage
+    //
     $(window).on('unload', function() {
 
         //let rows = gather_storable($table)
         //save_storable('default', rows)
     })
 
+    // temporary measure
     $('.min').on('click', function() {
         let d = gather_storable($table)
         save_storable(sheet, d)

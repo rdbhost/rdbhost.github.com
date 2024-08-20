@@ -13,6 +13,10 @@
 
 }
 
+.project-menu .active {
+  text-decoration: underline;
+}
+
 .project-menu span {
   background-color: blanchedalmond  /* ugly, choose better */;
   margin: 0.5rem;
