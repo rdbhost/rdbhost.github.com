@@ -1,4 +1,5 @@
 
+import { DataManager } from './datamanager.js'
 import { name_valid, clean_name, formula_formatter, result_formatter, MyMath, MapScope } from './math-tools.js'
 import { set_contenteditable_cols } from './sheet.js'
 
@@ -7,8 +8,6 @@ import { set_contenteditable_cols } from './sheet.js'
 //   the row array is description, name, unit, formula or results array
 //
 function gather_storable($table) {
-
-    const DM = $table.data('DM')
 
     let itms = []
     var scope = new MapScope()
@@ -22,6 +21,8 @@ function gather_storable($table) {
 
         let $tr = $(tr)
         let row = []
+
+        let tempDM = new DataManager()
 
         let description = $tr.find('.desc').text()
         let name = $tr.find('.name').text()
@@ -41,7 +42,7 @@ function gather_storable($table) {
                 $tr.find('.result').each(function(_j, td) {
     
                     let $td = $(td)
-                    let d = $td.data('value') || $td.text() ? DM.math.data_input_evaluater($td.text(), scope) : ""
+                    let d = $td.data('value') || $td.text() ? tempDM.math.data_input_evaluater($td.text(), scope) : ""
                     results.push(d)
                 })
     
@@ -68,10 +69,7 @@ function replace_table_from_json($table, data) {
     if (!data) { throw new Error('data not provided') }
     if (!data['rows']) { return }
 
-    let $trs = $table.find('tbody > tr')
     let $blank_row = $table.data('blank_row')
-    $trs.remove()
-    // $table.find('tbody').append($blank_row.clone(true))
 
     let rows = data['rows']
     let result_cols = data['header']
@@ -97,24 +95,21 @@ function replace_table_from_json($table, data) {
     // if there are multiple result columns, expand the header row
     //   and also the blank row, to include enough result columns
     //
-    if (altct > 1 || result_cols[0]) {
-        
-        let $res = $table.find('thead th.result')
-        let $resplus = $res.next(); $res.remove()
-        for (let i=0; i<altct; i++) {
-            let $t = $res.clone(true)
-            $resplus.before($t)
-            if (result_cols[i]) {
-                $t.data('custom_name', result_cols[i])
-                $t.find('span').text(result_cols[i])
-            }
+    let $res = $table.find('thead th.result').first()
+    let $resplus = $res.next(); $res.remove()
+    for (let i=0; i<altct; i++) {
+        let $t = $res.clone(true)
+        $resplus.before($t)
+        if (result_cols[i]) {
+            $t.data('custom_name', result_cols[i])
+            $t.find('span').text(result_cols[i])
         }
+    }
 
-        $res = $blank_row.find('.result')
-        $resplus = $res.next(); $res.remove()
-        for (let i=0; i<altct; i++) {
-            $resplus.before($res.clone(true))
-        }
+    $res = $blank_row.find('.result').first()
+    $resplus = $res.next(); $res.remove()
+    for (let i=0; i<altct; i++) {
+        $resplus.before($res.clone(true))
     }
 
     // iterate over rows in source data

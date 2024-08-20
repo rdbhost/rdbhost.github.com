@@ -1,5 +1,6 @@
 import { DataManager } from './datamanager.js'
 import { name_valid, clean_name, formula_formatter } from './math-tools.js'
+import { get_storable, replace_table_from_json } from './persistance.js';
 
 const MAX_ALTS = 8;
     
@@ -311,6 +312,24 @@ function update_alts($table) {
     }
 }
 
+// load data for given sheet_name from localStorage, and populate html table
+//
+function load_sheet($table, sheet_name) {
+
+    // load sheet data for target sheet
+    let saved = get_storable(sheet_name)
+    if (!saved) { throw new Error(`sheet ${sheet_name} not found in localStorage`) }
+ 
+    $table.find('tbody > tr').remove()
+    replace_table_from_json($table, saved)
+ 
+    ensure_five_blank($table)
+    table_initialize($table)
+ 
+    $table.trigger("table:global-recalc")
+}
+ 
+
 function initialize($table) {
 
     // grab copy of first row, presumed blank.
@@ -320,17 +339,17 @@ function initialize($table) {
     $blank_row.find('.result').data('alt', 0)
     $table.data('blank_row', $blank_row)
 
-    const DM = new DataManager();
-    $table.data('DM', DM)
+    $table.find('tbody > tr').remove()
+
 }
 
 function table_initialize($table) {
 
-    const DM = $table.data('DM')
+    const DM = new DataManager();
+    $table.data('DM', DM)
 
     // setup initial sheet
     let $headers = $table.find('th.result');
-    // $headers.data('alt', 0);   // todo 
     $headers.find('button.close-res').hide().off();
 
     $table.find('tbody > tr').each(function(i, tr) {
@@ -363,15 +382,27 @@ function table_initialize($table) {
     // $table becomes available on event obj as evt.data
     $table.find('th.alt-add').on('click', $table, addalt_func);  
 
-    // double click on left-column duplicates row
-    //
-    $table.find('.handle').on("dblclick", function(evt) {
 
+    ensure_five_blank($table)
+    apply_draggable_rows($table)
+    apply_draggable_columns($table)
+
+}
+
+// tbody_handlers install click handlers on tbody and thead for most click events
+//
+function tbody_handlers($table) {
+
+        // double click on left-column duplicates row
+    //
+    $table.find('tbody').on("dblclick", ".handle", function(evt) {   // tbody
+ 
         remove_draggable_columns($table)
 
         let $tr = $(evt.target).closest('tr');
         let $tr2 = $tr.clone(true, true)
         let name = $tr.find('td.name').text()
+        let DM = $table.data('DM')
         while (DM.VALUES[0].has(name)) {
             name = name+'_';
         }
@@ -390,6 +421,7 @@ function table_initialize($table) {
 
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('.name').text()
+        let DM = $table.data('DM')
         if (name) { DM.remove_row(name) }
         $tr.remove()
 
@@ -439,6 +471,7 @@ function table_initialize($table) {
                 
             } else {
             
+                let DM = $table.data('DM')
                 while (DM.VALUES[0].has(name)) {
                     name = name+'_';
                 }
@@ -507,6 +540,7 @@ function table_initialize($table) {
             return;
         }
 
+        let DM = $table.data('DM')
         let scope = DM.VALUES[$t.data('alt')]
         let input_val = $t.text()
 
@@ -522,6 +556,7 @@ function table_initialize($table) {
         }
         else {
 
+            let DM = $table.data('DM')
             let res = DM.math.data_input_evaluater(input_val, scope)
             scope.set(name, res)
         }
@@ -549,12 +584,8 @@ function table_initialize($table) {
 
     })
 
-    ensure_five_blank($table)
-    apply_draggable_rows($table)
-    apply_draggable_columns($table)
-
 }
 
-export { initialize, table_initialize, set_contenteditable_cols, addalt_func, update_alts, 
-         ensure_five_blank, row_is_blank, rows_are_blank, 
+export { initialize, table_initialize, tbody_handlers, set_contenteditable_cols, addalt_func, update_alts, 
+         load_sheet, ensure_five_blank, row_is_blank, rows_are_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }

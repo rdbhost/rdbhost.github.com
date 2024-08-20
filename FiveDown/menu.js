@@ -1,19 +1,6 @@
 import { save_storable, get_storable, gather_storable, replace_table_from_json, 
     get_next_sheet_name, get_all_sheet_names, remove_sheet_from_storage } from './persistance.js'
-import { ensure_five_blank  } from './sheet.js'
-
-// load data for given sheet_name from localStorage, and populate html table
-//
-function load_sheet($table, sheet_name) {
-
-   // load sheet data for target sheet
-   let saved = get_storable(sheet_name)
-   if (!saved) { throw new Error(`sheet ${sheet_name} not found in localStorage`) }
-
-   replace_table_from_json($table, saved)
-
-   ensure_five_blank($table)
-}
+import { ensure_five_blank, initialize, table_initialize, load_sheet  } from './sheet.js'
 
 // processes sheet_name for display, retrieving a custom name if apropo
 //
@@ -24,11 +11,17 @@ function display_sheet_name(name, titles) {
 
 function set_sheet_name_active(current) {
 
-    $('span.sheet-selecter').removeClass('active').find('button').removeAttr('disabled')
+    let $spans = $('span.sheet-selecter')
+    $spans.removeClass('active').find('button').hide() // attr('disabled', 1)
     let $cur = $('#'+current)
-    $cur.addClass('active').find('button').attr('disabled', 't')
+    $cur.addClass('active')
+    if ($spans.length > 1) {
+        $cur.find('button').show() // removeAttr('disabled')
+    }
 }
 
+// menu_initialize sets up 
+//
 function menu_initialize(current) {
 
     let sheet_names = get_all_sheet_names()
@@ -56,6 +49,7 @@ function menu_initialize(current) {
     else {
 
         $projs.before($first)
+        $first.addClass('active').find('button').hide()
     }
 
     // handler for click on a project button
@@ -96,8 +90,18 @@ function menu_initialize(current) {
         let target_id = $(event.target).parent().attr('id')
         let $target = $(event.target).closest('span')
 
+        if ( $target.attr('id') !== get_storable('status')['active_sheet'] ) { 
+            throw new Error('deleted sheet not active') 
+        }
+
+        let $alt = $target.next() 
+        if ($alt.attr('id') === 'new-sheet') { $alt = $target.prev() }
+        if (!$alt.length)    { throw new Error('trying to delete last sheet')  }
+
         $target.remove()
         remove_sheet_from_storage(target_id)
+
+        setTimeout(() => $alt.trigger('click'), 0)
 
         console.log(`sheet delete button clicked ${target_id}`)
         return false

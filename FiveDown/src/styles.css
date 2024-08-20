@@ -13,7 +13,7 @@
 
 }
 
-.project-menu .active {
+.project-menu .active span {
   text-decoration: underline;
 }
 
