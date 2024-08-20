@@ -1,127 +1,8 @@
 
-import { save_storable, get_storable, gather_storable, replace_table_from_json, 
-         get_next_sheet_name, get_all_sheet_names, remove_sheet_from_storage } from './persistance.js'
+import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
 import { update_alts, ensure_five_blank, table_initialize, initialize,
          remove_draggable_rows, apply_draggable_rows } from './sheet.js'
-
-
-function load_sheet($table, sheet_name) {
-
-        // load sheet data for target sheet
-        let saved = get_storable(sheet_name)
-        if (!saved) { throw new Error(`sheet ${sheet_name} not found in localStorage`) }
-
-        replace_table_from_json($table, saved)
-
-        ensure_five_blank($table)
-}
-
-function menu_initialize(sheet_names, current) {
-
-    // add names to sheet menu
-    //
-    let $projs = $('.project-menu > span')
-    let $first = $projs.first(); $first.remove()
-    let $new;
-    
-    if (sheet_names.length > 0) {
-
-        sheet_names.sort()
-
-        sheet_names.forEach(function(name, i) {
-            $new = $first.clone(true)
-            $new.attr('id', name)
-            $new.find('span').text(name)
-            $projs.last().before($new)
-        })
-
-        $('span.sheet-selecter').removeClass('active')
-        $('#'+current).addClass('active')
-    }
-    else {
-
-        $projs.before($first)
-    }
-
-    // handler for click on a project button
-    //
-    $('.project-menu').on('click', 'span.sheet-selecter:not(.active)', function(event) {
-
-        let $btn = $(event.target).closest('span.sheet-selecter')
-        let target_sheet = $btn.attr('id')
-        let status = get_storable('status') 
-        if (!status) { throw new Error('status not found in localStorage') }
-
-        let $table = $('table')
-
-        // if button is for current sheet, ignore it and return
-        if (status['active_sheet'] === target_sheet) { return }
-
-        // save data from current sheet to localStorage
-        let data =  gather_storable($table)
-        save_storable(status['active_sheet'], data)
-
-        // save new sheet selection to localStorage status
-        save_storable('status', {'active_sheet': target_sheet})
-
-        // set active on active page btn, remove from others
-        let $projs = $('.project-menu')
-        $projs.find('span.sheet-selecter').removeClass('active')
-        $projs.find('#'+target_sheet).addClass('active')
-        
-        // load sheet for new sheet chosen
-        load_sheet($table, target_sheet)
- 
-        console.log('sheet selected')
-    })
-
-    $('.project-menu').on('click', '.sheet-delete', function(event) {
-
-        let target_id = $(event.target).parent().attr('id')
-        let $target = $(event.target).closest('span')
-        $target.remove()
-
-        remove_sheet_from_storage(target_id)
-
-        console.log(`sheet delete button clicked ${target_id}`)
-    })
-
-    // handler for click on the new-sheet button
-    //
-    $('.project-menu').on('click', '#new-sheet', function(event) {
-
-        let $table = $('table')
-        let target_sheet = get_next_sheet_name()
-
-        // add item to sheet menu
-        //
-        let $projs = $('.project-menu') 
-        let $first = $projs.find('span.sheet-selecter').first(); $first.remove(); 
-        let $newsheet = $('#new-sheet')
-        $projs.prepend($first.clone(true))
-        let $new = $first.clone(true)
-        $new.find('span').text(target_sheet)
-        $new.attr('id', target_sheet)
-        $newsheet.before($new)
-
-        // set active on active page btn, remove from others
-        $projs.find('span.sheet-selecter').removeClass('active')
-        $projs.find('#'+target_sheet).addClass('active')
-
-        // get default page data from localStorage
-        //
-        let data = get_storable('default')
-        if (!data) { throw new Error(`sheet default not found in localStorage`) }
-
-        // save (default) data to localStorage under sheet name, then reload by that name
-        //
-        save_storable('status', {'active_sheet': target_sheet} )
-        save_storable(target_sheet, data)
-        load_sheet($table, target_sheet)
-
-        console.log('new sheet requested '+target_sheet)
-    })
-}
+import { menu_initialize } from './menu.js';
 
 
 function events_initialize($table) {    
@@ -191,6 +72,11 @@ $().ready(function() {
         save_storable('status', status)
     }
 
+    // ensure a titles hash is present in localStorage
+    if (!get_storable('titles')) {
+        save_storable('titles', {})
+    }
+
     // if the current sheet is not stored in localStorage,
     //  gather data from html and store it
     let sheet = status['active_sheet']
@@ -209,7 +95,7 @@ $().ready(function() {
 
         save_storable('default', {
             'header': [null],
-            'rows': [null]
+            'rows': [null, ["a brand new sheet, for your computing pleasure!", "", "", ""]]
         })
     }
 
@@ -218,12 +104,11 @@ $().ready(function() {
     table_initialize($table);
     events_initialize($table)
 
-    let names = get_all_sheet_names()
-    menu_initialize(names, status['active_sheet'])
+    menu_initialize(status['active_sheet'])
 
     // recalculate all values
     //
-    $table.trigger("table:global-recalc"); // be column specific
+    $table.trigger("table:global-recalc")
 
 
     // when user exits page, save current table state to localStorage

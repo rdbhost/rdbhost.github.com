@@ -40,13 +40,16 @@ function gather_storable($table) {
                 let results = []
                 $tr.find('.result').each(function(_j, td) {
     
-                    let d = $(td).data('value') || DM.math.data_input_evaluater($(td).text(), scope)
+                    let $td = $(td)
+                    let d = $td.data('value') || $td.text() ? DM.math.data_input_evaluater($td.text(), scope) : ""
                     results.push(d)
                 })
     
-                row.push(results)
+                if (results.some((a) => !!a)) { row.push(results) }
+                else { row.push("") }
             }
-            itms.push(row)    
+
+            itms.push(row) 
         }
         else {
             itms.push(null)
