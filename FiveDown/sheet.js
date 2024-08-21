@@ -192,6 +192,8 @@ function apply_draggable_columns($table) {
     $table.find('thead th.alt-add').droppable(drop_opts)
 }
 
+// uninstalls handlers for column drag n drop
+//
 function remove_draggable_columns($table) {
 
     $table.find('thead > th.result').draggable('destroy').droppable('destroy')
@@ -235,6 +237,8 @@ function remove_alt(evt, $table) {
     $table.trigger("table:alt-update");
 }
 
+// addalt_func - a handler for the add-alternate-result-column button
+//
 function addalt_func(evt) {
 
     let $table = evt.data
@@ -329,7 +333,9 @@ function load_sheet($table, sheet_name) {
     $table.trigger("table:global-recalc")
 }
  
-
+// processes raw table html, saving blank_row template to table.data() and 
+//   removing all rows
+//
 function initialize($table) {
 
     // grab copy of first row, presumed blank.
@@ -343,6 +349,9 @@ function initialize($table) {
 
 }
 
+// processes all html table rows, saving to data(), saving data to 
+//   DataManager and formatting as necessary
+//
 function table_initialize($table) {
 
     const DM = new DataManager();

@@ -1,6 +1,6 @@
 
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name, formula_formatter, result_formatter, MyMath, MapScope } from './math-tools.js'
+import { result_formatter, MapScope } from './math-tools.js'
 import { set_contenteditable_cols } from './sheet.js'
 
 // gather_storable - iterates over html table, extracting data to store
@@ -75,13 +75,15 @@ function replace_table_from_json($table, data) {
     let result_cols = data['header']
     let altct;
 
+    // if json data provides a list of result_cols, get count from that
+    //
     if (result_cols) {
 
         altct = result_cols.length
     }
     else {
 
-        // count how many result columns are in source data,
+        // otherwise count how many result columns are in source data,
         //  basing on longest row
         //
         altct = rows.reduce(function(m, v) {
@@ -169,6 +171,8 @@ function save_storable(id, data) {
     window.localStorage.setItem(id, j)
 }
 
+// get_next_sheet_name = get first sequential sheet_# name that is not already in localStorage
+//
 function get_next_sheet_name() {
 
     for (let i=0; i<100; i++) {
@@ -181,6 +185,8 @@ function get_next_sheet_name() {
     throw new Error('no next sheet number found')
 }
 
+// get_all_sheet_names - gets a list of all sheet-names in localStorage
+//
 function get_all_sheet_names() {
 
     let names = []
@@ -193,6 +199,8 @@ function get_all_sheet_names() {
     return names
 }
 
+// removes a named sheet from localStorage
+//
 function remove_sheet_from_storage(sheet_id) {
 
     if (!window.localStorage.getItem(sheet_id)) { throw new Error(`sheet ${sheet_id} not found in storage`) }
