@@ -1,3 +1,4 @@
+/* Base styles */
 .table {
   display: table;
 }
@@ -10,7 +11,6 @@
   margin-left: auto;
   margin-right: auto;
   width: 92%;
-
 }
 
 .project-menu .active span {
@@ -18,18 +18,14 @@
 }
 
 .project-menu span {
-  background-color: blanchedalmond  /* ugly, choose better */;
+  background-color: blanchedalmond; /* ugly, choose better */
   margin: 0.5rem;
 }
 
-/* Overall table style */
-
+/* Table styles */
 table {
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 1.25rem;
-  margin-bottom: 1.25rem;
-  width: 100%; /* 91.666667%; */
+  margin: 1.25rem auto;
+  width: 100%;
   border-collapse: collapse;
   border-radius: 0.5rem;
   --tw-bg-opacity: 1;
@@ -39,11 +35,9 @@ table {
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity));
-  /* Softer border color */
 }
 
-/* Header style */
-
+/* Header styles */
 thead {
   --tw-bg-opacity: 1;
   background-color: rgb(250 245 255 / var(--tw-bg-opacity));
@@ -55,36 +49,29 @@ thead {
   color: rgb(31 41 55 / var(--tw-text-opacity));
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  /* Rounded corners for the table header */
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(209 213 219 / var(--tw-border-opacity));
-  /* Bottom border for the header */
 }
 
 th {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
   text-align: left;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
-  /* Softer border color */
 }
 
 /* Specific column width settings */
-
 th.min, th.alt-add {
-  width: 3rem;
+  width: 0rem;
+  height: 0rem;
   text-align: center;
+  padding: none;
 }
 
 th.result {
   cursor: pointer;
   text-align: center;
-  border-top-left-radius: 1.2rem;
-  border-top-right-radius: 1.2rem;
   --tw-bg-opacity: 1;
   background-color: rgb(239 246 255 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
@@ -92,7 +79,6 @@ th.result {
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-  /* Subtle shadow effect */
 }
 
 th.alt-add {
@@ -107,32 +93,23 @@ th.alt-add {
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-  /* Subtle shadow effect */
 }
 
-/* Table body style */
-
+/* Table body styles */
 tbody tr {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-  /* Uniform background color for all rows */
 }
 
 td {
-  padding-left: 1rem;
-  padding-right: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem 1rem;
   border-top-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
-  /* Softer border color */
   vertical-align: middle;
-  /* Vertically align content */
 }
 
 /* Redesign for left and right columns */
-
 td.handle, td.delete {
   cursor: pointer;
   --tw-bg-opacity: 1;
@@ -141,23 +118,99 @@ td.handle, td.delete {
   font-weight: 700;
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
-  /* border-radius: 0.375rem; */
+}
+
+/* Make drag handles fill the cell and stand out */
+td.handle {
+  padding: 0;
+  cursor: grab; /* Default cursor when hovering over the handle */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  background-color: #f0f0f0; /* Light grey background */
+  border: 0.5px dashed #c0c0c0; /* Dashed border */
+  position: relative; /* For tooltip positioning */
 }
 
 td.handle::before {
-  content: "≡";
-  /* Replaced with icon symbol */
+  content: "≡"; /* Grabber icon */
+  font-size: 2rem;
 }
 
+/* Change cursor to grabbing when the handle is being dragged */
+td.handle:active {
+  cursor: grabbing;
+}
+
+/* Tooltip for draggable handle */
+td.handle::after {
+  content: "Drag to reorder";
+  position: absolute;
+  top: -2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+td.handle:hover::after {
+  opacity: 1;
+}
+
+
+
+
+/* Style delete-column buttons */
+th .close-res {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #888;
+  margin-left: 1rem;
+}
+
+th .close-res:hover {
+  color: #333;
+}
+
+th .close-res::before {
+  content: "x";
+}
+
+/* Make row delete buttons subtler */
 td.delete::before {
-  content: "✕";
-  /* Replaced with icon symbol */
-  --tw-text-opacity: 1;
-  color: rgb(239 68 68 / var(--tw-text-opacity));
+  content: "x";
+  font-size: 1rem;
+  color: #999;
+}
+
+td.delete:hover::before {
+  color: #333;
+}
+
+/* Make Result headers look more like draggable tabs */
+th.result, th.alt-add {
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  background-color: #f0f0f0;
+  border: 1px solid #c0c0c0;
+  border-bottom: none;
+  cursor: move;
+}
+
+th.result:hover, th.alt-add:hover {
+  background-color: #e0e0e0;
 }
 
 /* Add column button */
-
 td.alt-add {
   cursor: pointer;
   --tw-bg-opacity: 1;
@@ -165,28 +218,40 @@ td.alt-add {
   text-align: center;
   --tw-text-opacity: 1;
   color: rgb(37 99 235 / var(--tw-text-opacity));
-  /* border-radius: 0.375rem; */
 }
 
-/* Non-editable cells */
+/* Error cell styling */
+td.result.error {
+  background-color: red; /* Red background */
+  color: black; /* Black text */
+  white-space: nowrap; /* Prevent text from wrapping */
+  overflow: visible; /* Allow text to overflow */
+}
 
+/* Alternative styling if you prefer red text on pink background */
+/* td.result.error {
+  background-color: pink;
+  color: red;
+  white-space: nowrap;
+  overflow: visible;
+} */
+
+
+/* Non-editable cells */
 td.readonly {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity));
-  /* border-radius: 0.375rem; */
 }
 
 /* Output result cells */
-
 td.output {
   --tw-bg-opacity: 1;
   background-color: rgb(240 253 244 / var(--tw-bg-opacity));
   font-weight: 600;
   --tw-text-opacity: 1;
   color: rgb(22 163 74 / var(--tw-text-opacity));
-  /* border-radius: 0.375rem; */
 }
 
 td.error {
@@ -194,14 +259,25 @@ td.error {
   color: red;
 }
 
+
 /* Hover effects */
 
 td:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+ 
 }
+td.desc:hover,
+td.name:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
+  border: 1px solid #000; /* Adds a black border on hover */
+}
+
 
 th:hover, td.handle:hover, td.delete:hover, td.alt-add:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+  border: 1px solid #ddd;
 }
+
