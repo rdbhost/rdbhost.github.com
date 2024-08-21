@@ -77,16 +77,16 @@ class MapScope {
         if (typeof value == 'object' && value.message !== undefined) {
 
           td.text(`${value.message}`)
-          td.addClass('error')
+          td.addClass('error').removeAttr('title')
         }
         else if (value === undefined) {
           td.text("")
-          td.removeClass('error output').addClass('readonly')
+          td.removeClass('error output').addClass('readonly').removeAttr('title')
         }
         else {
 
           td.text(result_formatter(value))
-          td.removeClass('error')
+          td.removeClass('error').attr('title', value)
         }
         return this
     }

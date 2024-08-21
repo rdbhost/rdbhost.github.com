@@ -563,13 +563,18 @@ function tbody_handlers($table) {
         $table.trigger('table:global-recalc')  // TODO: change to column recalc
     })
 
+
+    // dblclick on result column header enables editing of header
+    //
     $table.find('thead').on('dblclick', 'th.result', function(evt) {
 
+        // enable content editing, and put focus in cll
         let $th = $(evt.target).closest('th')
         let $span = $th.find('span');
         $span.attr('contenteditable', 'true')
         $span.trigger('focus')
 
+        // one-shot focusout handler saves changes to data() and disables editing
         $span.one('focusout', function() {
             if ($span.text()) {
                 $th.data('custom_name', $span.text())
