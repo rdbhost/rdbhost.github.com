@@ -2,7 +2,8 @@
  * @license
  * Portions Copyright (c) 2013, the Dart project authors.
  */
-import { BINARY_OPERATORS, KEYWORDS, POSTFIX_PRECEDENCE, UNARY_OPERATORS, } from './constants.js';
+import { KEYWORDS, POSTFIX_PRECEDENCE } from './constants.js';
+import { BINARY_OPERATORS, UNARY_OPERATORS } from './eval.js'
 import { Kind, Tokenizer } from './tokenizer.js';
 export const parse = (expr, astFactory) => new Parser(expr, astFactory).parse();
 export class Parser {
@@ -92,7 +93,8 @@ export class Parser {
         }
     }
     _parseBinary(left, op) {
-        if (BINARY_OPERATORS.indexOf(op.value) === -1) {
+        //if (BINARY_OPERATORS.indexOf(op.value) === -1) {
+        if (!Object.hasOwn(BINARY_OPERATORS, op.value)) {
             throw new Error(`unknown operator: ${op.value}`);
         }
         this._advance();
@@ -119,7 +121,8 @@ export class Parser {
                     return this._parseDecimal(value);
                 }
             }
-            if (UNARY_OPERATORS.indexOf(value) === -1)
+            //if (UNARY_OPERATORS.indexOf(value) === -1)
+            if (!Object.hasOwn(UNARY_OPERATORS, value)) 
                 throw new Error(`unexpected token: ${value}`);
             const expr = this._parsePrecedence(this._parsePrimary(), POSTFIX_PRECEDENCE);
             return this._ast.unary(value, expr);

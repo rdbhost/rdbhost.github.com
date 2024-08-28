@@ -1,5 +1,5 @@
 
-import { parse as jexpr_parse, EvalAstFactory } from './jexpr.js'
+import { parse as jexpr_parse, EvalAstFactory, UNARY_OPERATORS, BINARY_OPERATORS } from './jexpr.js'
 import { FunctionMap } from './functions.js'
 
 // This is a fake Map object that uses name keys to track
@@ -19,7 +19,8 @@ class MapScope {
     //
     add (key, td) {
 
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+      if (!name_valid(key)) 
+        throw new Error(`invalid key ${key}`)
 
       return this.localScope.set(key, td)
     }
@@ -126,7 +127,7 @@ class MapScope {
 
       constructor() {
 
-        this.astf = new EvalAstFactory()
+        this.astf = new EvalAstFactory(UNARY_OPERATORS, BINARY_OPERATORS)
       }
 
       evaluate_diagnostics (scope) {
@@ -170,9 +171,8 @@ class MapScope {
         } catch (e) {
 
           // if the evaluation itself throws an Error, check for certain errors
-          if (e.message.substr(0,35) === 'Cannot read properties of undefined') {
+          if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
             return new Error('formula seems incomplete')
-          }
 
           return e;
         }
@@ -187,9 +187,8 @@ class MapScope {
         }
         catch( e ) {
 
-          if (e.message.substr(-27) === ', was undefined (undefined)') {
+          if (e.message.substr(-27) === ', was undefined (undefined)') 
             return new Error(e.message.substr(0,e.message.length-27))
-          }
 
           return e;
         }
