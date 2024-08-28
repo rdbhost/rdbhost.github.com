@@ -2,7 +2,7 @@
  * @license
  * Portions Copyright (c) 2013, the Dart project authors.
  */
-import { KEYWORDS, POSTFIX_PRECEDENCE, PRECEDENCE } from './constants.js';
+import { KEYWORDS, POSTFIX_PRECEDENCE, PRECEDENCE } from './operators.js';
 const _TWO_CHAR_OPS = ['==', '!=', '<=', '>=', '||', '&&' /*, '??', '|>' */];
 const _THREE_CHAR_OPS = [] // DVK: no 3 char ops useful ['===', '!=='];
 export var Kind;

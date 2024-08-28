@@ -2,8 +2,7 @@
  * @license
  * Portions Copyright (c) 2013, the Dart project authors.
  */
-import { KEYWORDS, POSTFIX_PRECEDENCE } from './constants.js';
-import { BINARY_OPERATORS, UNARY_OPERATORS } from './eval.js'
+import { KEYWORDS, POSTFIX_PRECEDENCE, BINARY_OPERATORS, UNARY_OPERATORS } from './operators.js';
 import { Kind, Tokenizer } from './tokenizer.js';
 export const parse = (expr, astFactory) => new Parser(expr, astFactory).parse();
 export class Parser {
