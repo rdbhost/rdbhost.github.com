@@ -5,6 +5,7 @@
 export class EvalAstFactory {
 
     constructor(unops, binops) {
+        
         this.UNARY_OPERATORS = unops
         this.BINARY_OPERATORS = binops
     }
@@ -14,7 +15,7 @@ export class EvalAstFactory {
         return {
             type: 'Empty',
             evaluate(scope) {
-                return scope;
+                return null // scope;
             },
             getIds(idents) {
                 return idents;
