@@ -1,5 +1,7 @@
 import { FunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
+import _unit from './UnitMath.js'
+const unit = _unit.config({ precision: 8 })
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set
@@ -157,7 +159,7 @@ class UnitScope extends ValScope {
 
         this.diagnostics.get('foundbad').push(key)
       }
-      return ret 
+      return unit(1, ret) 
     }
 
     return undefined;
