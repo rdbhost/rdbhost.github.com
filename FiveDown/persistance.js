@@ -1,6 +1,7 @@
 
 import { DataManager } from './datamanager.js'
-import { result_formatter, MapScope } from './math-tools.js'
+import { result_formatter } from './math-tools.js'
+import { ValScope } from './scopes.js'
 import { set_contenteditable_cols } from './sheet.js'
 
 // gather_storable - iterates over html table, extracting data to store
@@ -10,7 +11,7 @@ import { set_contenteditable_cols } from './sheet.js'
 function gather_storable($table) {
 
     let itms = []
-    var scope = new MapScope()
+    var scope = new ValScope()
 
     let columns = $table.find('thead th.result').get().map(function(v, _i) { 
         return $(v).data('custom_name') || null 

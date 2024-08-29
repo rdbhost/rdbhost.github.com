@@ -30,8 +30,9 @@ const FunctionMap = new Map([
     
     ['sqrt', Math.sqrt],
     ['pow', Math.pow],
-    ['hypot', Math.hypot],
     ['imul', Math.imul],
+
+    ['mag', Math.hypot], // measures magnitude of vector
     
     ['ln', Math.log],
     ['log10', Math.log10],

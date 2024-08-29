@@ -1,13 +1,16 @@
 
-import { MapScope, MyMath, name_valid } from './math-tools.js'
+import { MyMath, name_valid } from './math-tools.js'
+import { ValScope } from './scopes.js'
 
 class DataManager {
 
     constructor() {
 
-        this.VALUES = Array();
-        this.FORMULAS = new Map();
-        this.math = new MyMath();
+        this.VALUES = Array()
+        this.FORMULAS = new Map()
+        this.UNITS = new Map()
+        this.math = new MyMath()
+        this.unit = null  // TODO
     }
     
     add_row(name, $tds) {
@@ -68,7 +71,7 @@ class DataManager {
 
     populate_values_for_alt(altnum) {
     
-        this.VALUES[altnum] = new MapScope();
+        this.VALUES[altnum] = new ValScope();
         let _this = this;
     
         $('tbody > tr').each(function(z, row) {
