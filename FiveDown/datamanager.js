@@ -1,6 +1,7 @@
 
 import { MyMath, name_valid } from './math-tools.js'
-import { ValScope } from './scopes.js'
+import { MyUnits } from './unit-math.js'
+import { ValScope, UnitScope } from './scopes.js'
 
 class DataManager {
 
@@ -8,9 +9,9 @@ class DataManager {
 
         this.VALUES = Array()
         this.FORMULAS = new Map()
-        this.UNITS = new Map()
+        this.UNITS = new UnitScope()
         this.math = new MyMath()
-        this.unit = null  // TODO
+        this.unit = new MyUnits()
     }
     
     add_row(name, $tds, $tdu) {
@@ -127,24 +128,30 @@ class DataManager {
 
     update_calculated_rows(altnum) {
 
-        let _this = this;
+        let _this = this
 
-        let scope = this.VALUES[altnum];
+        let scope = this.VALUES[altnum]
 
         this.FORMULAS.forEach(function(formula, key) {
 
-            console.log('formula '+formula);
+            console.log('formula '+formula)
             let exp = _this.math.parse(formula)
-            let res = _this.math.evaluate(exp, scope);
-            scope.set(key, res);
-        });
+            let res = _this.math.evaluate(exp, scope)
+            scope.set(key, res)
+        })
+
+        this.FORMULAS.forEach(function(formula, key) {
+
+            console.log('unit formula '+formula)
+            // todo
+        })
     }
 
     change_formula(name, formula) {
 
         let _this = this;
 
-        if (!name_valid(name)) { throw new Error(`Error - invalid name ${name}`) };
+        if (!name_valid(name)) throw new Error(`Error - invalid name ${name}`) 
         
         if (this.FORMULAS.has(name)) {
             this.FORMULAS.delete(name);
@@ -165,8 +172,11 @@ class DataManager {
             let errmsg = _this.math.expression_error(formula)
             if (errmsg) {
 
-                this.VALUES.forEach(function(scope, _i) { scope.set(name, "") })
+                this.VALUES.forEach(function(scope, _i) { 
+                    scope.set(name, "") 
+                })
                 this.VALUES[0].set(name, new Error(errmsg))
+                this.UNITS.set(name, "") // TODO
             } 
             
             // else formula valid and non-blank, so save, and update result cols
@@ -178,6 +188,8 @@ class DataManager {
                     let res = _this.math.evaluate(exp, scope);
                     scope.set(name, res);
                 })
+                let unit = _this.unit.evaluate(exp, this.UNITS)
+                this.UNITS.set(name, unit) 
             }
         }
     }
