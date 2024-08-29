@@ -27,7 +27,7 @@ class ValScope {
     // removes, and returns, the cell for a given key
     remove (key) {
 
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+      if (!name_valid(key)) throw new Error(`invalid key ${key}`)
 
       let tmp = this.localScope.get(key);
       this.localScope.delete(key);
@@ -38,7 +38,7 @@ class ValScope {
     //   if the name refers to a predefined function
     get (key) {
 
-      if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
+      if (!name_valid(key)) throw new Error(`invalid key ${key}`)
 
       if (this.has(key)) {
 
@@ -66,8 +66,8 @@ class ValScope {
     //
     set (key, value) {
 
-        if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
-        if (!this.localScope.has(key)) { throw new Error(`key ${key} not found in MapScope`) }
+        if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+        if (!this.localScope.has(key)) throw new Error(`key ${key} not found in MapScope`)
 
         let td = this.localScope.get(key);
         td.data('value', value)
@@ -93,8 +93,9 @@ class ValScope {
   
     has (key) {
       
-        if (!name_valid(key)) { throw new Error(`invalid key ${key}`) }
-        if (!this.localScope.has(key)) { this.diagnostics.get('missing').push(key) }
+        if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+        if (!this.localScope.has(key)) 
+          this.diagnostics.get('missing').push(key)
         return this.localScope.has(key)
     }
   
@@ -122,4 +123,74 @@ class ValScope {
     }
 };
 
-export { ValScope }
+class UnitScope extends ValScope {
+
+  constructor() {
+    super()
+  }
+
+  // add adds a key and two cells
+  //
+  add (key, td, td_display) {
+
+    if (!name_valid(key)) 
+      throw new Error(`invalid key ${key}`)
+
+    return this.localScope.set(key, [td, td_display])
+  }
+
+
+  // gets the value of the $(td) object stored for key
+  //
+  get (key) {
+
+    if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+
+    if (this.has(key)) {
+
+      let val = this.localScope.get(key);
+
+      let ret = val[0].data('value')
+        
+      // if stored value is an Error object, add key to foundbad list
+      if (typeof ret === 'object' && ret.message !== undefined) {
+
+        this.diagnostics.get('foundbad').push(key)
+      }
+      return ret 
+    }
+
+    return undefined;
+  }
+
+  // sets value into $(td) object stored.
+  //
+  set (key, value) {
+
+    if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+    if (!this.localScope.has(key)) throw new Error(`key ${key} not found in MapScope`)
+
+    let $td = this.localScope.get(key)[0];
+    $td.data('value', value)
+    $td.data('prev-val', undefined)
+
+    // if (calculated) value does not match raw (entered) value, set error class
+    let disp = $td.text()
+    if (disp && disp !== value) 
+      $td.addClass('error')
+    else 
+      $td.removeClass('error')
+
+    // TODO - do something with td_display, this.localScope.get(key)[1]
+
+    // if value is an Error object, throw it as exception
+    if (typeof value == 'object' && value.message !== undefined) {
+
+      throw value
+    }
+    return this
+  }
+
+}
+
+export { ValScope, UnitScope }

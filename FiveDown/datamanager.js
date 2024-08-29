@@ -92,20 +92,28 @@ class DataManager {
         })
     }
 
-    populate_formulas() {
+    populate_formulas_and_units() {
     
-        let _this = this;
+        let _this = this
 
         $('tbody > tr').each(function(z, row) {
     
-            let $row = $(row);
-            let formula = $row.find('.formula').data('value');
-            if (formula == "") { return };
+            let $row = $(row)
+            let name = $row.find('.name').text()
+            if (!name) return
+            if (!name_valid(name)) throw new Error(`invalid name ${name}`) 
 
-            let name = $row.find('.name').text();
-            if (!name_valid(name)) { throw new Error(`invalid name ${name}`) };
+            let formula = $row.find('.formula').data('value')
+            if (formula) { 
 
-            _this.FORMULAS.set(name, formula);
+                _this.FORMULAS.set(name, formula)
+            }
+
+            let unit = $row.find('.unit').data('value')
+            if (unit) {
+
+                _this.UNITS.add(name, $row.find('.unit').first(), $row.find('.unit-disp'))
+            }
         })
     }
 

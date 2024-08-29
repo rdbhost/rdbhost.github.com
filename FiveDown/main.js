@@ -1,7 +1,7 @@
 
-import { save_storable, get_storable, gather_storable, replace_table_from_json } from './persistance.js'
-import { update_alts, ensure_five_blank, table_initialize, initialize, load_sheet,
-         remove_draggable_rows, apply_draggable_rows, tbody_handlers} from './sheet.js'
+import { save_storable, get_storable, gather_storable } from './persistance.js'
+import { ensure_five_blank, initialize, load_sheet, tbody_handlers,
+    remove_draggable_rows, apply_draggable_rows } from './sheet.js'
 import { menu_initialize } from './menu.js';
 
 
@@ -100,11 +100,15 @@ $().ready(function() {
         save_storable(sheet, sheet_data)
     }
 
+    // call the various initialize functions
+    //
     initialize($table)
     menu_initialize(status['active_sheet'])
     events_initialize($table)
     tbody_handlers($table)
 
+    // load the chosen sheet from localStorage
+    //
     load_sheet($table, sheet)
 
     // recalculate all values

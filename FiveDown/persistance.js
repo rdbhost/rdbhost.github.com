@@ -109,6 +109,7 @@ function replace_table_from_json($table, data) {
         }
     }
 
+    // fix the blank row
     $res = $blank_row.find('.result').first()
     $resplus = $res.next(); $res.remove()
     for (let i=0; i<altct; i++) {

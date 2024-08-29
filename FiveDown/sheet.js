@@ -386,11 +386,10 @@ function table_initialize($table) {
     });
 
     // push formulas from initial sheet into FORMULAS Map, and recalc
-    DM.populate_formulas();
+    DM.populate_formulas_and_units();
 
     // $table becomes available on event obj as evt.data
     $table.find('th.alt-add').on('click', $table, addalt_func);  
-
 
     ensure_five_blank($table)
     apply_draggable_rows($table)
@@ -402,7 +401,7 @@ function table_initialize($table) {
 //
 function tbody_handlers($table) {
 
-        // double click on left-column duplicates row
+    // double click on left-column duplicates row
     //
     $table.find('tbody').on("dblclick", ".handle", function(evt) {   // tbody
  
