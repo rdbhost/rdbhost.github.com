@@ -410,6 +410,7 @@ function tbody_handlers($table) {
         let $tr = $(evt.target).closest('tr');
         let $tr2 = $tr.clone(true, true)
         let name = $tr.find('td.name').text()
+
         let DM = $table.data('DM')
         while (DM.VALUES[0].has(name)) {
             name = name+'_';
@@ -493,7 +494,7 @@ function tbody_handlers($table) {
             // otherwise, if name defined, send a row:add signal
             else if (name) {
 
-                $('table').trigger("row:add", [name, $tr.find('.result')])
+                $('table').trigger("row:add", [name, $tr.find('.result'), $tr.find('.unit')])
             }
             $td.data("prev-val", name)      // store new name in data
             $td.text(name)
@@ -584,6 +585,7 @@ function tbody_handlers($table) {
 
         // one-shot focusout handler saves changes to data() and disables editing
         $span.one('focusout', function() {
+
             if ($span.text()) {
                 $th.data('custom_name', $span.text())
             }
@@ -592,9 +594,31 @@ function tbody_handlers($table) {
                 $span.text('Result '+append)
                 $th.data('custom_name', null)
             }
+
             $span.attr('contenteditable', 'false')
         })
 
+    })
+
+    // handler on unit cells changes the contenteditable and styling
+    //   of unit cells
+    //
+    $table.find('tbody').on('focusout', '.unit', function(evt) {
+        
+        let $td = $(evt.target);                    // t is $<td>
+        let $tr = $td.closest('tr');
+
+        set_contenteditable_cols($tr)
+        if ($td.attr('contenteditable') == 'false') return 
+
+        let unit = $td.text()
+        if (unit !== ($td.data("prev-val") || '')) {         // is unit diff from stored?
+
+            $td.data("prev-val", unit).data('value', unit);  // store new unit in data
+
+            let name = $tr.find('td.name').text();
+            $table.trigger("row:unit-change", [name, $td.data('value')]);       
+        } 
     })
 
 }

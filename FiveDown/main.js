@@ -16,11 +16,11 @@ function events_initialize($table) {
             DM.rename_row(prev, now);
             $('table').trigger('table:global-recalc');
         }, 0)
-    }).on('row:add', function(event, name, $tds) {
+    }).on('row:add', function(event, name, $tdres, $tdunit) {
         console.log('row add '+name);
         let DM = $table.data('DM')
         setTimeout(function() {
-            DM.add_row(name, $tds);
+            DM.add_row(name, $tdres, $tdunit);
         }, 0)
     }).on('row:pad-end', function(event) {
         console.log('add blanks')
@@ -35,6 +35,13 @@ function events_initialize($table) {
         let DM = $table.data('DM')
         setTimeout(function () {
             DM.change_formula(name, formula)
+            $('table').trigger('table:global-recalc')
+        }, 0)
+    }).on('row:unit-change', function(event, name, unit) {
+        console.log('row unit change '+unit)
+        let DM = $table.data('DM')
+        setTimeout(function () {
+            // DM.change_formula(name, formula)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on("table:alt-update", function() {

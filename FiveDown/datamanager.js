@@ -13,7 +13,7 @@ class DataManager {
         this.unit = null  // TODO
     }
     
-    add_row(name, $tds) {
+    add_row(name, $tds, $tdu) {
 
         var _this = this;
 
@@ -21,6 +21,7 @@ class DataManager {
 
             _this.VALUES[i].add(name, $(td));
         })
+        _this.UNITS.add(name, $tdu, null) // todo
     }
 
     remove_row(name) {
@@ -32,22 +33,24 @@ class DataManager {
             }
         })
         this.FORMULAS.delete(name);    
+        this.UNITS.delete(name)
     }
 
     rename_row(prev, now) {
 
         let need_update = false;
 
-        if (now == " ") { now = "" }
+        if (now == " ") now = "" 
 
         if (now == "") { 
             this.VALUES.forEach(function(vals, i) {
                 if (vals.has(prev)) {
-                    vals.set(prev, undefined);
+                    vals.set(prev, undefined)
                     vals.remove(prev)
                 }
             })
-            this.FORMULAS.delete(prev);
+            this.FORMULAS.delete(prev)
+            this.UNITS.delete(prev)
         }
         else {
             need_update = true;
@@ -65,6 +68,11 @@ class DataManager {
                     vals.add(now, tmp);
                 }
             })
+            if (this.UNITS.has(prev)) {
+                let tmp = this.UNITS.get(prev);
+                this.UNITS.delete(prev);
+                this.UNITS.set(now, tmp);
+            }
         }
         return need_update
     }
@@ -78,8 +86,8 @@ class DataManager {
     
             let $row = $(row);
             let name = $row.find('.name').text();
-            if (!name) { return }
-            if (!name_valid(name)) { throw new Error(`invalid name ${name}`) };
+            if (!name) return 
+            if (!name_valid(name)) throw new Error(`invalid name ${name}`) 
     
             $row.find('.result').each(function(i, td) {
                 let $td = $(td);
