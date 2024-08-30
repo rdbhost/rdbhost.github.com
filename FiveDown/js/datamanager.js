@@ -29,7 +29,7 @@ class DataManager {
 
         this.VALUES.forEach(function(vals, i) {
             if (vals.has(name)) {
-                vals.set(prev, undefined);
+                vals.set(name, undefined);
                 vals.remove(name);
             }
         })
@@ -56,7 +56,7 @@ class DataManager {
         else {
             need_update = true;
 
-            if (!name_valid(now)) { throw new Error(`invalid name ${now}`) };
+            if (!name_valid(now)) throw new Error(`invalid name ${now}`) 
 
             if (this.FORMULAS.has(prev)) {
                 let tmp = this.FORMULAS.get(prev);

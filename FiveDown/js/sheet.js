@@ -152,7 +152,8 @@ function move_result_column($table, num, before) {
 
         let $row = $(row)
         let $results = $row.find('td.result, td.alt-add')
-        if ($results.length < before) { throw new Error(`bad before $(before) in alt drag `) }
+        if ($results.length < before) 
+            throw new Error(`bad before $(before) in alt drag `) 
 
         let $before = $results.get(before)
         let $num = $results.get(num); $num.remove()
@@ -322,7 +323,8 @@ function load_sheet($table, sheet_name) {
 
     // load sheet data for target sheet
     let saved = get_storable(sheet_name)
-    if (!saved) { throw new Error(`sheet ${sheet_name} not found in localStorage`) }
+    if (!saved) 
+        throw new Error(`sheet ${sheet_name} not found in localStorage`) 
  
     $table.find('tbody > tr').remove()
     replace_table_from_json($table, saved)
@@ -431,7 +433,10 @@ function tbody_handlers($table) {
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('.name').text()
         let DM = $table.data('DM')
-        if (name) { DM.remove_row(name) }
+        if (name) {
+            DM.remove_row(name) 
+            $table.trigger('table:global-recalc')   
+        }
         $tr.remove()
 
         apply_draggable_rows($table)

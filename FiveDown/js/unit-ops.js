@@ -3,7 +3,7 @@
  * Portions Copyright (c) 2013, the Dart project authors.
 */
 
-import _unit from './UnitMath.js'
+import _unit from './lib/UnitMath.js'
 const unit = _unit.config({ precision: 8 })
 
 

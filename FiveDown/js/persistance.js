@@ -67,8 +67,10 @@ function gather_storable($table) {
 //
 function replace_table_from_json($table, data) {
 
-    if (!data) { throw new Error('data not provided') }
-    if (!data['rows']) { return }
+    if (!data) 
+        throw new Error('data not provided') 
+    if (!data['rows']) 
+        return 
 
     let $blank_row = $table.data('blank_row')
 
@@ -139,7 +141,8 @@ function replace_table_from_json($table, data) {
             else {
 
                 let $res = $new.find('.result')
-                if ($res.length !== other.length) { throw new Error('result ct mismatch') }
+                if ($res.length !== other.length) 
+                    throw new Error('result ct mismatch') 
                     
                 $res.each(function(i, v) {
                     let $td = $(v)
@@ -167,7 +170,8 @@ function get_storable(id) {
 //
 function save_storable(id, data) {
 
-    if (!id) { throw new Error('bad id ${id} in save_storable') }
+    if (!id) 
+        throw new Error('bad id ${id} in save_storable') 
 
     let j = JSON.stringify(data)
     window.localStorage.setItem(id, j)
@@ -205,7 +209,8 @@ function get_all_sheet_names() {
 //
 function remove_sheet_from_storage(sheet_id) {
 
-    if (!window.localStorage.getItem(sheet_id)) { throw new Error(`sheet ${sheet_id} not found in storage`) }
+    if (!window.localStorage.getItem(sheet_id)) 
+        throw new Error(`sheet ${sheet_id} not found in storage`) 
     let s = window.localStorage.removeItem(sheet_id)
 }
 

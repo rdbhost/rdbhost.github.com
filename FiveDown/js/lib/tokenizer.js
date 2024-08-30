@@ -222,7 +222,8 @@ export class Tokenizer {
         op = this._getValue();
 
         // DVK: check for assignment, throw exception
-        if (op === '=') { throw new Error('= is not operator') }
+        if (op === '=') 
+            throw new Error('= is not operator') 
 
         return token(Kind.OPERATOR, op, PRECEDENCE[op]);
     }

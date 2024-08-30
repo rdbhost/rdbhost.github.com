@@ -75,7 +75,9 @@ function add(a, b) {
 
    if (Array.isArray(a) && Array.isArray(b)) {
 
-       if (a.length !== b.length) { throw new Error('vectors to add must be same length') }
+       if (a.length !== b.length) 
+         throw new Error('vectors to add must be same length') 
+
        return a.map(function(_v, i) { return a[i]+b[i] })
    }
    else if (Number.isFinite(a) && Number.isFinite(b)) {
@@ -87,7 +89,9 @@ function subtract(a, b) {
 
    if (Array.isArray(a) && Array.isArray(b)) {
 
-       if (a.length !== b.length) { throw new Error('vectors to subtract must be same length') }
+       if (a.length !== b.length) 
+         throw new Error('vectors to subtract must be same length') 
+
        return a.map(function(_v, i) { return a[i]-b[i] })
    }
    else if (Number.isFinite(a) && Number.isFinite(b)) {
@@ -98,16 +102,20 @@ function subtract(a, b) {
 
 function dot_product(a, b) {
 
-   if (!Array.isArray(a) || !Array.isArray(b)) { throw new Error('dot product operates on vectors') }
-   if (a.length !== b.length) { throw new Error('vectors must be equal length') }
+   if (!Array.isArray(a) || !Array.isArray(b)) 
+      throw new Error('dot product operates on vectors') 
+   if (a.length !== b.length) 
+      throw new Error('vectors must be equal length') 
 
    return a.map((x, i) => a[i] * b[i]).reduce((m, n) => m + n);
 }
 
 function cross_product(a, b) {
 
-   if (!Array.isArray(a) || !Array.isArray(b)) { throw new Error('cross product operates on vectors') }
-   if (a.length !== 3 || b.length !== 3) { throw new Error('vectors must be length 3') }
+   if (!Array.isArray(a) || !Array.isArray(b)) 
+      throw new Error('cross product operates on vectors') 
+   if (a.length !== 3 || b.length !== 3) 
+      throw new Error('vectors must be length 3') 
 
    return [
        a[1]*b[2] - a[2]*b[1],

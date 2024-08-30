@@ -59,7 +59,7 @@ function menu_initialize(current) {
         let $btn = $(event.target).closest('span.sheet-selecter')
         let target_sheet = $btn.attr('id')
         let status = get_storable('status') 
-        if (!status) { throw new Error('status not found in localStorage') }
+        if (!status) throw new Error('status not found in localStorage')
 
         let $table = $('table')
 
@@ -90,13 +90,14 @@ function menu_initialize(current) {
         let target_id = $(event.target).parent().attr('id')
         let $target = $(event.target).closest('span')
 
-        if ( $target.attr('id') !== get_storable('status')['active_sheet'] ) { 
+        if ( $target.attr('id') !== get_storable('status')['active_sheet'] ) 
             throw new Error('deleted sheet not active') 
-        }
 
         let $alt = $target.next() 
-        if ($alt.attr('id') === 'new-sheet') { $alt = $target.prev() }
-        if (!$alt.length)    { throw new Error('trying to delete last sheet')  }
+        if ($alt.attr('id') === 'new-sheet') 
+            $alt = $target.prev() 
+        if (!$alt.length)    
+            throw new Error('trying to delete last sheet')  
 
         $target.remove()
         remove_sheet_from_storage(target_id)
@@ -155,7 +156,8 @@ function menu_initialize(current) {
         // get default page data from localStorage
         //
         let data = get_storable('default')
-        if (!data) { throw new Error(`sheet default not found in localStorage`) }
+        if (!data) 
+            throw new Error(`sheet default not found in localStorage`) 
 
         // save (default) data to localStorage under sheet name, then reload by that name
         //
