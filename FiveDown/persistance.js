@@ -130,11 +130,11 @@ function replace_table_from_json($table, data) {
             let [description, name, unit, other] = val
             $new.find('.desc').text(description).data('prev-val', description)
             $new.find('.name').text(name).data('prev-val', name)
-            $new.find('.unit').text(unit).data('prev-val', unit)
+            $new.find('.unit').text(unit).data('prev-val', unit).data('value', unit)
 
             if (!Array.isArray(other)) {
 
-                $new.find('.formula').text(other).data('prev-val', other)
+                $new.find('.formula').text(other).data('prev-val', other).data('value', other)
             }
             else {
 

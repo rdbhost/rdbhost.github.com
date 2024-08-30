@@ -1,6 +1,7 @@
 
 import { parse as jexpr_parse, EvalAstFactory } from './jexpr.js'
 import { UNARY_UNIT_OPERATORS, BINARY_UNIT_OPERATORS } from './unit-ops.js'
+import { data_valid } from './math-tools.js'
 
 import _unit from './UnitMath.js'
 const unit = _unit.config({ precision: 8 })

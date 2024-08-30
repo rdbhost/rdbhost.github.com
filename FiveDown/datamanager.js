@@ -118,7 +118,7 @@ class DataManager {
                 _this.FORMULAS.set(name, formula)
             }
 
-            let unit = $row.find('.unit').data('value')
+            let unit = $row.find('.unit').data('value') 
             if (unit) {
 
                 _this.UNITS.add(name, $row.find('.unit').first(), $row.find('.unit-disp'))
@@ -143,6 +143,8 @@ class DataManager {
         this.FORMULAS.forEach(function(formula, key) {
 
             console.log('unit formula '+formula)
+            let exp = _this.unit.parse(formula)
+            let res = _this.unit.evaluate(exp, _this.UNITS)
             // todo
         })
     }

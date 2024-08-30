@@ -9,11 +9,11 @@ const unit = _unit.config({ precision: 8 })
 
 export const BINARY_UNIT_OPERATORS = {
    '+': (a, b) => unit.add(a, b),
-   '-': (a, b) => unit.subtract(a, b),
-   '*': (a, b) => unit.multiply(a, b),
+   '-': (a, b) => unit.sub(a, b),
+   '*': (a, b) => unit.mul(a, b),
    '@': (a, b) => 1, 
-   '/': (a, b) => unit.divide(a, b),
-   '%': (a, b) => unit.subtract(a, b), // a % b,
+   '/': (a, b) => unit.div(a, b),
+   '%': (a, b) => unit.sub(a, b), // a % b,
    '^': (a, b) => unit.pow(a, b),
    '==': (a, b) => a === b, // use shorter symbol, but stricter compare
    '!=': (a, b) => a !== b, // ditto
@@ -32,7 +32,7 @@ export const BINARY_UNIT_OPERATORS = {
 
 export const UNARY_UNIT_OPERATORS = {
    '+': (a) => a,
-   '-': (a) => unit.multiply(a, -1),
+   '-': (a) => unit.mul(a, -1),
    '!': (a) => !a,
 }
 

@@ -189,5 +189,5 @@ class MyMath {
     return formula.replaceAll('@', '•').replaceAll('*', '×');
   }
 
-  export { MyMath, name_valid, clean_name, data_valid_re, result_formatter, formula_formatter }
+  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter }
 
