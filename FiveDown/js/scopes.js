@@ -189,11 +189,12 @@ class UnitScope extends ValScope {
     let $td = this.localScope.get(key)[0];
     $td.data('value', value)
     $td.data('prev-val', undefined)
+    $td.attr('title', `calculated value: ${value}`)
 
     // if (calculated) value does not match raw (entered) value, set error class
     let disp = $td.text()
     if (disp && disp !== value) {
-      $td.attr('title', value).addClass('error')
+      $td.addClass('error')
     }
     else { 
       $td.removeAttr('title').removeClass('error')

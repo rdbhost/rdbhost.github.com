@@ -149,7 +149,7 @@ class DataManager {
             let val = $cell.text()
 
             $cell.data('calc-value', res)
-            $cell.attr('title', res)
+            $cell.attr('title', `calculated value: ${res}`)
             if (val && res !== val) {
              
                 $cell.data('value', new Error(`value mismatch`))
