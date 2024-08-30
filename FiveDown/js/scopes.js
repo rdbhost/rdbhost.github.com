@@ -83,7 +83,7 @@ class ValScope {
         }
         else if (value === undefined) {
           td.text("")
-          td.removeClass('error output').addClass('readonly').removeAttr('title')
+          td.removeClass('error output').removeAttr('title')
         }
         else {
 
@@ -95,9 +95,12 @@ class ValScope {
   
     has (key) {
       
-        if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+        if (!name_valid(key)) 
+          throw new Error(`invalid key ${key}`)
+
         if (!this.localScope.has(key)) 
           this.diagnostics.get('missing').push(key)
+
         return this.localScope.has(key)
     }
   
@@ -189,10 +192,12 @@ class UnitScope extends ValScope {
 
     // if (calculated) value does not match raw (entered) value, set error class
     let disp = $td.text()
-    if (disp && disp !== value) 
-      $td.addClass('error')
-    else 
-      $td.removeClass('error')
+    if (disp && disp !== value) {
+      $td.attr('title', value).addClass('error')
+    }
+    else { 
+      $td.removeAttr('title').removeClass('error')
+    }
 
     // TODO - do something with td_display, this.localScope.get(key)[1]
 

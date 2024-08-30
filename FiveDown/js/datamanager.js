@@ -147,9 +147,11 @@ class DataManager {
 
             let $cell = _this.UNITS.getItem(key)
             let val = $cell.text()
-            if (res !== val) {
+
+            $cell.data('calc-value', res)
+            $cell.attr('title', res)
+            if (val && res !== val) {
              
-                $cell.data('calc-value', res)
                 $cell.data('value', new Error(`value mismatch`))
                 $cell.addClass('error')
                 console.log('unit error ['+res+'] <> ['+val+']')
