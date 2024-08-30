@@ -1,6 +1,7 @@
 import { DataManager } from './datamanager.js'
 import { name_valid, clean_name, formula_formatter } from './math-tools.js'
 import { get_storable, replace_table_from_json } from './persistance.js';
+import { format_unit } from './unit-math.js';
 
 const MAX_ALTS = 8;
     
@@ -620,6 +621,16 @@ function tbody_handlers($table) {
         if (unit !== ($td.data("prev-val") || '')) {         // is unit diff from stored?
 
             $td.data("prev-val", unit).data('value', unit);  // store new unit in data
+            let disp = format_unit(unit)
+            if (disp?.message) {
+
+                $td.text(unit).data('value', undefined).data('prev-val', unit)
+                $td.addClass('error')
+            }
+            else {
+
+                $td.text(disp).removeClass('error')
+            }
 
             let name = $tr.find('td.name').text();
             $table.trigger("row:unit-change", [name, $td.data('value')]);       

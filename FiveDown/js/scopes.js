@@ -18,7 +18,7 @@ class ValScope {
   
     // add adds a key and cell pair
     //
-    add (key, td) {
+    addItem (key, td) {
 
       if (!name_valid(key)) 
         throw new Error(`invalid key ${key}`)
@@ -133,7 +133,7 @@ class UnitScope extends ValScope {
 
   // add adds a key and two cells
   //
-  add (key, td, td_display) {
+  addItem (key, td, td_display) {
 
     if (!name_valid(key)) 
       throw new Error(`invalid key ${key}`)
@@ -141,18 +141,27 @@ class UnitScope extends ValScope {
     return this.localScope.set(key, [td, td_display])
   }
 
+  // getItem gets the $<td> for the unit cell
+  //
+  getItem(key) {
+
+    return this.localScope.get(key)[0]
+  }
 
   // gets the value of the $(td) object stored for key
   //
   get (key) {
 
-    if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+    if (!name_valid(key)) 
+      throw new Error(`invalid key ${key}`)
 
     if (this.has(key)) {
 
-      let val = this.localScope.get(key);
+      let val = this.getItem(key);
 
-      let ret = val[0].data('value')
+      let ret = val.data('value')
+      if (!ret)
+        return undefined
         
       // if stored value is an Error object, add key to foundbad list
       if (typeof ret === 'object' && ret.message !== undefined) {
@@ -169,8 +178,10 @@ class UnitScope extends ValScope {
   //
   set (key, value) {
 
-    if (!name_valid(key)) throw new Error(`invalid key ${key}`)
-    if (!this.localScope.has(key)) throw new Error(`key ${key} not found in MapScope`)
+    if (!name_valid(key)) 
+      throw new Error(`invalid key ${key}`)
+    if (!this.localScope.has(key)) 
+      throw new Error(`key ${key} not found in MapScope`)
 
     let $td = this.localScope.get(key)[0];
     $td.data('value', value)

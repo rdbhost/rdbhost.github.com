@@ -20,9 +20,9 @@ class DataManager {
 
         $tds.each(function(i, td) {
 
-            _this.VALUES[i].add(name, $(td));
+            _this.VALUES[i].addItem(name, $(td));
         })
-        _this.UNITS.add(name, $tdu, null) // todo
+        _this.UNITS.addItem(name, $tdu, null) // todo
     }
 
     remove_row(name) {
@@ -66,7 +66,7 @@ class DataManager {
             this.VALUES.forEach(function(vals, i) {
                 if (vals.has(prev)) {
                     let tmp = vals.remove(prev);
-                    vals.add(now, tmp);
+                    vals.addItem(now, tmp);
                 }
             })
             if (this.UNITS.has(prev)) {
@@ -87,13 +87,15 @@ class DataManager {
     
             let $row = $(row);
             let name = $row.find('.name').text();
-            if (!name) return 
-            if (!name_valid(name)) throw new Error(`invalid name ${name}`) 
+            if (!name) 
+                return 
+            if (!name_valid(name)) 
+                throw new Error(`invalid name ${name}`) 
     
             $row.find('.result').each(function(i, td) {
                 let $td = $(td);
                 if ($td.data('alt') == altnum) {
-                    _this.VALUES[altnum].add(name, $td);
+                    _this.VALUES[altnum].addItem(name, $td);
                     let val = _this.math.data_input_evaluater($td.text(), _this.VALUES[altnum]);
                     _this.VALUES[altnum].set(name, val);
                 }
@@ -110,7 +112,8 @@ class DataManager {
             let $row = $(row)
             let name = $row.find('.name').text()
             if (!name) return
-            if (!name_valid(name)) throw new Error(`invalid name ${name}`) 
+            if (!name_valid(name)) 
+                throw new Error(`invalid name ${name}`) 
 
             let formula = $row.find('.formula').data('value')
             if (formula) { 
@@ -118,11 +121,7 @@ class DataManager {
                 _this.FORMULAS.set(name, formula)
             }
 
-            let unit = $row.find('.unit').data('value') 
-            if (unit) {
-
-                _this.UNITS.add(name, $row.find('.unit').first(), $row.find('.unit-disp'))
-            }
+            _this.UNITS.addItem(name, $row.find('.unit').first(), $row.find('.unit-disp'))
         })
     }
 
@@ -144,8 +143,21 @@ class DataManager {
 
             console.log('unit formula '+formula)
             let exp = _this.unit.parse(formula)
-            let res = _this.unit.evaluate(exp, _this.UNITS)
-            // todo
+            let res = _this.unit.evaluate(exp, _this.UNITS).getUnits().toString()
+
+            let $cell = _this.UNITS.getItem(key)
+            let val = $cell.text()
+            if (res !== val) {
+             
+                $cell.data('calc-value', res)
+                $cell.data('value', new Error(`value mismatch`))
+                $cell.addClass('error')
+                console.log('unit error ['+res+'] <> ['+val+']')
+            }
+            else {
+                $cell.removeClass('error')
+                console.log('unit calculated '+res)
+            }
         })
     }
 
