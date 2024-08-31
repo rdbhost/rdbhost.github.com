@@ -203,6 +203,11 @@ td.unit {
   width: 15%;
 }
 
+td.unit.error {
+  background-color: #fecaca;
+  color: #dc2626;
+}
+
 /* Ensure all cells maintain their size */
 td {
   max-width: 100%;
