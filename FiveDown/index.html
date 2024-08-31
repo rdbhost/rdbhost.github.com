@@ -4,14 +4,26 @@
     <link rel="stylesheet" href="src/styles.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
-    <script src="jexpr.js" type="module"></script>
-    <script src="functions.js" type="module"></script>
-    <script src="math-tools.js" type="module"></script>
-    <script src="datamanager.js" type="module"></script>
-    <script src="main.js" type="module"></script>
+    <script src="js/jexpr.js" type="module"></script>
+    <script src="js/functions.js" type="module"></script>
+    <script src="js/math-tools.js" type="module"></script>
+    <script src="js/unit-ops.js" type="module"></script>
+    <script src="js/unit-math.js" type="module"></script>
+    <script src="js/scopes.js" type="module"></script>
+    <script src="js/datamanager.js" type="module"></script>
+    <script src="js/persistance.js" type="module"></script>
+    <script src="js/menu.js" type="module"></script>
+    <script src="js/sheet.js" type="module"></script>
+    <script src="js/main.js" type="module"></script>
 </head>
 <body>
     <div class="outer-box">
+        <div class="project-menu">
+            <span id="sheet_00" class="sheet-selecter active">
+                <span>Sheet 00</span>
+                <button class="sheet-delete">x</button></span>
+            <span id="new-sheet">[new]</span>
+        </div>
         <table>
             <thead>
                 <th class="min"></th>
