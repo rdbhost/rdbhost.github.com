@@ -1,29 +1,6 @@
-/* Base styles */
-.table {
-  display: table;
-  width: 100%;
-}
 
 .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
-}
-
-.outer-box {
-  margin-left: auto;
-  margin-right: auto;
-  width: 92%;
-}
-
-/* Project menu styles */
-.project-menu .active span {
-  text-decoration: underline;
-}
-
-.project-menu span {
-  background-color: #fff0e0;
-  margin: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
 }
 
 /* Table styles */
@@ -57,10 +34,10 @@ th {
   text-overflow: ellipsis;
 }
 
-th.min-delete {
+th.min:last-child {
   border-top-right-radius: 1rem;
 }
-th.min {
+th.min:first-child {
   border-top-left-radius: 1rem;
 }
 th.unit {
@@ -119,7 +96,7 @@ td.handle, td.delete {
 
 td.handle::before {
   content: "≡";
-  font-size: 1.5rem;
+  font-size: 1.5rem; 
 }
 
 td.delete::before {
