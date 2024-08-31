@@ -1,6 +1,7 @@
 /* Base styles */
 .table {
   display: table;
+  width: 100%;
 }
 
 .filter {
@@ -13,209 +14,89 @@
   width: 92%;
 }
 
+/* Project menu styles */
 .project-menu .active span {
   text-decoration: underline;
 }
 
 .project-menu span {
-  background-color: blanchedalmond; /* ugly, choose better */
+  background-color: #fff0e0;
   margin: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
 }
 
 /* Table styles */
 table {
   margin: 1.25rem auto;
   width: 100%;
-  border-collapse: collapse;
-  border-radius: 0.5rem;
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
-  --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-  --tw-border-opacity: 1;
-  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 1rem 1rem 0 0;
+  background-color: #ffffff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  border: 0px solid #d1d5db;
+  table-layout: auto; /* Added to ensure fixed column widths */
 }
 
 /* Header styles */
 thead {
-  --tw-bg-opacity: 1;
-  background-color: rgb(250 245 255 / var(--tw-bg-opacity));
+  background-color: #faf5ff;
   font-size: 0.875rem;
-  line-height: 1.25rem;
   font-weight: 600;
   text-transform: uppercase;
-  --tw-text-opacity: 1;
-  color: rgb(31 41 55 / var(--tw-text-opacity));
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-  border-bottom-width: 1px;
-  --tw-border-opacity: 1;
-  border-color: rgb(209 213 219 / var(--tw-border-opacity));
+  color: #1f2937;
 }
 
 th {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1rem;
   text-align: left;
-  --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity));
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Specific column width settings */
-th.min, th.alt-add {
-  width: 0rem;
-  height: 0rem;
-  text-align: center;
-  padding: none;
-}
-
-th.result {
-  cursor: pointer;
-  text-align: center;
-  --tw-bg-opacity: 1;
-  background-color: #e5f6ff; /* rgb(239 246 255 / var(--tw-bg-opacity)); */
-  --tw-text-opacity: 1;
-  color: rgb(37 99 235 / var(--tw-text-opacity));
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-th.alt-add {
-  cursor: pointer;
-  text-align: center;
-  border-top-left-radius: 1.2rem;
-  border-top-right-radius: 1.2rem;
-  --tw-bg-opacity: 1;
-  background-color: #e5f6ff; /* rgb(239 246 255 / var(--tw-bg-opacity)); */
-  --tw-text-opacity: 1;
-  color: rgb(37 99 235 / var(--tw-text-opacity));
-  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
-  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
-}
-
-/* ???? WHY are there multiple paragraphs for th.result? ????? */
-
-/* Make Result headers look more like draggable tabs */
-th.result, th.alt-add {
-  border-top-left-radius: 1rem;
+th.min-delete {
   border-top-right-radius: 1rem;
-/*  background-color: #f0f0f0;  
-  border: 1px solid #c0c0c0; */
-  border-bottom: none;
+}
+th.min {
+  border-top-left-radius: 1rem;
+}
+th.unit {
+  border-top-left-radius: 1rem;
+}
+th.formula {
+  border-top-right-radius: 1rem;
+}
+
+th.result, th.alt-add {
   cursor: move;
+  text-align: center;
+  background-color: #e5f6ff;
+  color: #2563eb;
+  border-radius: 1rem 1rem 0 0;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
 th.result:hover, th.alt-add:hover {
-  background-color: #e0e0e0;
-}
-
-/* Style delete-column buttons */
-th .close-res {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  color: #888;
-  margin-left: 1rem;
-}
-
-th .close-res:hover {
-  color: #333;
-}
-
-th .close-res::before {
-  content: "x";
-}
-
-th:hover, td.handle:hover, td.delete:hover, td.alt-add:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
-  border: 1px solid #ddd;
+  background-color: #d0e8ff;
 }
 
 /* Table body styles */
 tbody tr {
-  --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+  background-color: #ffffff;
 }
 
 td {
-  padding: 0.5rem 1rem;
-  border-top-width: 1px;
-  --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity));
+  padding: 0.75rem 1rem;
+  border-top: 1px solid #e5e7eb;
   vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* Redesign for left and right columns */
-td.handle, td.delete {
-  cursor: pointer;
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
-  text-align: center;
-  font-weight: 700;
-  --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity));
-}
-
-/* Make drag handles fill the cell and stand out */
-td.handle {
-  padding: 0;
-  cursor: grab; /* Default cursor when hovering over the handle */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  background-color: #f0f0f0; /* Light grey background */
-  border: 0.5px dashed #c0c0c0; /* Dashed border */
-  position: relative; /* For tooltip positioning */
-}
-
-td.handle::before {
-  content: "≡"; /* Grabber icon */
-  font-size: 2rem;
-}
-
-/* Change cursor to grabbing when the handle is being dragged */
-td.handle:active {
-  cursor: grabbing;
-}
-
-/* Tooltip for draggable handle */
-td.handle::after {
-  content: "Drag to reorder";
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #333;
-  color: #fff;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  font-size: 0.875rem;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-td.handle:hover::after {
-  opacity: 1;
-}
-
-/* Make row delete buttons subtler */
-td.delete::before {
-  content: "x";
-  font-size: 1rem;
-  color: #999;
-}
-
-td.delete:hover::before {
-  color: #333;
-}
-
-/* Add column button */
 td.alt-add {
   cursor: pointer;
   --tw-bg-opacity: 1;
@@ -225,54 +106,128 @@ td.alt-add {
   color: rgb(37 99 235 / var(--tw-text-opacity));
 }
 
-/* Error cell styling * /
-/* td.result.error { */
-/*  background-color: red; /* Red background */
-/*  color: black; /* Black text */
-/*  white-space: nowrap; /* Prevent text from wrapping */
-/*  overflow: visible; /* Allow text to overflow */
-/* } */
+/* Handle and delete button styles */
+td.handle, td.delete {
+  cursor: pointer;
+  background-color: #f3f4f6;
+  text-align: center;
+  font-weight: 900;
+  color: #4b5563;
+  width: 40px;
+  padding: 0;
+}
 
-/* Alternative styling if you prefer red text on pink background */
+td.handle::before {
+  content: "≡";
+  font-size: 1.5rem;
+}
+
+td.delete::before {
+  content: "×";
+  font-size: 1.25rem;
+  color: #9ca3af;
+}
+
+td.delete:hover::before {
+  color: #4b5563;
+}
+
+
+/* Cell styles */
 td.result.error {
-  background-color: pink;
-  color: red;
-  white-space: nowrap;
-  overflow: visible;
+  background-color: #fecaca;
+  color: #dc2626;
 }
 
-
-/* Non-editable cells */
 td.readonly {
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity));
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 
-/* Output result cells */
 td.output {
-  --tw-bg-opacity: 1;
-  background-color: rgb(240 253 244 / var(--tw-bg-opacity));
+  background-color: #f0fdf4;
   font-weight: 600;
-  --tw-text-opacity: 1;
-  color: rgb(22 163 74 / var(--tw-text-opacity));
+  color: #16a34a;
 }
 
 /* Hover effects */
-
 td:hover {
-  --tw-bg-opacity: 1;
-/*  background-color: rgb(243 244 246 / var(--tw-bg-opacity));
- 
-}
-td.desc:hover,
-td.name:hover { 
-  --tw-bg-opacity: 1; 
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity)); */
+  position: relative;
   z-index: 1;
-  border: 2px solid #000; /* Adds a black border on hover */
 }
+
+td:hover::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #000;
+  pointer-events: none;
+}
+
+/* Input styles */
+input, textarea {
+  width: 100%;
+  padding: 0.25rem;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Column width adjustments */
+td.handle, td.delete {
+  width: 3%;
+}
+
+td.desc, td.name {
+  width: 15%;
+}
+
+td.formula {
+  width: 15%;
+}
+
+td.result {
+  width: 15%;
+}
+
+td.alt-add {
+  width: 5%;
+}
+
+td.unit {
+  width: 15%;
+}
+
+/* Ensure all cells maintain their size */
+td {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  table {
+    font-size: 0.875rem;
+  }
+  
+  th, td {
+    padding: 0.5rem;
+  }
+  
+  td.desc, td.name, td.formula, td.result, td.unit {
+    width: fixed;
+  }
+}
+
+
+
+
+
 
 
 
