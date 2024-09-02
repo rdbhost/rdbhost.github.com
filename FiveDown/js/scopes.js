@@ -74,7 +74,7 @@ class ValScope {
       td.data('value', value)
       td.data('prev-val', undefined)
 
-      if (typeof value === 'object' && value?.factor) {
+      if (typeof value === 'object' && value?.convert) {
 
         td.text(`${result_formatter(value.value)}`)
         td.addClass('convert').removeClass('error').attr('title', value.value)

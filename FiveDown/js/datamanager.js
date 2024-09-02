@@ -139,10 +139,13 @@ class DataManager {
             let unit = _this.UNITS.getItem(key)
             let factor = unit.data('conversion_factor')
 
-            if (factor !== undefined) 
-                res = res * factor
+            if (factor !== undefined) {
 
-            scope.set(key, {value: res, factor: !!factor})
+                res = res * factor
+                scope.set(key, {value: res, convert: !!factor})
+            }
+            else
+                scope.set(key, value)
         })
 
     }
