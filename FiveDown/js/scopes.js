@@ -70,7 +70,7 @@ class ValScope {
       if (!name_valid(key)) throw new Error(`invalid key ${key}`)
       if (!this.localScope.has(key)) throw new Error(`key ${key} not found in ValScope`)
 
-      let td = this.localScope.get(key);
+      let td = this.localScope.get(key)
       td.data('value', value)
       td.data('prev-val', undefined)
 
