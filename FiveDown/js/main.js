@@ -59,6 +59,7 @@ function events_initialize($table) {
         console.log('global-recalc requested');
         let DM = $table.data('DM')
         setTimeout(function () {
+            DM.update_calculated_units()
             $('thead th.result').each(function(z,th) {
                 let i = $(th).data('alt')
                 DM.update_calculated_rows(i)

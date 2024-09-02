@@ -1,6 +1,6 @@
 import { FunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
-import { unit } from './unit-math.js'
+import { conversion_factor, unit } from './unit-math.js'
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set
@@ -68,7 +68,7 @@ class ValScope {
     set (key, value) {
 
         if (!name_valid(key)) throw new Error(`invalid key ${key}`)
-        if (!this.localScope.has(key)) throw new Error(`key ${key} not found in MapScope`)
+        if (!this.localScope.has(key)) throw new Error(`key ${key} not found in ValScope`)
 
         let td = this.localScope.get(key);
         td.data('value', value)
@@ -129,25 +129,22 @@ class ValScope {
 
 class UnitScope extends ValScope {
 
-  constructor() {
-    super()
-  }
 
   // add adds a key and two cells
   //
-  addItem (key, td, td_display) {
+  addItem (key, td) {
 
     if (!name_valid(key)) 
       throw new Error(`invalid key ${key}`)
 
-    return this.localScope.set(key, [td, td_display])
+    return this.localScope.set(key, td)
   }
 
   // getItem gets the $<td> for the unit cell
   //
   getItem(key) {
 
-    return this.localScope.get(key)[0]
+    return this.localScope.get(key)
   }
 
   // gets the value of the $(td) object stored for key
@@ -178,33 +175,41 @@ class UnitScope extends ValScope {
 
   // sets value into $(td) object stored.
   //
-  set (key, value) {
+  set (key, calculated) {
 
     if (!name_valid(key)) 
       throw new Error(`invalid key ${key}`)
     if (!this.localScope.has(key)) 
-      throw new Error(`key ${key} not found in MapScope`)
+      throw new Error(`key ${key} not found in UnitScope`)
 
-    let $td = this.localScope.get(key)[0];
-    $td.data('value', value)
+    let $td = this.localScope.get(key);
+    $td.data('calculated', calculated)
     $td.data('prev-val', undefined)
-    $td.attr('title', `calculated value: ${value}`)
+    $td.attr('title', `calculated units: ${calculated}`)
 
     // if (calculated) value does not match raw (entered) value, set error class
     let disp = $td.text()
-    if (disp && disp !== value) {
-      $td.addClass('error')
+    $td.data('conversion_factor', undefined)
+    if (disp && disp !== calculated) {
+
+      let t = conversion_factor(calculated, disp)
+      if (t === false) 
+
+        $td.addClass('error')
+      else {
+
+        $td.data('conversion_factor', t)
+        $td.removeClass('error').addClass('convert')
+      }
     }
     else { 
       $td.removeAttr('title').removeClass('error')
     }
 
-    // TODO - do something with td_display, this.localScope.get(key)[1]
-
     // if value is an Error object, throw it as exception
-    if (typeof value == 'object' && value.message !== undefined) {
+    if (typeof calculated == 'object' && calculated.message !== undefined) {
 
-      throw value
+      throw calculated
     }
     return this
   }

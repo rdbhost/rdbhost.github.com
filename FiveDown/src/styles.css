@@ -214,6 +214,10 @@ td {
   box-sizing: border-box;
 }
 
+td.convert {
+  text-decoration: underline;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   table {

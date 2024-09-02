@@ -121,14 +121,13 @@ class DataManager {
                 _this.FORMULAS.set(name, formula)
             }
 
-            _this.UNITS.addItem(name, $row.find('.unit').first(), $row.find('.unit-disp'))
+            _this.UNITS.addItem(name, $row.find('.unit').first())
         })
     }
 
     update_calculated_rows(altnum) {
 
         let _this = this
-
         let scope = this.VALUES[altnum]
 
         this.FORMULAS.forEach(function(formula, key) {
@@ -139,27 +138,20 @@ class DataManager {
             scope.set(key, res)
         })
 
+    }
+
+    update_calculated_units() {
+
+        let _this = this
+
         this.FORMULAS.forEach(function(formula, key) {
 
             console.log('unit formula '+formula)
             let exp = _this.unit.parse(formula)
             let res = _this.unit.evaluate(exp, _this.UNITS).getUnits().toString()
 
-            let $cell = _this.UNITS.getItem(key)
-            let val = $cell.text()
-
-            $cell.data('calc-value', res)
-            $cell.attr('title', `calculated value: ${res}`)
-            if (val && res !== val) {
-             
-                $cell.data('value', new Error(`value mismatch`))
-                $cell.addClass('error')
-                console.log('unit error ['+res+'] <> ['+val+']')
-            }
-            else {
-                $cell.removeClass('error')
-                console.log('unit calculated '+res)
-            }
+            _this.UNITS.set(key, res)
+            console.log('unit calculated '+res)
         })
     }
 

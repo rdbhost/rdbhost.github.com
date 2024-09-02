@@ -11,18 +11,26 @@ function unit_valid(u) {
   return (u.type === 'Unit')
 }
 
-function convert_unit(from, to) {
+function conversion_factor(from, to) {
+
+  let f, t;
+  try {
+    f = unit(from)
+    t = unit(to)
+  }
+  catch (e) {
+    return false
+  }
 
   try {
 
-    let f = unit(from)
-    return f.to(to)
+    f = f.setValue(1)
+    return f.to(t).getValue()
   }
   catch(e) {
 
-    if (typeof e === 'TypeError') {
+    if (typeof e === 'object' && e?.name === 'TypeError') 
       return false;
-    }
     else 
       throw e
   }
@@ -100,4 +108,4 @@ class MyUnits{
 
 }
 
-export { MyUnits, unit, format_unit, convert_unit }
+export { MyUnits, unit, format_unit, conversion_factor }
