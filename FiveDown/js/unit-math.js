@@ -1,9 +1,7 @@
 
 import { parse as jexpr_parse, EvalAstFactory } from './jexpr.js'
-import { UNARY_UNIT_OPERATORS, BINARY_UNIT_OPERATORS } from './unit-ops.js'
+import { unit, UNARY_UNIT_OPERATORS, BINARY_UNIT_OPERATORS } from './unit-ops.js'
 
-import _unit from './lib/UnitMath.js'
-const unit = _unit.config({ precision: 8 })
 
 function unit_valid(u) {
 
@@ -11,6 +9,23 @@ function unit_valid(u) {
     return false
   
   return (u.type === 'Unit')
+}
+
+function convert_unit(from, to) {
+
+  try {
+
+    let f = unit(from)
+    return f.to(to)
+  }
+  catch(e) {
+
+    if (typeof e === 'TypeError') {
+      return false;
+    }
+    else 
+      throw e
+  }
 }
 
 function format_unit(u) {
@@ -85,4 +100,4 @@ class MyUnits{
 
 }
 
-export { MyUnits, format_unit }
+export { MyUnits, unit, format_unit, convert_unit }

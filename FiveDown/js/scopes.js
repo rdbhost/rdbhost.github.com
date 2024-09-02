@@ -1,7 +1,6 @@
 import { FunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
-import _unit from './lib/UnitMath.js'
-const unit = _unit.config({ precision: 8 })
+import { unit } from './unit-math.js'
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set

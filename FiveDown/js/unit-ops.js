@@ -4,7 +4,7 @@
 */
 
 import _unit from './lib/UnitMath.js'
-const unit = _unit.config({ precision: 8 })
+export const unit = _unit.config({ precision: 8 })
 
 
 export const BINARY_UNIT_OPERATORS = {
