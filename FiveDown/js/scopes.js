@@ -167,16 +167,22 @@ class UnitScope extends ValScope {
 
       let val = this.getItem(key);
 
-      let ret = val.data('value')
-      if (!ret)
-        return undefined
-        
-      // if stored value is an Error object, add key to foundbad list
-      if (typeof ret === 'object' && ret.message !== undefined) {
+      if (typeof val === 'function') {
 
-        this.diagnostics.get('foundbad').push(key)
+        return val
       }
-      return unit(1, ret) 
+      else {
+        let ret = val.data('value')
+        if (!ret)
+          return undefined
+          
+        // if stored value is an Error object, add key to foundbad list
+        if (typeof ret === 'object' && ret.message !== undefined) {
+
+          this.diagnostics.get('foundbad').push(key)
+        }
+        return unit(1, ret) 
+      }
     }
 
     return undefined;
