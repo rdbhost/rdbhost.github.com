@@ -516,7 +516,7 @@ function tbody_handlers($table) {
 
         let $td = $(evt.target);                    // $td is $<td>
         if ($td.attr('contenteditable') == 'false') { return }
-        $td.text($td.data('value'))
+        $td.text($td.data('value')).removeClass('convert')
     })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
         
@@ -528,6 +528,8 @@ function tbody_handlers($table) {
 
         let formula = $td.text()
         $td.text(formula_formatter(formula))
+        if ($td.attr('data-conversion'))
+            $td.addClass('convert')
 
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
 

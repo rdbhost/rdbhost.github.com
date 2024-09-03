@@ -190,6 +190,11 @@ td.desc, td.name {
 td.formula {
   width: 15%;
 }
+td.formula.convert::after {
+  content: ' (x' attr(data-conversion) ')'; 
+  font-size: smaller;
+  color: lightgrey;
+}
 
 td.result {
   width: 15%;

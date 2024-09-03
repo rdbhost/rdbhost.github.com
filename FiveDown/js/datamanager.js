@@ -146,11 +146,11 @@ class DataManager {
 
                 res = res * factor
                 scope.set(key, {value: res, convert: !!factor})
-                $formulaTd.attr('data-conversion', factor.toPrecision(3))
+                $formulaTd.attr('data-conversion', factor.toPrecision(3)).addClass('convert')
             }
             else {
                 scope.set(key, res)
-                $formulaTd.removeAttr('data-conversion')
+                $formulaTd.removeAttr('data-conversion').removeAttr('convert')
             }
         })
 
