@@ -190,7 +190,6 @@ class UnitScope extends ValScope {
     let $td = this.localScope.get(key);
     $td.data('calculated', calculated)
     $td.data('prev-val', undefined)
-    $td.attr('title', `calculated units: ${calculated}`)
 
     // if (calculated) value does not match raw (entered) value, set error class
     let disp = $td.text()
@@ -198,17 +197,21 @@ class UnitScope extends ValScope {
     if (disp && disp !== calculated) {
 
       let t = conversion_factor(calculated, disp)
-      if (t === false) 
+      if (t === false) {
 
+        $td.attr('title', `calculated units: ${calculated}`)
         $td.addClass('error')
+      }
       else {
 
         $td.data('conversion_factor', t)
         $td.removeClass('error').addClass('convert')
+        $td.attr('title', `converted from ${calculated} units`)
       }
     }
     else { 
       $td.removeAttr('title').removeClass('error')
+      $td.attr('title', `calculated units: ${calculated}`)
     }
 
     // if value is an Error object, throw it as exception
