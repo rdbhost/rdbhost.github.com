@@ -30,11 +30,11 @@ function events_initialize($table) {
             ensure_five_blank($table) 
             apply_draggable_rows($table)
         }, 0)
-    }).on('row:formula-change', function(event, name, formula) {
-        console.log('row formula change '+formula)
+    }).on('row:formula-change', function(event, name, $formulaTd) {
+        console.log('row formula change '+$formulaTd.data('value'))
         let DM = $table.data('DM')
         setTimeout(function () {
-            DM.change_formula(name, formula)
+            DM.change_formula(name, $formulaTd)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on('row:unit-change', function(event, name, unit) {

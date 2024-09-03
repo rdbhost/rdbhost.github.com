@@ -536,7 +536,7 @@ function tbody_handlers($table) {
             //$res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
-            $table.trigger("row:formula-change", [name, $td.data('value')]);       
+            $table.trigger("row:formula-change", [name, $td]);       
         } 
     })
 

@@ -1,4 +1,4 @@
-import { FunctionMap } from './functions.js'
+import { FunctionMap, UnitFunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
 import { conversion_factor, unit } from './unit-math.js'
 
@@ -8,9 +8,9 @@ import { conversion_factor, unit } from './unit-math.js'
 //
 class ValScope {
   
-    constructor () {
+    constructor (maptype) {
 
-      this.localScope = new Map(FunctionMap)
+      this.localScope = new Map(maptype)
       this.diagnostics = undefined 
       this.reset_diagnostics()
     }
@@ -134,6 +134,10 @@ class ValScope {
 
 class UnitScope extends ValScope {
 
+  constructor (maptype) {
+
+    super(maptype)
+  }
 
   // add adds a key and two cells
   //
