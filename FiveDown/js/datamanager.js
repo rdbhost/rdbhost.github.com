@@ -166,7 +166,8 @@ class DataManager {
             console.log('unit formula '+formula)
 
             let exp = _this.unit.parse(formula)
-            let res = _this.unit.evaluate(exp, _this.UNITS).getUnits().toString()
+            let res = _this.unit.evaluate(exp, _this.UNITS)
+            res = res.getUnits().toString()
 
             _this.UNITS.set(key, res)
             console.log('unit calculated '+res)
