@@ -1,4 +1,4 @@
-import { FunctionMap, UnitFunctionMap } from './functions.js'
+// import { FunctionMap, UnitFunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
 import { conversion_factor, unit } from './unit-math.js'
 

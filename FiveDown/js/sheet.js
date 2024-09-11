@@ -163,6 +163,7 @@ function move_result_column($table, num, before) {
     })
 
     update_alts($table)
+    $table.trigger("table:alt-update")
 }
 
 // make result columns, draggable to reorder
