@@ -205,8 +205,9 @@ function remove_draggable_columns($table) {
 
 // click on header '+' adds alt 
 //
-function remove_alt(evt, $table) {
+function remove_alt(evt) {
 
+    let $table = evt.data
     remove_draggable_columns($table)
 
     let $hdr = $(evt.target).closest('th');
@@ -310,7 +311,7 @@ function update_alts($table) {
     if (headers.length>1) {
         headers.find('button.close-res').show();
         headers.find('button.close-res').on();
-        headers.find('button.close-res').click($table, remove_alt) // extra params???
+        headers.find('button.close-res').on('click', $table, remove_alt) // extra params???
     }
     // otherwise, hide and disable '-' buttons 
     else {
