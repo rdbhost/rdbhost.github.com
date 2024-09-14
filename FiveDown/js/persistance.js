@@ -100,10 +100,11 @@ function replace_table_from_json($table, data) {
     // if there are multiple result columns, expand the header row
     //   and also the blank row, to include enough result columns
     //
-    let $res = $table.find('thead th.result').first()
-    let $resplus = $res.next(); $res.remove()
+    let $res = $table.find('thead th.result')
+    let $resplus = $table.find('.alt-add')
+    $res.remove()
     for (let i=0; i<altct; i++) {
-        let $t = $res.clone(true)
+        let $t = $res.first().clone(true)
         $resplus.before($t)
         if (result_cols[i]) {
             $t.data('custom_name', result_cols[i])
@@ -112,10 +113,11 @@ function replace_table_from_json($table, data) {
     }
 
     // fix the blank row
-    $res = $blank_row.find('.result').first()
-    $resplus = $res.next(); $res.remove()
+    $res = $blank_row.find('.result')
+    $resplus = $blank_row.find('.alt-add')
+    $res.remove()
     for (let i=0; i<altct; i++) {
-        $resplus.before($res.clone(true))
+        $resplus.before($res.first().clone(true))
     }
 
     // iterate over rows in source data
