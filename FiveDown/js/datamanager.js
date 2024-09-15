@@ -1,7 +1,7 @@
 
 import { MyMath, name_valid } from './math-tools.js'
 import { MyUnits } from './unit-math.js'
-import { ValScope, UnitScope } from './scopes.js'
+import { ValScope } /* , UnitScope } */ from './scopes.js'
 import { FunctionMap, UnitFunctionMap } from './functions.js'
 
 class DataManager {
@@ -10,9 +10,9 @@ class DataManager {
 
         this.VALUES = Array()
         this.FORMULAS = new Map()
-        this.UNITS = new UnitScope(UnitFunctionMap)
+    //     this.UNITS = new UnitScope(UnitFunctionMap)
         this.math = new MyMath()
-        this.unit = new MyUnits()
+    //    this.unit = new MyUnits()
     }
     
     add_row(name, $tds, $tdu) {
@@ -23,7 +23,7 @@ class DataManager {
 
             _this.VALUES[i].addItem(name, $(td));
         })
-        _this.UNITS.addItem(name, $tdu)
+//        _this.UNITS.addItem(name, $tdu)
     }
 
     remove_row(name) {
@@ -35,7 +35,7 @@ class DataManager {
             }
         })
         this.FORMULAS.delete(name);    
-        this.UNITS.delete(name)
+ //       this.UNITS.delete(name)
     }
 
     rename_row(prev, now) {
@@ -52,7 +52,7 @@ class DataManager {
                 }
             })
             this.FORMULAS.delete(prev)
-            this.UNITS.delete(prev)
+ //           this.UNITS.delete(prev)
         }
         else {
             need_update = true;
@@ -70,12 +70,12 @@ class DataManager {
                     vals.addItem(now, tmp);
                 }
             })
-            if (this.UNITS.has(prev)) {
+/*            if (this.UNITS.has(prev)) {
                 let tmp = this.UNITS.get(prev);
                 this.UNITS.delete(prev);
                 this.UNITS.set(now, tmp);
             }
-        }
+*/        }
         return need_update
     }
 
@@ -122,7 +122,7 @@ class DataManager {
                 _this.FORMULAS.set(name, $row.find('.formula'))
             }
 
-            _this.UNITS.addItem(name, $row.find('.unit').first())
+ //           _this.UNITS.addItem(name, $row.find('.unit').first())
         })
     }
 
@@ -139,19 +139,19 @@ class DataManager {
             let exp = _this.math.parse(formula)
             let res = _this.math.evaluate(exp, scope)
 
-            let unit = _this.UNITS.getItem(key)
-            let factor = unit.data('conversion_factor')
+ //           let unit = _this.UNITS.getItem(key)
+ //           let factor = unit.data('conversion_factor')
 
-            if (factor !== undefined) {
+ /*           if (factor !== undefined) {
 
                 res = res * factor
                 scope.set(key, {value: res, convert: !!factor})
                 $formulaTd.attr('data-conversion', factor.toPrecision(3)).addClass('convert')
             }
-            else {
+            else { */
                 scope.set(key, res)
                 $formulaTd.removeAttr('data-conversion').removeAttr('convert')
-            }
+//            }
         })
 
     }
@@ -165,12 +165,12 @@ class DataManager {
             let formula = $formulaTd.data('value')
             console.log('unit formula '+formula)
 
-            let exp = _this.unit.parse(formula)
-            let res = _this.unit.evaluate(exp, _this.UNITS)
-            res = res.getUnits().toString()
+ //           let exp = _this.unit.parse(formula)
+ //           let res = _this.unit.evaluate(exp, _this.UNITS)
+ //           res = res.getUnits().toString()
 
-            _this.UNITS.set(key, res)
-            console.log('unit calculated '+res)
+//            _this.UNITS.set(key, res)
+//            console.log('unit calculated '+res)
         })
     }
 
@@ -204,7 +204,7 @@ class DataManager {
                     scope.set(name, "") 
                 })
                 this.VALUES[0].set(name, new Error(errmsg))
-                this.UNITS.set(name, "") 
+     //           this.UNITS.set(name, "") 
             } 
             
             // else formula valid and non-blank, so save, and update result cols
@@ -216,9 +216,9 @@ class DataManager {
                     let res = _this.math.evaluate(exp, scope);
                     scope.set(name, res);
                 })
-                let untexp = _this.unit.parse(formula)
-                let unit = _this.unit.evaluate(untexp, this.UNITS)
-                this.UNITS.set(name, unit) 
+    //            let untexp = _this.unit.parse(formula)
+    //            let unit = _this.unit.evaluate(untexp, this.UNITS)
+    //            this.UNITS.set(name, unit) 
             }
         }
     }
