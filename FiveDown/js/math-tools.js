@@ -8,7 +8,7 @@ class MyMath {
       this.astf = new EvalAstFactory(UNARY_OPERATORS, BINARY_OPERATORS)
     }
 
-    evaluate_diagnostics (scope) {
+    evaluate_diagnostics (scope, result) {
 
       // if scope recorded any key misses, report one of them
       let missing = scope.get_diagnostics().get('missing')
@@ -23,7 +23,7 @@ class MyMath {
         return `${first} is not valid`
       }
 
-      return 'bad result'
+      return `bad result ${result}`
     }
 
     evaluate(exp, scope) {
@@ -40,7 +40,7 @@ class MyMath {
         //
         if ( !data_valid(result) ) {
 
-          let msg = this.evaluate_diagnostics(scope)
+          let msg = this.evaluate_diagnostics(scope, result)
           return new Error(msg)
         }          
 
@@ -148,6 +148,7 @@ class MyMath {
       return false
     }
     else if (data === false || data === true) {
+
       return true
     }
     else {

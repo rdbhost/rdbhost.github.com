@@ -71,28 +71,32 @@ class ValScope {
       if (!this.localScope.has(key)) throw new Error(`key ${key} not found in ValScope`)
 
       let td = this.localScope.get(key)
-      td.data('value', value)
-      td.data('prev-val', undefined)
+      let prev = td.data('value')
 
+      // if value is converted, save value 
       if (typeof value === 'object' && value?.convert) {
 
         td.text(`${result_formatter(value.value)}`)
         td.addClass('convert').removeClass('error').attr('title', value.value)
+        td.data('value', value.value).data('prev-val', prev)
       }
       // if value is an Error object, apply error style, and use error message
       else if (typeof value == 'object' && value.message !== undefined) {
 
         td.text(`${value.message}`)
         td.addClass('error').removeAttr('title').removeClass('convert')
+        td.data('value', value).data('prev-val', prev)
       }
       else if (value === undefined) {
         td.text("")
         td.removeClass('error output').removeAttr('title').removeClass('convert')
+        td.data('value', value).data('prev-val', prev)
       }
       else {
 
         td.text(result_formatter(value))
         td.removeClass('error').attr('title', value).removeClass('convert')
+        td.data('value', value).data('prev-val', prev)
       }
       return this
     }

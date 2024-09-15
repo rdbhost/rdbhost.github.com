@@ -580,34 +580,7 @@ function tbody_handlers($table) {
     })
 
 
-    // dblclick on result column header enables editing of header
-    //
-    $table.find('thead').on('dblclick', 'th.result', function(evt) {
-
-        // enable content editing, and put focus in cll
-        let $th = $(evt.target).closest('th')
-        let $span = $th.find('span');
-        $span.attr('contenteditable', 'true')
-        $span.trigger('focus')
-
-        // one-shot focusout handler saves changes to data() and disables editing
-        $span.one('focusout', function() {
-
-            if ($span.text()) {
-                $th.data('custom_name', $span.text())
-            }
-            else {
-                let append = $table.find('thead th.result').length > 1 ? $span.closest('th').data('alt') : ""
-                $span.text('Result '+append)
-                $th.data('custom_name', null)
-            }
-
-            $span.attr('contenteditable', 'false')
-        })
-
-    })
-
-    // handler on unit cells changes the contenteditable and styling
+     // handler on unit cells changes the contenteditable and styling
     //   of unit cells
     //
     $table.find('tbody').on('focusout', '.unit', function(evt) {
@@ -636,6 +609,33 @@ function tbody_handlers($table) {
             let name = $tr.find('td.name').text();
             $table.trigger("row:unit-change", [name, $td.data('value')]);       
         } 
+    })
+
+    // dblclick on result column header enables editing of header
+    //
+    $table.find('thead').on('dblclick', 'th.result', function(evt) {
+
+        // enable content editing, and put focus in cll
+        let $th = $(evt.target).closest('th')
+        let $span = $th.find('span');
+        $span.attr('contenteditable', 'true')
+        $span.trigger('focus')
+
+        // one-shot focusout handler saves changes to data() and disables editing
+        $span.one('focusout', function() {
+
+            if ($span.text()) {
+                $th.data('custom_name', $span.text())
+            }
+            else {
+                let append = $table.find('thead th.result').length > 1 ? $span.closest('th').data('alt') : ""
+                $span.text('Result '+append)
+                $th.data('custom_name', null)
+            }
+
+            $span.attr('contenteditable', 'false')
+        })
+
     })
 
     // $table becomes available on event obj as evt.data

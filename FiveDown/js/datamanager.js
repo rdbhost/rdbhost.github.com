@@ -23,7 +23,7 @@ class DataManager {
 
             _this.VALUES[i].addItem(name, $(td));
         })
-        _this.UNITS.addItem(name, $tdu, null) // todo
+        _this.UNITS.addItem(name, $tdu)
     }
 
     remove_row(name) {
