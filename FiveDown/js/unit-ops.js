@@ -4,14 +4,14 @@
 */
 
 import _unit from './lib/UnitMath.js'
-const unit = _unit.config({ precision: 8 })
+export const unit = _unit.config({ precision: 8 })
 
 
 export const BINARY_UNIT_OPERATORS = {
    '+': (a, b) => unit.add(a, b),
    '-': (a, b) => unit.sub(a, b),
    '*': (a, b) => unit.mul(a, b),
-   '@': (a, b) => 1, 
+   '@': (a, b) => unit.add(a, b),  // result has same unit as each operand 
    '/': (a, b) => unit.div(a, b),
    '%': (a, b) => unit.sub(a, b), // a % b,
    '^': (a, b) => unit.pow(a, b),

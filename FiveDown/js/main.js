@@ -30,18 +30,17 @@ function events_initialize($table) {
             ensure_five_blank($table) 
             apply_draggable_rows($table)
         }, 0)
-    }).on('row:formula-change', function(event, name, formula) {
-        console.log('row formula change '+formula)
+    }).on('row:formula-change', function(event, name, $formulaTd) {
+        console.log('row formula change '+$formulaTd.data('value'))
         let DM = $table.data('DM')
         setTimeout(function () {
-            DM.change_formula(name, formula)
+            DM.change_formula(name, $formulaTd)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on('row:unit-change', function(event, name, unit) {
         console.log('row unit change '+unit)
-        let DM = $table.data('DM')
+        // let DM = $table.data('DM')
         setTimeout(function () {
-            // DM.change_formula(name, formula)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on("table:alt-update", function() {
@@ -59,6 +58,7 @@ function events_initialize($table) {
         console.log('global-recalc requested');
         let DM = $table.data('DM')
         setTimeout(function () {
+            DM.update_calculated_units()
             $('thead th.result').each(function(z,th) {
                 let i = $(th).data('alt')
                 DM.update_calculated_rows(i)

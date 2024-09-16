@@ -1,8 +1,9 @@
-
 /*  Provides a default Map of available functions
 
- 
 */
+
+import { unit } from './unit-math.js'
+
 const FunctionMap = new Map([
 
     ['sin', Math.sin],
@@ -50,12 +51,59 @@ const FunctionMap = new Map([
 
 ])
 
+const UnitFunctionMap = new Map([
+
+    ['sin', (a) => unit(1)],
+    ['cos', (a) => unit(1)],
+    ['tan', (a) => unit(1)],
+    ['acos', (a) => unit('radian')],
+    ['asin', (a) => unit('radian')],
+    ['atan', (a) => unit('radian')],
+    
+    ['cosh', (a) => unit(a)],
+    ['sinh', (a) => unit(a)],
+    ['tanh', (a) => unit(a)],
+    ['acosh', (a) => unit(a)],
+    ['asinh', (a) => unit(a)],
+    ['atanh', (a) => unit(a)],
+    
+    ['degrees', (r) => unit('degree')],
+    ['radians', (d) => unit('radian')],
+    
+    ['round', (a) => unit(a)],
+    ['ceil', (a) => unit(a)],
+    ['floor', (a) => unit(a)],
+    ['fround', (a) => unit(a)],
+    ['trunc', (a) => unit(a)],
+    
+    ['sqrt', unit.sqrt],
+    ['pow', unit.pow],
+    ['imul', unit.mul],
+
+    ['mag', (a) => unit(a)], // measures magnitude of vector
+    
+    ['ln', (a) => unit(1)],
+    ['log10', (a) => unit(1)],
+    ['log2', (a) => unit(1)],
+    ['exp', (a) => unit(1)],
+    
+    ['max', (a) => unit(a)],
+    ['min', (a) => unit(a)],
+    ['random', (a) => unit(1)],
+    ['abs', (a) => unit(a)],
+    ['sign', (a) => unit(1)],
+
+    ['PI', (a) => unit(1)],
+    ['E', (a) => unit(1)]
+
+])
+
 function free_td(val) {
     let t = $('<td>')
     t.data('value', val)
     return t
 }
 
-export { FunctionMap }
+export { FunctionMap, UnitFunctionMap }
 
 

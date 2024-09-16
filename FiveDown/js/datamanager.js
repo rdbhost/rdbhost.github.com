@@ -1,7 +1,8 @@
 
 import { MyMath, name_valid } from './math-tools.js'
 import { MyUnits } from './unit-math.js'
-import { ValScope, UnitScope } from './scopes.js'
+import { ValScope } /* , UnitScope } */ from './scopes.js'
+import { FunctionMap, UnitFunctionMap } from './functions.js'
 
 class DataManager {
 
@@ -9,9 +10,9 @@ class DataManager {
 
         this.VALUES = Array()
         this.FORMULAS = new Map()
-        this.UNITS = new UnitScope()
+    //     this.UNITS = new UnitScope(UnitFunctionMap)
         this.math = new MyMath()
-        this.unit = new MyUnits()
+    //    this.unit = new MyUnits()
     }
     
     add_row(name, $tds, $tdu) {
@@ -22,7 +23,7 @@ class DataManager {
 
             _this.VALUES[i].addItem(name, $(td));
         })
-        _this.UNITS.addItem(name, $tdu, null) // todo
+//        _this.UNITS.addItem(name, $tdu)
     }
 
     remove_row(name) {
@@ -34,7 +35,7 @@ class DataManager {
             }
         })
         this.FORMULAS.delete(name);    
-        this.UNITS.delete(name)
+ //       this.UNITS.delete(name)
     }
 
     rename_row(prev, now) {
@@ -51,7 +52,7 @@ class DataManager {
                 }
             })
             this.FORMULAS.delete(prev)
-            this.UNITS.delete(prev)
+ //           this.UNITS.delete(prev)
         }
         else {
             need_update = true;
@@ -69,18 +70,18 @@ class DataManager {
                     vals.addItem(now, tmp);
                 }
             })
-            if (this.UNITS.has(prev)) {
+/*            if (this.UNITS.has(prev)) {
                 let tmp = this.UNITS.get(prev);
                 this.UNITS.delete(prev);
                 this.UNITS.set(now, tmp);
             }
-        }
+*/        }
         return need_update
     }
 
     populate_values_for_alt(altnum) {
     
-        this.VALUES[altnum] = new ValScope();
+        this.VALUES[altnum] = new ValScope(FunctionMap);
         let _this = this;
     
         $('tbody > tr').each(function(z, row) {
@@ -118,54 +119,65 @@ class DataManager {
             let formula = $row.find('.formula').data('value')
             if (formula) { 
 
-                _this.FORMULAS.set(name, formula)
+                _this.FORMULAS.set(name, $row.find('.formula'))
             }
 
-            _this.UNITS.addItem(name, $row.find('.unit').first(), $row.find('.unit-disp'))
+ //           _this.UNITS.addItem(name, $row.find('.unit').first())
         })
     }
 
     update_calculated_rows(altnum) {
 
         let _this = this
-
         let scope = this.VALUES[altnum]
 
-        this.FORMULAS.forEach(function(formula, key) {
+        this.FORMULAS.forEach(function($formulaTd, key) {
 
+            let formula = $formulaTd.data('value')
             console.log('formula '+formula)
+
             let exp = _this.math.parse(formula)
             let res = _this.math.evaluate(exp, scope)
-            scope.set(key, res)
+
+ //           let unit = _this.UNITS.getItem(key)
+ //           let factor = unit.data('conversion_factor')
+
+ /*           if (factor !== undefined) {
+
+                res = res * factor
+                scope.set(key, {value: res, convert: !!factor})
+                $formulaTd.attr('data-conversion', factor.toPrecision(3)).addClass('convert')
+            }
+            else { */
+                scope.set(key, res)
+                $formulaTd.removeAttr('data-conversion').removeAttr('convert')
+//            }
         })
 
-        this.FORMULAS.forEach(function(formula, key) {
+    }
 
+    update_calculated_units() {
+
+        let _this = this
+
+        this.FORMULAS.forEach(function($formulaTd, key) {
+
+            let formula = $formulaTd.data('value')
             console.log('unit formula '+formula)
-            let exp = _this.unit.parse(formula)
-            let res = _this.unit.evaluate(exp, _this.UNITS).getUnits().toString()
 
-            let $cell = _this.UNITS.getItem(key)
-            let val = $cell.text()
+ //           let exp = _this.unit.parse(formula)
+ //           let res = _this.unit.evaluate(exp, _this.UNITS)
+ //           res = res.getUnits().toString()
 
-            $cell.data('calc-value', res)
-            $cell.attr('title', `calculated value: ${res}`)
-            if (val && res !== val) {
-             
-                $cell.data('value', new Error(`value mismatch`))
-                $cell.addClass('error')
-                console.log('unit error ['+res+'] <> ['+val+']')
-            }
-            else {
-                $cell.removeClass('error')
-                console.log('unit calculated '+res)
-            }
+//            _this.UNITS.set(key, res)
+//            console.log('unit calculated '+res)
         })
     }
 
-    change_formula(name, formula) {
+    change_formula(name, $formulaTd) {
 
-        let _this = this;
+        let _this = this
+        let formula = $formulaTd.data('value')
 
         if (!name_valid(name)) throw new Error(`Error - invalid name ${name}`) 
         
@@ -192,20 +204,21 @@ class DataManager {
                     scope.set(name, "") 
                 })
                 this.VALUES[0].set(name, new Error(errmsg))
-                this.UNITS.set(name, "") // TODO
+     //           this.UNITS.set(name, "") 
             } 
             
             // else formula valid and non-blank, so save, and update result cols
             else {
 
-                this.FORMULAS.set(name, formula);
+                this.FORMULAS.set(name, $formulaTd);
                 this.VALUES.forEach(function(scope, _i) {
     
                     let res = _this.math.evaluate(exp, scope);
                     scope.set(name, res);
                 })
-                let unit = _this.unit.evaluate(exp, this.UNITS)
-                this.UNITS.set(name, unit) 
+    //            let untexp = _this.unit.parse(formula)
+    //            let unit = _this.unit.evaluate(untexp, this.UNITS)
+    //            this.UNITS.set(name, unit) 
             }
         }
     }

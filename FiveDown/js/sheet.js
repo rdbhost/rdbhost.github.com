@@ -163,6 +163,7 @@ function move_result_column($table, num, before) {
     })
 
     update_alts($table)
+    $table.trigger("table:alt-update")
 }
 
 // make result columns, draggable to reorder
@@ -204,8 +205,9 @@ function remove_draggable_columns($table) {
 
 // click on header '+' adds alt 
 //
-function remove_alt(evt, $table) {
+function remove_alt(evt) {
 
+    let $table = evt.data
     remove_draggable_columns($table)
 
     let $hdr = $(evt.target).closest('th');
@@ -309,7 +311,7 @@ function update_alts($table) {
     if (headers.length>1) {
         headers.find('button.close-res').show();
         headers.find('button.close-res').on();
-        headers.find('button.close-res').click($table, remove_alt) // extra params???
+        headers.find('button.close-res').on('click', $table, remove_alt) // extra params???
     }
     // otherwise, hide and disable '-' buttons 
     else {
@@ -390,9 +392,6 @@ function table_initialize($table) {
 
     // push formulas from initial sheet into FORMULAS Map, and recalc
     DM.populate_formulas_and_units();
-
-    // $table becomes available on event obj as evt.data
-    $table.find('th.alt-add').on('click', $table, addalt_func);  
 
     ensure_five_blank($table)
     apply_draggable_rows($table)
@@ -516,7 +515,7 @@ function tbody_handlers($table) {
 
         let $td = $(evt.target);                    // $td is $<td>
         if ($td.attr('contenteditable') == 'false') { return }
-        $td.text($td.data('value'))
+        $td.text($td.data('value')).removeClass('convert')
     })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
         
@@ -528,6 +527,8 @@ function tbody_handlers($table) {
 
         let formula = $td.text()
         $td.text(formula_formatter(formula))
+        if ($td.attr('data-conversion'))
+            $td.addClass('convert')
 
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
 
@@ -536,7 +537,7 @@ function tbody_handlers($table) {
             //$res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
-            $table.trigger("row:formula-change", [name, $td.data('value')]);       
+            $table.trigger("row:formula-change", [name, $td]);       
         } 
     })
 
@@ -579,34 +580,7 @@ function tbody_handlers($table) {
     })
 
 
-    // dblclick on result column header enables editing of header
-    //
-    $table.find('thead').on('dblclick', 'th.result', function(evt) {
-
-        // enable content editing, and put focus in cll
-        let $th = $(evt.target).closest('th')
-        let $span = $th.find('span');
-        $span.attr('contenteditable', 'true')
-        $span.trigger('focus')
-
-        // one-shot focusout handler saves changes to data() and disables editing
-        $span.one('focusout', function() {
-
-            if ($span.text()) {
-                $th.data('custom_name', $span.text())
-            }
-            else {
-                let append = $table.find('thead th.result').length > 1 ? $span.closest('th').data('alt') : ""
-                $span.text('Result '+append)
-                $th.data('custom_name', null)
-            }
-
-            $span.attr('contenteditable', 'false')
-        })
-
-    })
-
-    // handler on unit cells changes the contenteditable and styling
+     // handler on unit cells changes the contenteditable and styling
     //   of unit cells
     //
     $table.find('tbody').on('focusout', '.unit', function(evt) {
@@ -636,6 +610,36 @@ function tbody_handlers($table) {
             $table.trigger("row:unit-change", [name, $td.data('value')]);       
         } 
     })
+
+    // dblclick on result column header enables editing of header
+    //
+    $table.find('thead').on('dblclick', 'th.result', function(evt) {
+
+        // enable content editing, and put focus in cll
+        let $th = $(evt.target).closest('th')
+        let $span = $th.find('span');
+        $span.attr('contenteditable', 'true')
+        $span.trigger('focus')
+
+        // one-shot focusout handler saves changes to data() and disables editing
+        $span.one('focusout', function() {
+
+            if ($span.text()) {
+                $th.data('custom_name', $span.text())
+            }
+            else {
+                let append = $table.find('thead th.result').length > 1 ? $span.closest('th').data('alt') : ""
+                $span.text('Result '+append)
+                $th.data('custom_name', null)
+            }
+
+            $span.attr('contenteditable', 'false')
+        })
+
+    })
+
+    // $table becomes available on event obj as evt.data
+    $table.find('thead').on('click', '.alt-add', $table, addalt_func);  
 
 }
 
