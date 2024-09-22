@@ -57,7 +57,8 @@ class MyMath {
         if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
           return new Error('formula seems incomplete')
 
-        return e;
+        let foundbad = scope.get_diagnostics().get('foundbad')
+        return new Error(e.message, {cause: foundbad})
       }
     }
 
@@ -73,7 +74,8 @@ class MyMath {
         if (e.message.substr(-27) === ', was undefined (undefined)') 
           return new Error(e.message.substr(0,e.message.length-27))
 
-        return e;
+        let foundbad = scope.get_diagnostics().get('foundbad')
+        return new Error(e.message, {cause: foundbad})
       }
     }
 
