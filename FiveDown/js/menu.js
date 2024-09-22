@@ -79,7 +79,7 @@ function menu_initialize(current) {
         // load sheet for new sheet chosen
         load_sheet($table, target_sheet)
 
-        console.log('sheet selected')
+        console.log(`sheet ${target_sheet} selected`)
         return false
     })
 

@@ -94,7 +94,7 @@ class ValScope {
         td.addClass('error').removeAttr('title').removeClass('convert')
         td.data('value', value).data('prev-val', prev)
       }
-      else if (value === undefined) {
+      else if (value === undefined || Number.isNaN(value)) {
         td.text("")
         td.removeClass('error output').removeAttr('title').removeClass('convert')
         td.data('value', value).data('prev-val', prev)
