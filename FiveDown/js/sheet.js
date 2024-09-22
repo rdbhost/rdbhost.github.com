@@ -413,12 +413,14 @@ function tbody_handlers($table) {
         let $tr2 = $tr.clone(true, true)
         let name = $tr.find('td.name').text()
 
-        let DM = $table.data('DM')
-        while (DM.VALUES[0].has(name)) {
-            name = name+'_';
+        if (name) {
+
+            let DM = $table.data('DM')
+            while (DM.VALUES[0].has(name)) 
+                name = name+'_';
+            $tr2.find('td.name').text(name)
+            $tr2.find('td.name').data('prev-val',name)
         }
-        $tr2.find('td.name').text(name)
-        $tr2.find('td.name').data('prev-val',name)
         $tr.after($tr2);
 
         apply_draggable_columns($table)
