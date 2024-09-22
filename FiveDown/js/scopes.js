@@ -1,6 +1,6 @@
 // import { FunctionMap, UnitFunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
-import { conversion_factor, unit } from './unit-math.js'
+// import { conversion_factor, unit } from './unit-math.js'
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set
@@ -35,32 +35,39 @@ class ValScope {
       return tmp;
     }
 
+    getItem(key) {
+
+      if (!name_valid(key)) throw new Error(`invalid key ${key}`)
+      if (!this.has(key)) throw new Error(`key ${key} not found`)
+
+      return this.localScope.get(key)
+    }
+
     // gets the value of the $(td) object stored for key, or a named function
     //   if the name refers to a predefined function
     get (key) {
 
       if (!name_valid(key)) throw new Error(`invalid key ${key}`)
 
-      if (this.has(key)) {
+      let val = this.getItem(key);
+      if (typeof val === 'function') {
 
-        let val = this.localScope.get(key);
-        if (typeof val === 'function') {
+        return val
+      } 
+      else {
 
-          return val
-        } else {
+        let ret = val.data('value')
+        
+        // if stored value is an Error object, add key to foundbad list
+        if (typeof ret === 'object' && ret.message !== undefined) {
 
-          let ret = val.data('value')
-          
-          // if stored value is an Error object, add key to foundbad list
-          if (typeof ret === 'object' && ret.message !== undefined) {
-
-            this.diagnostics.get('foundbad').push(key)
-          }
-          return ret 
+          this.diagnostics.get('foundbad').push(key)
         }
+        else if (ret === undefined || ret === "" || Number.isNaN(ret)) {
+          this.diagnostics.get('foundbad').push(key)
+        }
+        return ret 
       }
-
-      return undefined;
     }
   
     // sets value into $(td) object stored.
