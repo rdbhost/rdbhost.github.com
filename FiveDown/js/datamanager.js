@@ -134,7 +134,7 @@ class DataManager {
         this.FORMULAS.forEach(function($formulaTd, key) {
 
             let formula = $formulaTd.data('value')
-            console.log('formula '+formula)
+            // console.log('formula '+formula)
 
             let exp = _this.math.parse(formula)
             let res = _this.math.evaluate(exp, scope)
@@ -151,6 +151,13 @@ class DataManager {
             else { */
                 scope.set(key, res)
                 $formulaTd.removeAttr('data-conversion').removeAttr('convert')
+
+                if (res.cause && res.cause.length) {
+                    res.cause.forEach(function(key) {
+                        let badsrc = scope.getItem(key)
+                        badsrc.addClass('error')
+                    })
+                }
 //            }
         })
 
@@ -163,7 +170,7 @@ class DataManager {
         this.FORMULAS.forEach(function($formulaTd, key) {
 
             let formula = $formulaTd.data('value')
-            console.log('unit formula '+formula)
+ //           console.log('unit formula '+formula)
 
  //           let exp = _this.unit.parse(formula)
  //           let res = _this.unit.evaluate(exp, _this.UNITS)
@@ -215,6 +222,13 @@ class DataManager {
     
                     let res = _this.math.evaluate(exp, scope);
                     scope.set(name, res);
+
+                    if (res.cause && res.cause.length) {
+                        res.cause.forEach(function(key) {
+                            let badsrc = scope.getItem(key)
+                            badsrc.addClass('error')
+                        })
+                    }
                 })
     //            let untexp = _this.unit.parse(formula)
     //            let unit = _this.unit.evaluate(untexp, this.UNITS)
