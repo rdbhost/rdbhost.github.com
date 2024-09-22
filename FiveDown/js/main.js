@@ -23,7 +23,7 @@ function events_initialize($table) {
             DM.add_row(name, $tdres, $tdunit);
         }, 0)
     }).on('row:pad-end', function(event) {
-        console.log('add blanks')
+        // console.log('add blanks')
         let DM = $table.data('DM')
         setTimeout(function() {
             remove_draggable_rows($table)
