@@ -302,7 +302,7 @@ td.formula {
 	white-space: nowrap;
 }
 
-td.result.output.error {
+td.result.error {
 	width: auto;
 	background-color: #fecaca;
 	font-weight: 600;
