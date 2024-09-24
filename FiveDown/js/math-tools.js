@@ -8,22 +8,27 @@ class MyMath {
       this.astf = new EvalAstFactory(UNARY_OPERATORS, BINARY_OPERATORS)
     }
 
+    // evaluate_diagnostics, returns an Error object containing displayable message,
+    //  as well as a 'cause' element containing list of bad source items
+    //
     evaluate_diagnostics (scope, result) {
 
       // if scope recorded any key misses, report one of them
       let missing = scope.get_diagnostics().get('missing')
       if (missing.length) {
+
         let first = missing[0]
-        return `${first} is not available`
+        return new Error(`${first} is not available`, {cause: []})
       }
       // else if scope recorded any Error object retrievals, report one
       let foundbad = scope.get_diagnostics().get('foundbad')
       if (foundbad.length) {
+
         let first = foundbad[0]
-        return `${first} is not valid`
+        return new Error(`${first} is not valid`, {cause: foundbad})
       }
 
-      return `bad result ${result}`
+      return new Error(`bad result ${result}`, {cause: []})
     }
 
     evaluate(exp, scope) {
@@ -40,8 +45,8 @@ class MyMath {
         //
         if ( !data_valid(result) ) {
 
-          let msg = this.evaluate_diagnostics(scope, result)
-          return new Error(msg)
+          let error = this.evaluate_diagnostics(scope, result)
+          return error
         }          
 
         return result;
