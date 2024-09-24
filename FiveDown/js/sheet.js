@@ -1,5 +1,5 @@
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name, formula_formatter } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter, result_formatter } from './math-tools.js'
 import { get_storable, replace_table_from_json } from './persistance.js';
 import { format_unit } from './unit-math.js';
 
@@ -524,8 +524,9 @@ function tbody_handlers($table) {
         let $td = $(evt.target);                    // t is $<td>
         let $tr = $td.closest('tr');
 
-        if ($td.attr('contenteditable') == 'false') { return }
         set_contenteditable_cols($tr)
+        if ($td.attr('contenteditable') == 'false') 
+            return 
 
         let formula = $td.text()
         $td.text(formula_formatter(formula))
@@ -535,8 +536,6 @@ function tbody_handlers($table) {
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
 
             $td.data("prev-val", formula).data('value', formula);  // store new formula in data
-            // let $res = $tr.find('td.result');
-            //$res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
             $table.trigger("row:formula-change", [name, $td]);       
@@ -546,27 +545,34 @@ function tbody_handlers($table) {
     // handler on result cells pushes data changes into data() and calls
     //   for global recalc
     //   
+    $table.find('tbody').on('focusin', '.result', function(evt) {
+
+        let $td = $(evt.target);                    // $td is $<td>
+        if ($td.attr('contenteditable') == 'false') 
+            return 
+        if ($td.data('raw_input') !== undefined)
+            $td.text($td.data('raw_input'))
+    })
     $table.find('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
-            $tr = $t.closest('tr'),
-            name = $tr.find('.name').text()
+            $tr = $t.closest('tr')
 
         set_contenteditable_cols($tr)
 
-        if ($t.attr('contenteditable') === 'false') {
-            return;
-        }
+        if ($t.attr('contenteditable') === 'false') 
+            return
 
+        let input_val = $t.text()
+        if ($t.data('prev-val') === input_val) 
+            return
+
+        $t.data('prev-val', input_val)
+        $t.data('raw_input', input_val)
+
+        let name = $tr.find('.name').text()
         let DM = $table.data('DM')
         let scope = DM.VALUES[$t.data('alt')]
-        let input_val = $t.text()
-
-        if ($t.data('prev-val') === input_val) {
-            return
-        } else {
-            $t.data('prev-val', input_val)
-        }
 
         if (input_val === "") {
 
@@ -574,7 +580,6 @@ function tbody_handlers($table) {
         }
         else {
 
-            let DM = $table.data('DM')
             let res = DM.math.data_input_evaluater(input_val, scope)
             scope.set(name, res)
         }

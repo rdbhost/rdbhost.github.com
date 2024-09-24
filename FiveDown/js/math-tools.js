@@ -74,14 +74,13 @@ class MyMath {
         if (e.message.substr(-27) === ', was undefined (undefined)') 
           return new Error(e.message.substr(0,e.message.length-27))
 
-        let foundbad = scope.get_diagnostics().get('foundbad')
-        return new Error(e.message, {cause: foundbad})
+        return new Error(e.message)
       }
     }
 
     // expression_error checks formulas for parsing errors
     //
-    expression_error(expr) {
+    expression_error(expr) { 
 
       try {
 
@@ -95,7 +94,7 @@ class MyMath {
 
         return 'bad formula'
       }
-    }
+    } 
 
     // data_input_evaluater evaluates an expression with a scope, and returns
     //  either a valid expression (number, boolean, 2or3 element vector)
@@ -106,16 +105,13 @@ class MyMath {
       let exp = this.parse(expr)
       let res = this.evaluate(exp, scope)
 
-      if (typeof res === 'object' && res?.name === 'Error') {
+      if (typeof res === 'object' && res?.name === 'Error') 
         return new Error(expr)
-      }
-      else {
+      
+      if (!data_valid(res)) 
+        return new Error(expr)
 
-        if (data_valid(res)) {
-          return res
-        }
-        return new Error(expr)
-      }
+      return res    
     }
 
 }

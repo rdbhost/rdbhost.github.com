@@ -204,6 +204,7 @@ class DataManager {
         else {
 
             // else if formula is invalid, put error message in first result column
+            //   and clear other result columns
             let errmsg = _this.math.expression_error(formula)
             if (errmsg) {
 
