@@ -44,6 +44,22 @@ function set_contenteditable_cols($row) {
     }
 }
 
+// minimize_table_results - removes all results columns beyond first, from header
+//  and blank_row.  also removes all rows (other than saved blank)
+//
+function minimize_table($table) {
+
+    let $header = $table.find('thead > tr')
+    let $excess = $header.find('th.result:not(:first)')
+    $excess.remove()
+
+    let $blank = $table.data('blank_row')
+    $excess = $blank.find('td.result:not(:first)')
+    $excess.remove()
+
+    $table.find('tbody > tr').remove()
+}
+
 // add row to sheet
 //
 function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
@@ -358,11 +374,11 @@ function load_sheet($table, sheet_name) {
     if (!saved) 
         throw new Error(`sheet ${sheet_name} not found in localStorage`) 
  
-    $table.find('tbody > tr').remove()
+    minimize_table($table)
     replace_table_from_json($table, saved)
  
     ensure_five_blank($table)
-    table_initialize($table)
+    table_normalize($table)
  
     $table.trigger("table:global-recalc")
 }
@@ -384,14 +400,14 @@ function initialize($table) {
     $table.data('blank_row', $blank_row)
 
     // remove all other rows from table
-    $table.find('tbody > tr').remove()
+    minimize_table($table)
 }
  
 
 // processes all html table rows, saving to data(), saving data to 
 //   DataManager and formatting as necessary
 //
-function table_initialize($table) {
+function table_normalize($table) {
 
     const DM = new DataManager();
     $table.data('DM', DM)
@@ -420,14 +436,14 @@ function table_initialize($table) {
     update_alts($table)
 
     // push values from initial sheet into VALUES[0] MapScope
-    $headers.each(function(i, th) {
+//    $headers.each(function(i, th) {
 
-        let altnum = $(th).data('alt');
-        DM.populate_values_for_alt(altnum);
-    });
+//        let altnum = $(th).data('alt');
+//        DM.populate_values_for_alt(altnum);
+//    });
 
     // push formulas from initial sheet into FORMULAS Map, and recalc
-    DM.populate_formulas_and_units();
+//    DM.populate_formulas_and_units();
 
     ensure_five_blank($table)
     apply_draggable_rows($table)
@@ -698,6 +714,6 @@ function tbody_handlers($table) {
 
 }
 
-export { initialize, table_initialize, tbody_handlers, set_contenteditable_cols, update_alts, add_alt_column,
+export { initialize, table_normalize, tbody_handlers, set_contenteditable_cols, update_alts, add_alt_column,
          load_sheet, ensure_five_blank, row_is_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }
