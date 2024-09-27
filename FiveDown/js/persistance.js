@@ -116,9 +116,8 @@ function replace_table_from_json($table, data) {
     $res = $blank_row.find('.result')
     $resplus = $blank_row.find('.alt-add')
     $res.remove()
-    for (let i=0; i<altct; i++) {
+    for (let i=0; i<altct; i++) 
         $resplus.before($res.first().clone(true))
-    }
 
     // iterate over rows in source data
     //

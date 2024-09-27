@@ -44,66 +44,94 @@ function set_contenteditable_cols($row) {
     }
 }
 
+// add row to sheet
+//
+function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
+
+    let $blank = $table.data('blank_row').clone(true, true)
+
+    $blank.find('.desc').text(descr)
+    $blank.find('.name').text(name).data('prev-val', name)
+    $blank.find('.formula').text(formula).data('prev-val', formula)
+    $blank.find('.unit').text(unit).data('prev-val', unit)
+
+    let $results = $blank.find('.result')
+    if (results.length == 0)
+        results.length = $results.length
+    if ($results.length !== results.length) 
+        throw new Error(`results length mismatch ${$results.length} ${results.length}`)
+    results.forEach(function(val, i) {
+        let $td = $results.get(i)
+        $td.text(val || "").data('prev-val', val || "")
+        $td.data('alt', i);
+    })
+
+    if ($after) {
+        $after.after($blank)
+    }
+    else {
+        $table.find('tbody').append($blank)
+    }
+}
+
 // test that a row is blank
 //
 function row_is_blank($row) {
 
-    if ($row.length === 0) { return false }
+    if ($row.length === 0) 
+        return false 
     
-    let blank = (($row.find('.desc').text() == "")
+    let isBlank = (($row.find('.desc').text() == "")
                 &&  ($row.find('.name').text() == "")
                 &&  ($row.find('.formula').text() == "")
                 &&  ($row.find('.unit').text() == ""));
 
-    if (!blank) { return false }
+    if (!isBlank) 
+        return false 
 
     $row.find('.result').each(function(i, td) {
         if ($(td).find('span').text() !== "") {
-            blank = false;
+            isBlank = false;
         }
     })
-    return blank;
-}
-function rows_are_blank($rows) {
-
-    let fail = false;
-    $rows.each(function(i, row) {
-        if (!row_is_blank($(row))) { fail = true; }
-    })
-    return !fail;
+    return isBlank;
 }
 
 // ensures that the sheet ends with 5 blank rows.
 //
 function ensure_five_blank($table) {
 
-    let $blank_row = $table.data('blank_row')
-
     // pad to length 5
     let $lastfive = $table.find('tbody > tr').slice(-5);
     while ($lastfive.length < 5) {
-        let $br = $blank_row.clone(true)
-        $table.find('tbody').append($br);
+        add_row_to_sheet($table, null, "", "", "", [], "")
         $lastfive = $('tbody > tr').slice(-5);
     }
     
     // add blanks so that last five are blank
-    while (!rows_are_blank($lastfive)) {
-        let $br = $blank_row.clone(true)
-        $table.find('tbody').append($br);
-        $lastfive = $table.find('tbody > tr').slice(-5);
-    };
+    while (!row_is_blank($($lastfive.get(0)))
+        || !row_is_blank($($lastfive.get(1)))
+        || !row_is_blank($($lastfive.get(2)))
+        || !row_is_blank($($lastfive.get(3)))
+        || !row_is_blank($($lastfive.get(4))) ) {
+
+            add_row_to_sheet($table, null, "", "", "", [], "")
+            $lastfive = $table.find('tbody > tr').slice(-5);
+    }
+
     // prune off extra blanks at end
     if ($table.find('tbody > tr').length > 5) {
+
         let $sixth = $table.find('tbody > tr').slice(-6,-5);
         while (row_is_blank($sixth)) {
+
             let $tr = $table.find('tbody > tr').last()
             $tr.remove();
             $sixth = $table.find('tbody > tr').slice(-6,-5);
         };
     }
 
-    update_alts($table)
+    // update_alts($table)
 }
 
 // make all rows draggable to reorder
@@ -243,9 +271,8 @@ function remove_alt(evt) {
 
 // addalt_func - a handler for the add-alternate-result-column button
 //
-function addalt_func(evt) {
+function add_alt_column($table) {
 
-    let $table = evt.data
     remove_draggable_columns($table)
 
     // add additional header column, named Alt #
@@ -258,19 +285,20 @@ function addalt_func(evt) {
 
     // in each row, add one result column
     $table.find('tbody > tr').each(function (i, row) {
+
         let $last = $(row).find('td.result').last()
-        $last.after($last.clone(true));
+        $last.after($last.clone(true))
     });
 
     // in blank_row, add one result column
     let $blank_row = $table.data('blank_row')
     let $last = $blank_row.find('td.result').last()
-    $last.after($last.clone(true));
+    $last.after($last.clone(true))
 
-    update_alts($table);
+    update_alts($table)
     apply_draggable_columns($table)
 
-    $table.trigger("table:alt-update");
+    // $table.trigger("table:alt-update");
 }        
 
 // updates header to show Result, Result 1, Result 2 etc
@@ -345,13 +373,17 @@ function initialize($table) {
 
     // grab copy of first row, presumed blank.
     let $blank_row = $table.find('tbody > tr').first()
-    set_contenteditable_cols($blank_row)
     $blank_row.remove();
+
+    // initialize blank row
+    set_contenteditable_cols($blank_row)
     $blank_row.find('.result').data('alt', 0)
+
+    // store blank row in $table.data
     $table.data('blank_row', $blank_row)
 
+    // remove all other rows from table
     $table.find('tbody > tr').remove()
-
 }
 
 // processes all html table rows, saving to data(), saving data to 
@@ -409,19 +441,19 @@ function tbody_handlers($table) {
  
         remove_draggable_columns($table)
 
-        let $tr = $(evt.target).closest('tr');
-        let $tr2 = $tr.clone(true, true)
+        let $tr = $(evt.target).closest('tr')
         let name = $tr.find('td.name').text()
+        let descr = $tr.find('td.desc').text()
+        let formula = $tr.find('td.formula').text()
+        let unit = $tr.find('td.unit').text()
 
         if (name) {
 
             let DM = $table.data('DM')
             while (DM.VALUES[0].has(name)) 
                 name = name+'_';
-            $tr2.find('td.name').text(name)
-            $tr2.find('td.name').data('prev-val',name)
         }
-        $tr.after($tr2);
+        add_row_to_sheet($table, $tr, descr, name, formula, [], unit)
 
         apply_draggable_columns($table)
     });
@@ -434,8 +466,8 @@ function tbody_handlers($table) {
 
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('.name').text()
-        let DM = $table.data('DM')
         if (name) {
+            let DM = $table.data('DM')
             DM.remove_row(name) 
             $table.trigger('table:global-recalc')   
         }
@@ -516,7 +548,8 @@ function tbody_handlers($table) {
     $table.find('tbody').on('focusin', '.formula', function(evt) {
 
         let $td = $(evt.target);                    // $td is $<td>
-        if ($td.attr('contenteditable') == 'false') { return }
+        if ($td.attr('contenteditable') == 'false') 
+            return
         $td.text($td.data('value')).removeClass('convert')
     })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
@@ -551,8 +584,9 @@ function tbody_handlers($table) {
         if ($td.attr('contenteditable') == 'false') 
             return 
         if ($td.data('raw_input') !== undefined)
-            $td.text($td.data('raw_input'))
-    })
+            //$td.text($td.data('raw_input'))
+            $td.text($td.data('prev-val'))
+        })
     $table.find('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
@@ -568,7 +602,7 @@ function tbody_handlers($table) {
             return
 
         $t.data('prev-val', input_val)
-        $t.data('raw_input', input_val)
+        //$t.data('raw_input', input_val)
 
         let name = $tr.find('.name').text()
         let DM = $table.data('DM')
@@ -646,10 +680,13 @@ function tbody_handlers($table) {
     })
 
     // $table becomes available on event obj as evt.data
-    $table.find('thead').on('click', '.alt-add', $table, addalt_func);  
+    $table.find('thead').on('click', '.alt-add', function() {
+
+        $table.trigger('table:add-alt-column', [$table])
+    });  
 
 }
 
-export { initialize, table_initialize, tbody_handlers, set_contenteditable_cols, addalt_func, update_alts, 
-         load_sheet, ensure_five_blank, row_is_blank, rows_are_blank, 
+export { initialize, table_initialize, tbody_handlers, set_contenteditable_cols, update_alts, add_alt_column,
+         load_sheet, ensure_five_blank, row_is_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }

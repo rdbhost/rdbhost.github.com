@@ -1,7 +1,8 @@
 
 import { save_storable, get_storable, gather_storable } from './persistance.js'
 import { ensure_five_blank, initialize, load_sheet, tbody_handlers,
-    remove_draggable_rows, apply_draggable_rows } from './sheet.js'
+    remove_draggable_rows, apply_draggable_rows, 
+    add_alt_column} from './sheet.js'
 import { menu_initialize } from './menu.js';
 
 
@@ -41,6 +42,13 @@ function events_initialize($table) {
         console.log('row unit change '+unit)
         // let DM = $table.data('DM')
         setTimeout(function () {
+            $('table').trigger('table:global-recalc')
+        }, 0)
+    }).on('table:add-alt-column', function(event, $table) {
+        console.log('add alt column ')
+        // let DM = $table.data('DM')
+        setTimeout(function () {
+            add_alt_column($table)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on("table:alt-update", function() {
