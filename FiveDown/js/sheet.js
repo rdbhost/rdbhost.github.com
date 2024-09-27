@@ -60,8 +60,10 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
         results.length = $results.length
     if ($results.length !== results.length) 
         throw new Error(`results length mismatch ${$results.length} ${results.length}`)
+
     results.forEach(function(val, i) {
-        let $td = $results.get(i)
+
+        let $td = $($results.get(i))
         $td.text(val || "").data('prev-val', val || "")
         $td.data('alt', i);
     })
@@ -131,7 +133,6 @@ function ensure_five_blank($table) {
         };
     }
 
-    // update_alts($table)
 }
 
 // make all rows draggable to reorder
@@ -415,6 +416,8 @@ function table_initialize($table) {
         $form_cell.text(formula_formatter($form_cell.text()))
     })
 
+    update_alts($table)
+
     // push values from initial sheet into VALUES[0] MapScope
     $headers.each(function(i, th) {
 
@@ -447,13 +450,20 @@ function tbody_handlers($table) {
         let formula = $tr.find('td.formula').text()
         let unit = $tr.find('td.unit').text()
 
+        let res = $tr.find('td.result').map(function(i, td) { 
+            return $(td).text() 
+        }).get()
+
         if (name) {
 
             let DM = $table.data('DM')
             while (DM.VALUES[0].has(name)) 
                 name = name+'_';
+            add_row_to_sheet($table, $tr, descr, name, formula, res, unit)
+            DM.add_row(name, $tr.find('td.result'), $tr.find('td.unit'))
         }
-        add_row_to_sheet($table, $tr, descr, name, formula, [], unit)
+        else 
+            add_row_to_sheet($table, $tr, descr, "", "", [], "")    
 
         apply_draggable_columns($table)
     });
