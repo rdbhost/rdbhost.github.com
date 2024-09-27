@@ -386,6 +386,7 @@ function initialize($table) {
     // remove all other rows from table
     $table.find('tbody > tr').remove()
 }
+ 
 
 // processes all html table rows, saving to data(), saving data to 
 //   DataManager and formatting as necessary
