@@ -1,4 +1,4 @@
-/* Apply fonts and increase base font size */
+/* Base body styles */
 body {
 	font-family: 'Roboto', sans-serif;
 	font-size: 16px;
@@ -6,7 +6,7 @@ body {
 	background-color: #f0f4f8;
 }
 
-/* Set table width to 90% of its container */
+/* Container for the table */
 .outer-box {
 	margin-left: auto;
 	margin-right: auto;
@@ -14,58 +14,164 @@ body {
 	max-width: 100%;
 }
 
-/* Basic table styling */
+/* Table base styling with fade-in animation */
 table {
-	margin-top: 0;
+	margin-top: -1px;
 	width: 100%;
 	border: 1px solid #d1d5db;
 	background-color: #ffffff;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	border-radius: 0.75rem;
+	overflow: hidden;
+	position: relative;
+	z-index: 10;
+	animation: tableAppear 0.6s ease-out;
+}
+
+@keyframes tableAppear {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 /* Table header styling */
 thead {
-	border: 1px solid #d1d5db;
-	border-bottom: none;
-	background-color: #f3f4f6;
+	position: relative;
+	z-index: 15;
+	border-bottom: 2px solid #d1d5db;
 }
 
+/* Enhanced table header styles with centered text */
 th {
-	border: 1px solid #d1d5db;
-	padding: 1rem 1.25rem;
-	text-align: left;
-	font-size: 0.9375rem;
-	font-weight: 700;
+	background-color: #3b82f6;
+	font-size: 1rem;
+	font-weight: 600;
+	color: #ffffff;
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: #374151;
+	padding: 1rem 1.25rem;
+	text-align: center;
+	transition: all 0.3s ease;
+	position: relative;
+	border: 1px solid #d1d5db;
+	z-index: 16;
 }
 
+/* Hover effect for header cells */
+th:hover {
+	background-color: #2563eb;
+	transform: scale(1.05);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Keep description column left-aligned */
+th.description {
+	text-align: left;
+}
+
+/* Improved alignment for specific columns */
+th.result,
+th.formula,
+th.min,
+th.unit {
+	text-align: center;
+}
+
+/* Multi-line header text with ellipsis */
+th .header-text {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-height: 2.4em;
+}
+
+/* Sort indicator styles */
+th.sortable {
+	cursor: pointer;
+}
+
+th.sortable::after {
+	content: '↕';
+	position: absolute;
+	right: 0.5rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #ffffff;
+	font-size: 0.875rem;
+}
 /* Result column header styling */
 th.result {
 	position: relative;
 	cursor: move;
-	border-top-left-radius: 0.5rem;
-	border-top-right-radius: 0.5rem;
+	border-top-left-radius: 1rem;
+	border-top-right-radius: 1rem;
 	border: 1px solid #d1d5db;
-	background-color: #3b82f6;
+	background-color: #4f46e5;
 	padding: 0.75rem 1rem;
 	text-align: center;
 	font-weight: 600;
 	color: #ffffff;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	z-index: 17;
+	overflow: hidden;
+	transition: background-color 0.3s ease;
 }
 
-th.result:after {
+th.result:hover {
+	background-color: #4338ca;
+}
+
+/* Drag handle for result column */
+th.result:before {
 	content: '⋮⋮';
 	position: absolute;
-	right: 0.25rem;
+	left: 8px;
 	top: 50%;
 	transform: translateY(-50%);
-	color: #ffffff;
-	opacity: 0.7;
+	cursor: move;
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 14px;
+}
+
+/* Unit column styling */
+th.unit {
+	border-top-left-radius: 0.75rem;
+	overflow: hidden;
+	position: relative;
+	z-index: 16;
+	background-color: #4a86e8;
+	transition: background-color 0.3s ease;
+}
+
+th.unit:hover {
+	background-color: #3b74d9;
+}
+
+/* Unit column border overlay */
+th.unit::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	border-top-left-radius: 0.75rem;
+	pointer-events: none;
+	border: 1px solid #d1d5db;
+	z-index: 1;
+}
+
+th:last-child {
+	border-top-right-radius: 0.75rem;
 }
 
 /* Add column header styling */
@@ -73,24 +179,28 @@ th.alt-add {
 	position: relative;
 	width: 2.5rem;
 	cursor: pointer;
-	border-top-left-radius: 0.5rem;
-	border-top-right-radius: 0.5rem;
+	border-top-left-radius: 1rem;
+	border-top-right-radius: 1rem;
 	border: 1px solid #d1d5db;
-	background-color: #3b82f6;
+	background-color: #10b981;
 	padding: 0.75rem 1rem;
 	text-align: center;
 	font-weight: 600;
 	color: #ffffff;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
-	transition: background-color 0.2s, transform 0.2s;
+	transition: all 0.3s ease;
+	z-index: 17;
+	overflow: hidden;
 }
 
+/* Hover effect for add column header */
 th.alt-add:hover {
-	background-color: #2563eb;
-	transform: translateY(-2px);
+	background-color: #059669;
+	transform: translateY(-2px) scale(1.05);
 }
 
+/* Plus icon for add column header */
 th.alt-add:after {
 	content: '';
 	position: absolute;
@@ -105,20 +215,52 @@ th.alt-add:after {
 }
 
 /* Table body styling */
+tbody {
+	position: relative;
+	z-index: 5;
+}
+
 tbody tr {
 	border-bottom: 1px solid #d1d5db;
 }
 
+/* General cell styling with fade-in animation */
 td {
 	border: 1px solid #d1d5db;
 	padding: 1rem 1.25rem;
 	font-size: 0.9375rem;
 	font-weight: 500;
 	color: #1f2937;
+	animation: cellFade 0.3s ease-in-out;
+	transition: all 0.3s ease;
+}
+
+@keyframes cellFade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 td:not(.handle):not(.delete) {
 	text-align: left;
+}
+
+/* Hover effect for all cells */
+td:hover {
+	position: relative;
+	transform: scale(1.05);
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+td:hover:after {
+	content: '';
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	border: 2px solid #000000;
 }
 
 /* Handle column styling */
@@ -129,14 +271,15 @@ td.handle {
 	background-color: #f3f4f6;
 	padding: 0;
 	text-align: center;
-	transition: background-color 0.2s, transform 0.2s;
+	transition: all 0.3s ease;
 }
 
 td.handle:hover {
 	background-color: #e5e7eb;
-	transform: translateY(-2px);
+	transform: translateY(-2px) scale(1.05);
 }
 
+/* Handle icon */
 td.handle:before {
 	content: '';
 	display: flex;
@@ -157,14 +300,15 @@ td.delete {
 	background-color: #f3f4f6;
 	padding: 0;
 	text-align: center;
-	transition: background-color 0.2s, color 0.2s, transform 0.2s;
+	transition: all 0.3s ease;
 }
 
 td.delete:hover {
 	background-color: #fee2e2;
-	transform: translateY(-2px);
+	transform: translateY(-2px) scale(1.05);
 }
 
+/* Delete icon */
 td.delete:before {
 	content: '';
 	display: flex;
@@ -176,24 +320,11 @@ td.delete:before {
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: 24px;
-	transition: background-image 0.2s;
+	transition: background-image 0.3s;
 }
 
 td.delete:hover:before {
 	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='%23ef4444' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M368 368L144 144M368 144L144 368'/%3E%3C/svg%3E");
-}
-
-/* Hover effect for all cells */
-td:hover {
-	position: relative;
-}
-
-td:hover:after {
-	content: '';
-	pointer-events: none;
-	position: absolute;
-	inset: 0;
-	border: 2px solid #000000;
 }
 
 /* Input and textarea styling */
@@ -204,16 +335,29 @@ textarea {
 	border: 1px solid #d1d5db;
 	padding: 0.5rem 0.75rem;
 	font-family: 'Roboto Mono', monospace;
-	transition: all 0.15s;
+	transition: all 0.3s ease;
 }
 
 input:focus,
 textarea:focus {
 	border-color: #3b82f6;
 	box-shadow: 0 0 0 3px rgba(191, 219, 254, 0.5);
+	animation: inputFocus 0.8s ease-in-out;
 }
 
-/* Project menu styling with improved visual hierarchy */
+@keyframes inputFocus {
+	0% {
+		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5);
+	}
+	70% {
+		box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+	}
+}
+
+/* Project menu styling */
 .project-menu {
 	margin-bottom: 0;
 	display: flex;
@@ -221,14 +365,22 @@ textarea:focus {
 	border: 1px solid #d1d5db;
 	border-bottom: none;
 	background-color: #f9fafb;
-	padding: 0.75rem 0.75rem 0;
+	padding: 0.75rem 0.75rem 0.125rem;
+
+	position: relative;
+	z-index: 20;
+	border-top-left-radius: 0.75rem;
+	border-top-right-radius: 0.75rem;
+	flex-wrap: wrap;
+	justify-content: flex-start;
 }
 
+/* Individual tab styling in project menu */
 .project-menu span {
 	margin-right: 0.5rem;
-	cursor: pointer;
-	border-top-left-radius: 0.5rem;
-	border-top-right-radius: 0.5rem;
+	cursor: text;
+	border-top-left-radius: 1rem;
+	border-top-right-radius: 1rem;
 	border: 1px solid #d1d5db;
 	border-bottom: none;
 	background-color: #f3f4f6;
@@ -237,58 +389,117 @@ textarea:focus {
 	font-weight: 500;
 	color: #4b5563;
 	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	transition: all 0.3s ease;
+	transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	min-width: 100px;
 }
 
 .project-menu span:hover {
 	background-color: #e5e7eb;
-	transform: translateY(-2px);
+	transform: translateY(-3px);
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Active tab styling */
 .project-menu .active span {
-	background-color: #3b82f6; /* Keep blue background for active tab */
+	background-color: #2563eb;
 	color: #ffffff;
 	font-weight: 600;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
-	transform: translateY(0); /* Ensure active tab is flush with menu */
+	transform: translateY(-2px);
+	border-bottom: 2px solid #ffffff;
+	animation: activeTab 0.5s ease-out;
 }
 
-.project-menu span#new-sheet {
-	background-color: #10b981;
-	color: #ffffff;
+@keyframes activeTab {
+	0% {
+		transform: scale(1);
+	}
+	50% {
+		transform: scale(1.1);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+/* Editable tab focus state */
+.project-menu span:focus {
+	outline: 2px solid #3b82f6;
+	background-color: #ffffff;
+	color: #1f2937;
+}
+
+/* Sheet actions container */
+.sheet-actions {
+	display: flex;
+	align-items: center;
+	margin-left: auto;
+	padding-bottom: 0.75rem;
+}
+
+/* Delete and New sheet buttons */
+#delete-sheet,
+#new-sheet {
+	padding: 0.5rem 0.75rem;
+	margin-left: 0.75rem;
+	border-radius: 0.25rem;
+	font-size: 0.875rem;
+	cursor: pointer;
 	transition: all 0.3s ease;
+	border: none;
+	font-weight: 600;
 }
 
-.project-menu span#new-sheet:hover {
-	background-color: #059669;
+#delete-sheet {
+	background-color: #f3f4f6;
+	color: #ef4444;
+}
+
+#delete-sheet:hover {
+	background-color: #fee2e2;
 	transform: translateY(-2px);
 }
 
-/* Styles for unselected sheets */
-.project-menu span:not(.active) {
-	transform: translateY(2px);
+#new-sheet {
+	background-color: #d1fae5;
+	color: #10b981;
+	border: 1px solid #10b981;
+	border-radius: 0.525rem;
+}
+
+#new-sheet:hover {
+	background-color: #d1fae5;
+	transform: translateY(-2px);
 }
 
 .sheet-delete {
-	margin-left: 0.75rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	border: none;
+	border-radius: 50%;
 	color: #6b7280;
-	transition: color 0.3s ease;
+	font-size: 18px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	margin-left: 8px;
 }
 
 .sheet-delete:hover {
+	background-color: #fee2e2;
 	color: #ef4444;
 }
 
-/* Additional hover effects */
-.project-menu span:hover .sheet-delete {
-	color: #ef4444;
+.sheet-delete::before {
+	line-height: 1;
 }
-
-/* Ensure active tab is always on top */
-.project-menu .active {
-	z-index: 10;
+/* Styles for unselected sheets */
+.project-menu span:not(.active) {
+	transform: translateY(2px);
 }
 
 /* Result and formula cell styling */
@@ -302,18 +513,43 @@ td.formula {
 	white-space: nowrap;
 }
 
+/* Error styling for result cells with shake animation */
 td.result.error {
-	width: auto;
 	background-color: #fecaca;
-	font-weight: 600;
 	color: #b91c1c;
+	font-weight: 600;
+	white-space: normal;
+	overflow: visible;
+	animation: errorShake 0.6s ease-in-out;
 }
 
+@keyframes errorShake {
+	0%,
+	100% {
+		transform: translateX(0);
+	}
+	10%,
+	30%,
+	50%,
+	70%,
+	90% {
+		transform: translateX(-5px);
+	}
+	20%,
+	40%,
+	60%,
+	80% {
+		transform: translateX(5px);
+	}
+}
+
+/* Read-only cell styling */
 td.readonly {
 	background-color: #f3f4f6;
 	color: #4b5563;
 }
 
+/* Output cell styling */
 td.output {
 	background-color: #dcfce7;
 	font-weight: 600;
@@ -325,12 +561,56 @@ td.output {
 	cursor: pointer;
 	background-color: #dbeafe;
 	color: #1d4ed8;
-	transition: background-color 0.15s, transform 0.2s;
+	transition: all 0.3s ease;
 }
 
 .alt-add:hover {
 	background-color: #bfdbfe;
-	transform: translateY(-2px);
+	transform: translateY(-2px) scale(1.05);
+}
+
+/* Close button for result columns */
+.close-res {
+	cursor: pointer;
+	background: none;
+	border: none;
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 16px;
+	font-weight: bold;
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	transition: all 0.3s ease;
+	padding: 4px;
+	line-height: 1;
+}
+
+.close-res:hover {
+	color: #ffffff;
+	transform: translateY(-50%) scale(1.1);
+}
+
+/* Styles for specific columns */
+th.formula,
+th.min,
+th.unit,
+td.formula,
+td.min,
+td.unit {
+	position: relative;
+}
+
+th.formula:last-child,
+th.min:last-child,
+th.unit:last-child,
+tr:last-child td.formula:last-child,
+tr:last-child td.min:last-child,
+tr:last-child td.unit:last-child {
+	border-bottom-right-radius: 0.75rem;
+}
+th.formula {
+	border-top-right-radius: 0.75rem;
 }
 
 /* Responsive design for smaller screens */
@@ -342,5 +622,69 @@ td.output {
 	td,
 	th {
 		padding: 0.75rem 1rem;
+	}
+
+	.project-menu span {
+		padding: 0.5rem 0.75rem;
+		font-size: 0.875rem;
+	}
+
+	th.result,
+	th.alt-add {
+		padding: 0.5rem 0.75rem;
+	}
+
+	td.handle,
+	td.delete {
+		height: 2rem;
+		width: 2rem;
+	}
+
+	.close-res {
+		font-size: 14px;
+		right: 4px;
+	}
+
+	th .header-text {
+		-webkit-line-clamp: 1;
+		max-height: 1.2em;
+	}
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+	body {
+		background-color: #ffffff;
+	}
+
+	table,
+	th,
+	td {
+		border-color: #000000;
+	}
+
+	.project-menu span,
+	th.result,
+	th.alt-add {
+		border-color: #000000;
+		color: #ffffff;
+		background-color: #000000;
+	}
+
+	td.handle:hover,
+	td.delete:hover {
+		background-color: #e0e0e0;
 	}
 }
