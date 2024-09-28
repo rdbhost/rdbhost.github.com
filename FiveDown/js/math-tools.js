@@ -80,13 +80,12 @@ class MyMath {
 
     // expression_error checks formulas for parsing errors
     //
-    expression_error(expr) { 
+    expression_error(parsed) { 
 
       try {
 
-        let t = this.parse(expr, this.astf)
-        if (t?.name == 'Error') {
-          return t.message || "bad formula"
+        if (parsed?.name == 'Error') {
+          return parsed.message || "bad formula"
         }
         return false
       }

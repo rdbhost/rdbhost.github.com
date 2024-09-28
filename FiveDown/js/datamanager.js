@@ -205,7 +205,7 @@ class DataManager {
 
             // else if formula is invalid, put error message in first result column
             //   and clear other result columns
-            let errmsg = _this.math.expression_error(formula)
+            let errmsg = _this.math.expression_error(exp)
             if (errmsg) {
 
                 this.VALUES.forEach(function(scope, _i) { 
