@@ -1,3 +1,5 @@
+// import { binaryOps, unaryOps, ternaryOps, functions } from './numeric_operators.js'
+
 var INUMBER = 'INUMBER';
 var IOP1 = 'IOP1';
 var IOP2 = 'IOP2';
@@ -1415,24 +1417,12 @@ function log10(a) {
   return Math.log(a) * Math.LOG10E;
 }
 
-function neg(a) {
-  return -a;
-}
-
-function not(a) {
-  return !a;
-}
-
 function trunc(a) {
   return a < 0 ? Math.ceil(a) : Math.floor(a);
 }
 
 function random(a) {
   return Math.random() * (a || 1);
-}
-
-function factorial(a) { // a!
-  return gamma(a + 1);
 }
 
 function isInteger(value) {
@@ -1508,13 +1498,6 @@ function gamma(n) {
   return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
 }
 
-function stringOrArrayLength(s) {
-  if (Array.isArray(s)) {
-    return s.length;
-  }
-  return String(s).length;
-}
-
 function hypot() {
   var sum = 0;
   var larg = 0;
@@ -1547,24 +1530,6 @@ function condition(cond, yep, nope) {
 * @param {Integer} exp  The exponent (the 10 logarithm of the adjustment base).
 * @return {Number} The adjusted value.
 */
-function roundTo(value, exp) {
-  // If the exp is undefined or zero...
-  if (typeof exp === 'undefined' || +exp === 0) {
-    return Math.round(value);
-  }
-  value = +value;
-  exp = -(+exp);
-  // If the value is not a number or the exp is not an integer...
-  if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0)) {
-    return NaN;
-  }
-  // Shift
-  value = value.toString().split('e');
-  value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp)));
-  // Shift back
-  value = value.toString().split('e');
-  return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
-}
 
 function setVar(name, value, variables) {
   if (variables) variables[name] = value;
@@ -1573,22 +1538,6 @@ function setVar(name, value, variables) {
 
 function arrayIndex(array, index) {
   return array[index | 0];
-}
-
-function max(array) {
-  if (arguments.length === 1 && Array.isArray(array)) {
-    return Math.max.apply(Math, array);
-  } else {
-    return Math.max.apply(Math, arguments);
-  }
-}
-
-function min(array) {
-  if (arguments.length === 1 && Array.isArray(array)) {
-    return Math.min.apply(Math, array);
-  } else {
-    return Math.min.apply(Math, arguments);
-  }
 }
 
 function arrayMap(f, a) {
@@ -1635,14 +1584,6 @@ function stringOrArrayIndexOf(target, s) {
   return s.indexOf(target);
 }
 
-function arrayJoin(sep, a) {
-  if (!Array.isArray(a)) {
-    throw new Error('Second argument to join is not an array');
-  }
-
-  return a.join(sep);
-}
-
 function sign(x) {
   return ((x > 0) - (x < 0)) || +x;
 }
@@ -1664,94 +1605,20 @@ function log2(x) {
   return Math.log(x) / Math.LN2;
 }
 
-function Parser(options) {
+function Parser(options, unaryOps, binaryOps, ternaryOps, functions) {
+
   this.options = options || {};
-  this.unaryOps = {
-    sin: Math.sin,
-    cos: Math.cos,
-    tan: Math.tan,
-    asin: Math.asin,
-    acos: Math.acos,
-    atan: Math.atan,
-    sinh: Math.sinh || sinh,
-    cosh: Math.cosh || cosh,
-    tanh: Math.tanh || tanh,
-    asinh: Math.asinh || asinh,
-    acosh: Math.acosh || acosh,
-    atanh: Math.atanh || atanh,
-    sqrt: Math.sqrt,
-    cbrt: Math.cbrt || cbrt,
-    log: Math.log,
-    log2: Math.log2 || log2,
-    ln: Math.log,
-    lg: Math.log10 || log10,
-    log10: Math.log10 || log10,
-    expm1: Math.expm1 || expm1,
-    log1p: Math.log1p || log1p,
-    abs: Math.abs,
-    ceil: Math.ceil,
-    floor: Math.floor,
-    round: Math.round,
-    trunc: Math.trunc || trunc,
-    '-': neg,
-    '+': Number,
-    exp: Math.exp,
-    not: not,
-    length: stringOrArrayLength,
-    '!': factorial,
-    sign: Math.sign || sign
-  };
-
-  this.binaryOps = {
-    '+': add,
-    '-': sub,
-    '*': mul,
-    '/': div,
-    '%': mod,
-    '^': Math.pow,
-    '||': concat,
-    '==': equal,
-    '!=': notEqual,
-    '>': greaterThan,
-    '<': lessThan,
-    '>=': greaterThanEqual,
-    '<=': lessThanEqual,
-    and: andOperator,
-    or: orOperator,
-    'in': inOperator,
-    '=': setVar,
-    '[': arrayIndex
-  };
-
-  this.ternaryOps = {
-    '?': condition
-  };
-
-  this.functions = {
-    random: random,
-    fac: factorial,
-    min: min,
-    max: max,
-    hypot: Math.hypot || hypot,
-    pyt: Math.hypot || hypot, // backward compat
-    pow: Math.pow,
-    atan2: Math.atan2,
-    'if': condition,
-    gamma: gamma,
-    roundTo: roundTo,
-    map: arrayMap,
-    fold: arrayFold,
-    filter: arrayFilter,
-    indexOf: stringOrArrayIndexOf,
-    join: arrayJoin
-  };
+  this.unaryOps = unaryOps
+  this.binaryOps = binaryOps
+  this.ternaryOps = ternaryOps
+  this.functions = functions
 
   this.consts = {
     E: Math.E,
     PI: Math.PI,
     'true': true,
     'false': false
-  };
+  }
 }
 
 Parser.prototype.parse = function (expr) {
@@ -1772,7 +1639,8 @@ Parser.prototype.evaluate = function (expr, variables) {
   return this.parse(expr).evaluate(variables);
 };
 
-var sharedParser = new Parser();
+/*
+var sharedParser = new Parser({}, unaryOps, binaryOps, ternaryOps, functions)
 
 Parser.parse = function (expr) {
   return sharedParser.parse(expr);
@@ -1781,6 +1649,7 @@ Parser.parse = function (expr) {
 Parser.evaluate = function (expr, variables) {
   return sharedParser.parse(expr).evaluate(variables);
 };
+*/
 
 var optionNameMap = {
   '+': 'add',
