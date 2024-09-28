@@ -612,10 +612,15 @@ function tbody_handlers($table) {
         let $td = $(evt.target);                    // $td is $<td>
         if ($td.attr('contenteditable') == 'false') 
             return 
-        if ($td.data('raw_input') !== undefined)
-            //$td.text($td.data('raw_input'))
+
+        if ($td.data('prev-val') !== undefined) {
+
+            $td.data('polished', $td.text())
             $td.text($td.data('prev-val'))
-        })
+        }
+        else
+            $td.data('polished', '')
+    })
     $table.find('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
@@ -627,11 +632,13 @@ function tbody_handlers($table) {
             return
 
         let input_val = $t.text()
-        if ($t.data('prev-val') === input_val) 
+        if ($t.data('prev-val') === input_val) {
+
+            $t.text($t.data('polished'))
             return
+        }
 
         $t.data('prev-val', input_val)
-        //$t.data('raw_input', input_val)
 
         let name = $tr.find('.name').text()
         let DM = $table.data('DM')

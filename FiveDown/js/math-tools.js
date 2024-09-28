@@ -184,7 +184,7 @@ class MyMath {
     } 
     else {
 
-      return Number(d).toPrecision(3);
+      return Number(d).toPrecision(5);
     }
   }
 
