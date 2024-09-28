@@ -1,11 +1,28 @@
 <html>
 <head>
-    <script src="js/expr-eval/dist/numeric_operators.js" type="module"></script>
+    <!-- script src="js/expr-eval/dist/numeric_operators.js" type="module"></script -->
 </head>
     <script type="module">
         import { Parser, Expression } from "./js/expr-eval/dist/index.js"
-        import { unaryOps, binaryOps, ternaryOps, functions } from "./js/expr-eval/dist/numeric_operators.js"
-        const parser = new Parser({}, unaryOps, binaryOps, ternaryOps, functions)
+        import { unaryOps, binaryOps, ternaryOps, functions } from './js/expr-eval/dist/numeric_operators.js' 
+        
+        let parserOpts = {
+                operators: {
+                        concatenate: false,
+                        conditional: true,
+                        factorial: false,
+
+                        // Enable and, or, not, <, ==, !=, etc.
+                        logical: true,
+                        comparison: true,
+
+                        // Disable = operator
+                        'in': true,
+                        assignment: false
+                }
+        }
+
+        const parser = new Parser(parserOpts, unaryOps, binaryOps, ternaryOps, functions)
 
         debugger
     </script>
