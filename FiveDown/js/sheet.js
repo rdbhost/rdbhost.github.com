@@ -17,12 +17,14 @@ function set_contenteditable_cols($row) {
         $rcols = $row.find('.formula, .result, .unit');
 
     if (name == "") { // if name not given, formula and results noteditable
+
         $rcols.attr('contenteditable', 'false')
             .addClass('readonly')
         $row.find('.result, .unit').attr('tabindex', -1)      
         $formula.attr('tabindex', 0);
             
-    } else {    // if name provided, then formula and results are either/or
+    } 
+    else {    // if name provided, then formula and results are either/or
         
         $rcols.attr('contenteditable', 'true')
             .removeClass('output readonly').attr('tabindex', 0)
@@ -84,12 +86,12 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
         $td.data('alt', i);
     })
 
-    if ($after) {
+    if ($after) 
         $after.after($blank)
-    }
-    else {
+    
+    else 
         $table.find('tbody').append($blank)
-    }
+    
 }
 
 // test that a row is blank
@@ -436,14 +438,14 @@ function table_normalize($table) {
     update_alts($table)
 
     // push values from initial sheet into VALUES[0] MapScope
-//    $headers.each(function(i, th) {
+    $headers.each(function(i, th) {
 
-//        let altnum = $(th).data('alt');
-//        DM.populate_values_for_alt(altnum);
-//    });
+        let altnum = $(th).data('alt');
+        DM.populate_values_for_alt(altnum);
+    });
 
     // push formulas from initial sheet into FORMULAS Map, and recalc
-//    DM.populate_formulas_and_units();
+    DM.populate_formulas_and_units();
 
     ensure_five_blank($table)
     apply_draggable_rows($table)

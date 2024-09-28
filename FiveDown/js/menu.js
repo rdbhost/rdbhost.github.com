@@ -5,8 +5,12 @@ import { ensure_five_blank, table_normalize, load_sheet  } from './sheet.js'
 // processes sheet_name for display, retrieving a custom name if apropo
 //
 function display_sheet_name(name, titles) {
-    if (name in titles) { return titles[name] }
-    return name.replace('_', ' ').replace('s', 'S')
+    if (name in titles) 
+        return titles[name]
+    if (name.substring(0,5) == 'sheet')
+        name = name.replace('s', 'S')
+
+    return name.replace('_', ' ')
 }
 
 function set_sheet_name_active(current) {

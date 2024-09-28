@@ -3,6 +3,7 @@ import { DataManager } from './datamanager.js'
 import { result_formatter } from './math-tools.js'
 import { ValScope } from './scopes.js'
 import { set_contenteditable_cols } from './sheet.js'
+import { samples } from './samples.js'
 
 // gather_storable - iterates over html table, extracting data to store
 //   returns an array; each element is either null or an array
@@ -142,6 +143,8 @@ function replace_table_from_json($table, data) {
             else {
 
                 let $res = $new.find('.result')
+                if (other.length == 0)
+                    other.length = $res.length
                 if ($res.length !== other.length) 
                     throw new Error('result ct mismatch') 
                     
@@ -160,10 +163,14 @@ function replace_table_from_json($table, data) {
 //
 function get_storable(id) {
 
-    let d = window.localStorage.getItem(id)
-    if (d) {
+    let d = samples[id] 
+    if (d)
+        return d
+
+    d = window.localStorage.getItem(id)
+    if (d) 
         return JSON.parse(d)        
-    }
+
     return null
 }
 
@@ -173,6 +180,9 @@ function save_storable(id, data) {
 
     if (!id) 
         throw new Error('bad id ${id} in save_storable') 
+
+    if (id in samples)
+        return
 
     let j = JSON.stringify(data)
     window.localStorage.setItem(id, j)
@@ -192,7 +202,7 @@ function get_next_sheet_name() {
     throw new Error('no next sheet number found')
 }
 
-// get_all_sheet_names - gets a list of all sheet-names in localStorage
+// get_all_sheet_names - gets a list of all sheet-names in localStorage + samples
 //
 function get_all_sheet_names() {
 
@@ -203,6 +213,10 @@ function get_all_sheet_names() {
             names.push(window.localStorage.key(i))
         }
     }
+
+    let sampls = Object.keys(samples)
+    names = names.concat(sampls)
+
     return names
 }
 
@@ -210,8 +224,12 @@ function get_all_sheet_names() {
 //
 function remove_sheet_from_storage(sheet_id) {
 
+    if (sheet_id in samples)
+        return 
+
     if (!window.localStorage.getItem(sheet_id)) 
         throw new Error(`sheet ${sheet_id} not found in storage`) 
+
     let s = window.localStorage.removeItem(sheet_id)
 }
 
