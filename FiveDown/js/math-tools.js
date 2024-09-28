@@ -178,13 +178,13 @@ class MyMath {
 
       return d.toString()
     } 
-    else if (d === "") {
+    else if (d === "" || d === undefined) {
 
       return ""
     } 
     else {
 
-      return Number(d).toPrecision(3);
+      return Number(d).toPrecision(5);
     }
   }
 
