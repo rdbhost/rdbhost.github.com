@@ -6,16 +6,21 @@ const samples = {
     geometry: {
         "header": [null],
         "rows":   [null,
-                  ["Height","h","cm",[3]],
-                  ["Radius","rad","cm",[2.5]],
-                  ["Volume of Cylinder","vol","cm^3","h*3.14*rad*rad"],
-                  null
+                  ["Height", "h", "cm", [3]],
+                  ["Radius", "rad", "cm", [2.5]],
+                  ["Volume of Cylinder","vol", "cm^3", "h*3.14*rad*rad"],
+                  null,
+                  ["Sphere radius", "rad2", "cm", [5]],
+                  ["Volume of sphere", "sphere", "cm^3", "4/3*PI*rad2^3"],
+                  null,
+                  ["Dog bone volume", "dogbone", "cm^3", "sphere*2+vol"],
+                  null,
         ]
     },
     test: {
         "header": [null, null],
         "rows":   [null,
-                  ["======= This Worksheet can be modified, but not resaved.  Fiddle away", "", "", ""],
+                  ["======= This sheet can be modified, but not resaved.  Fiddle away", "", "", ""],
                   null,
                   ["Scalar",             "a", "",     [3, 2] ],
                   ["Measurement",        "b", "cm",   [2.02, 3.78] ],
