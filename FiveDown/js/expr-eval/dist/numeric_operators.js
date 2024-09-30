@@ -44,7 +44,7 @@ var binaryOps = {
     '@': (a,b) => dot_product(a,b),
     '/': (a,b) => a / b,
     '%': (a,b) => a % b,
-    '^': Math.pow,
+    '^': (a,b) => power(a,b),
     '==': (a,b) => a === b,
     '!=': (a,b) => a !== b,
     '>': (a,b) => a>b,
@@ -70,7 +70,7 @@ var functions = {
     min: min,
     max: max,
     hypot: Math.hypot,
-    pow: Math.pow,
+    pow: (a,b) => power(a,b),
     atan2: Math.atan2,
 //    'if': condition,
 //    gamma: gamma,
@@ -80,6 +80,13 @@ var functions = {
 //    filter: arrayFilter,
 //    indexOf: stringOrArrayIndexOf,
     join: arrayJoin
+}
+
+function power(a,b) {
+  let r = Math.pow(a,b)
+  if (Number.isNaN(r))
+    throw new Error(`bad arguments to ^ ${a} ${b}`)
+  return r
 }
 
 function factorial(a) { // a!

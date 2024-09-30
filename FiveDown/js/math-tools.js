@@ -79,8 +79,7 @@ class MyMath {
 
         // evaluate() with a scope object
         let result = syntree.evaluate(ObjectMapWrap(scope))
-        return result;
-
+        return Number.isNaN(result) ? new Error('bad evaluation') : result;
       } 
       catch (e) {
 
