@@ -169,4 +169,4 @@ class ValScope {
 };
 
 
-export { ValScope }
+export { ValScope, ObjectMapWrap }
