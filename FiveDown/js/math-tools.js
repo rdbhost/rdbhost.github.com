@@ -1,11 +1,31 @@
 
-import { parse as jexpr_parse, EvalAstFactory, UNARY_OPERATORS, BINARY_OPERATORS } from './jexpr.js'
+// import { parse as jexpr_parse, EvalAstFactory, UNARY_OPERATORS, BINARY_OPERATORS } from './jexpr.js'
+import { Parser, Expression } from "./expr-eval/dist/index.js"
+import { unaryOps, binaryOps, ternaryOps, functions } from './expr-eval/dist/numeric_operators.js' 
+import { ObjectMapWrap, ValScope } from './scopes.js'
+
+let parserOpts = {
+        operators: {
+                concatenate: false,
+                conditional: true,
+                factorial: false,
+
+                // Enable and, or, not, <, ==, !=, etc.
+                logical: true,
+                comparison: true,
+
+                // Disable = operator
+                'in': true,
+                assignment: false
+        }
+}
+
 
 class MyMath {
 
     constructor() {
 
-      this.astf = new EvalAstFactory(UNARY_OPERATORS, BINARY_OPERATORS)
+      this.parser = new Parser(parserOpts, unaryOps, binaryOps, ternaryOps, functions)
     }
 
     // evaluate_diagnostics, returns an Error object containing displayable message,
@@ -31,61 +51,57 @@ class MyMath {
       return new Error(`bad result ${result}`, {cause: []})
     }
 
-    evaluate(exp, scope) {
+    // parse - process the expression 'expr' into a syntax tree
+    //   returns either a syntax tree 'Expression' object, or an Error
+    //
+    parse (expr) {
+
+      try {
+
+        return this.parser.parse(expr)
+      }
+      catch( e ) {
+
+        //if (e.message.substr(-27) === ', was undefined (undefined)') 
+        //  return new Error(e.message.substr(0,e.message.length-27))
+
+        return new Error(e.message)
+      }
+    }
+
+    // evaluate the Expression object 'syntree' with the values in scope
+    //   returns a numerical result (scalar or vector), or an Error object
+    // 
+    evaluate(syntree, scope) {
       
       try {
 
         scope.reset_diagnostics()
 
         // evaluate() with a scope object
-        let result = exp.evaluate(scope);
-
-        // evaluater handles a variety of input issues by returning NaN, so
-        //  if we get a NaN, we inspect the scope records to diagnose reason
-        //
-        if ( !data_valid(result) ) {
-
-          let error = this.evaluate_diagnostics(scope, result)
-          return error
-        }          
-
+        let result = syntree.evaluate(ObjectMapWrap(scope))
         return result;
 
-      } catch (e) {
+      } 
+      catch (e) {
 
         // if the evaluation itself throws an Error, check for certain errors
-        if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
-          return new Error('formula seems incomplete')
+        //if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
+        //  return new Error('formula seems incomplete')
 
         let foundbad = scope.get_diagnostics().get('foundbad')
         return new Error(e.message, {cause: foundbad})
       }
     }
 
-    parse (expr) {
-
-      try {
-
-        // parse() returns the AST
-        return jexpr_parse(expr, this.astf);
-      }
-      catch( e ) {
-
-        if (e.message.substr(-27) === ', was undefined (undefined)') 
-          return new Error(e.message.substr(0,e.message.length-27))
-
-        return new Error(e.message)
-      }
-    }
-
     // expression_error checks formulas for parsing errors
     //
-    expression_error(parsed) { 
+    expression_error(syntree) { 
 
       try {
 
-        if (parsed?.name == 'Error') {
-          return parsed.message || "bad formula"
+        if (syntree?.name == 'Error') {
+          return syntree.message || "bad formula"
         }
         return false
       }
@@ -101,12 +117,15 @@ class MyMath {
     //
     data_input_evaluater(expr, scope) {
 
-      let exp = this.parse(expr)
-      let res = this.evaluate(exp, scope)
+      if (!expr)
+        return ""
 
-      if (typeof res === 'object' && res?.name === 'Error') 
+      let syntree = this.parse(expr)
+
+      if (typeof syntree === 'object' && syntree?.name === 'Error') 
         return new Error(expr)
       
+      let res = this.evaluate(syntree, scope)
       if (!data_valid(res)) 
         return new Error(expr)
 
@@ -159,7 +178,7 @@ class MyMath {
     }
   }
 
-  // formatter - formats data entered into result columns. returns formatted string
+  // formatter - formats data for display in result columns. returns formatted string
   //
   function result_formatter(d) {
 

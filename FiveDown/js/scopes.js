@@ -15,7 +15,7 @@ function ObjectMapWrap(map) {
           },
 
           set(target, prop, value) {
-              return target.set(prop, value)
+              throw new Error('evaluater shouldnt be setting values in ValScope')
           },
 
           has(target, prop) {
@@ -169,4 +169,4 @@ class ValScope {
 };
 
 
-export { ValScope }
+export { ValScope, ObjectMapWrap }

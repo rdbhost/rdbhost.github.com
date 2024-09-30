@@ -1,4 +1,3 @@
-// import { binaryOps, unaryOps, ternaryOps, functions } from './numeric_operators.js'
 
 var INUMBER = 'INUMBER';
 var IOP1 = 'IOP1';
@@ -914,10 +913,11 @@ TokenStream.prototype.isOperator = function () {
   var startPos = this.pos;
   var c = this.expression.charAt(this.pos);
 
-  if (c === '+' || c === '-' || c === '*' || c === '/' || c === '%' || c === '^' || c === '?' || c === ':' || c === '.') {
+  if (c === '+' || c === '-' || c === '*' || c === '/' || c === '%' 
+    || c === '^' || c === '?' || c === ':' || c === '.' || c === '@') {
     this.current = this.newToken(TOP, c);
   } else if (c === '∙' || c === '•') {
-    this.current = this.newToken(TOP, '*');
+    this.current = this.newToken(TOP, '@');
   } else if (c === '>') {
     if (this.expression.charAt(this.pos + 1) === '=') {
       this.current = this.newToken(TOP, '>=');
@@ -1205,7 +1205,7 @@ ParserState.prototype.parseAddSub = function (instr) {
   }
 };
 
-var TERM_OPERATORS = ['*', '/', '%'];
+var TERM_OPERATORS = ['*', '/', '%', '@']; // DVK what is this? why not + -
 
 ParserState.prototype.parseTerm = function (instr) {
   this.parseFactor(instr);
@@ -1323,6 +1323,7 @@ ParserState.prototype.parseMemberExpression = function (instr) {
   }
 };
 
+/*
 function add(a, b) {
   return Number(a) + Number(b);
 }
@@ -1521,7 +1522,7 @@ function hypot() {
 function condition(cond, yep, nope) {
   return cond ? yep : nope;
 }
-
+*/
 /**
 * Decimal adjustment of a number.
 * From @escopecz.
