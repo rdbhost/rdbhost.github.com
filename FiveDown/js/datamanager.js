@@ -1,8 +1,8 @@
 
 import { MyMath, name_valid } from './math-tools.js'
-import { MyUnits } from './unit-math.js'
+// import { MyUnits } from './unit-math.js'
 import { ValScope } /* , UnitScope } */ from './scopes.js'
-import { FunctionMap, UnitFunctionMap } from './functions.js'
+import { FunctionMap /*, UnitFunctionMap */ } from './functions.js'
 
 class DataManager {
 

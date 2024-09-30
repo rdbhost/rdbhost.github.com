@@ -2,7 +2,7 @@
 
 */
 
-import { unit } from './unit-math.js'
+// import { unit } from './unit-math.js'
 
 const FunctionMap = new Map([
 
@@ -51,6 +51,7 @@ const FunctionMap = new Map([
 
 ])
 
+/*
 const UnitFunctionMap = new Map([
 
     ['sin', (a) => unit(1)],
@@ -97,13 +98,13 @@ const UnitFunctionMap = new Map([
     ['E', (a) => unit(1)]
 
 ])
-
+*/
 function free_td(val) {
     let t = $('<td>')
     t.data('value', val)
     return t
 }
 
-export { FunctionMap, UnitFunctionMap }
+export { FunctionMap } //, UnitFunctionMap }
 
 

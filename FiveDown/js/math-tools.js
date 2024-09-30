@@ -1,5 +1,4 @@
 
-// import { parse as jexpr_parse, EvalAstFactory, UNARY_OPERATORS, BINARY_OPERATORS } from './jexpr.js'
 import { Parser, Expression } from "./expr-eval/dist/index.js"
 import { unaryOps, binaryOps, ternaryOps, functions } from './expr-eval/dist/numeric_operators.js' 
 import { ObjectMapWrap, ValScope } from './scopes.js'
