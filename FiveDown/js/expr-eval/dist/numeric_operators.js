@@ -53,10 +53,10 @@ var binaryOps = {
     '<=': (a,b) => a<=b,
     and: (a,b) => a && b,
     or: (a,b) => a || b,
-    '||': (a,b) => a.concat(b),
+//    '||': (a,b) => a.concat(b),
     'in': (a,b) => inOperator(a,b),
 //    '=': setVar,
-//    '[': arrayIndex
+    '[': arrayIndex
 }
 
 var ternaryOps = {
@@ -87,6 +87,19 @@ function power(a,b) {
   if (Number.isNaN(r))
     throw new Error(`bad arguments to ^ ${a} ${b}`)
   return r
+}
+
+function arrayIndex(array, index) {
+  return array[index | 0];
+}
+
+function contains(array, obj) {
+  for (var i = 0; i < array.length; i++) {
+    if (array[i] === obj) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function factorial(a) { // a!
@@ -128,6 +141,12 @@ function arrayJoin(sep, a) {
     return a.join(sep);
 }
   
+function inOperator(a, b) {
+  if (!Array.isArray(b))
+    throw new Error(`'in' operator needs a vector, not ${typeof b}`)
+  return contains(b, a);
+}
+
 function max(array) {
     if (arguments.length === 1 && Array.isArray(array)) {
       return Math.max.apply(Math, array);

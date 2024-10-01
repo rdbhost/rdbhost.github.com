@@ -193,8 +193,7 @@ class DataManager {
         }
 
         // if formula is blank, clear values
-        let exp = _this.math.parse(formula)
-        if (exp.type === 'Empty') {
+        if (formula === '') {
 
             this.VALUES.forEach(function(scope, _i) {
 
@@ -205,6 +204,7 @@ class DataManager {
 
             // else if formula is invalid, put error message in first result column
             //   and clear other result columns
+            let exp = _this.math.parse(formula)
             let errmsg = _this.math.expression_error(exp)
             if (errmsg) {
 

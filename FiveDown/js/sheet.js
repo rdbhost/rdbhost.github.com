@@ -586,10 +586,6 @@ function tbody_handlers($table) {
         let $td = $(evt.target);                    // t is $<td>
         let $tr = $td.closest('tr');
 
-        set_contenteditable_cols($tr)
-        if ($td.attr('contenteditable') == 'false') 
-            return 
-
         let formula = $td.text()
         $td.text(formula_formatter(formula))
         if ($td.attr('data-conversion'))
@@ -602,6 +598,11 @@ function tbody_handlers($table) {
             let name = $tr.find('td.name').text();
             $table.trigger("row:formula-change", [name, $td]);       
         } 
+
+        set_contenteditable_cols($tr)
+        //if ($td.attr('contenteditable') == 'false') 
+        //    return 
+
     })
 
     // handler on result cells pushes data changes into data() and calls

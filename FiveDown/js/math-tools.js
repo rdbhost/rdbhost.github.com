@@ -135,17 +135,21 @@ class MyMath {
   // test functions for validating some input forms
   //
 
+  let reserved_names = ['in', 'or', 'and', 'not']
   const re = new RegExp("^[a-zA-Z_$][a-zA-Z_$0-9]*$");
   function name_valid(name) {
-    return re.test(name)
+    return reserved_names.indexOf(name) === -1 && re.test(name)
   }
 
   function clean_name(name) {
 
     var nxt = name.replace(/[^a-zA-Z_$0-9]/gi, '_')
-    if (name.match(/^[0-9]/)) {
+    if (name.match(/^[0-9]/)) 
       nxt = '_'+nxt
-    }
+
+    if (reserved_names.indexOf(name) >= 0)
+      nxt = nxt+'_'
+    
     return nxt
   }
 
