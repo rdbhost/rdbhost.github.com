@@ -53,7 +53,7 @@ thead tr:first-child th:first-child {
 }
 
 thead tr:first-child th:last-child {
-	border-top-right-radius: 1rem;
+	border-top-right-radius: 0.75rem;
 }
 
 /* Enhanced table header styles with centered text */
@@ -514,11 +514,13 @@ textarea:focus {
 /* Result and formula cell styling */
 td.result,
 td.formula {
-	width: 10rem;
+	width: auto;
+	max-width: 200px;
 	color: #1e40af;
 	font-family: 'Roboto Mono', monospace;
-	overflow: hidden;
+	overflow: visible;
 	text-overflow: ellipsis;
+	word-wrap: break-word;
 	white-space: nowrap;
 }
 
@@ -530,6 +532,7 @@ td.result.error {
 	white-space: normal;
 	overflow: visible;
 	animation: errorShake 0.6s ease-in-out;
+	padding: 0.5rem 0.75rem;
 }
 
 @keyframes errorShake {
@@ -612,7 +615,9 @@ td.unit {
 
 th.formula:last-child,
 th.min:last-child,
-th.unit:last-child,
+th.unit:last-child {
+	border-top-right-radius: 0;
+}
 tr:last-child td.formula:last-child,
 tr:last-child td.min:last-child,
 tr:last-child td.unit:last-child {
