@@ -1,6 +1,31 @@
 // import { FunctionMap, UnitFunctionMap } from './functions.js'
 import { name_valid, result_formatter } from './math-tools.js'
-// import { conversion_factor, unit } from './unit-math.js'
+
+// ObjectMapWrap - wraps a Map object (including ValScope and UnitScope objects)
+//  to make members of the Map object accessible as simple object attributes
+//  work with ValScope and UnitScope objects
+//
+//  use like: do_something_with_object(ObjectMapWrap(new ValScope(...)))
+//
+function ObjectMapWrap(map) {
+
+  const handler = {
+          get(target, prop, receiver) {
+              return target.get(prop)
+          },
+
+          set(target, prop, value) {
+              throw new Error('evaluater shouldnt be setting values in ValScope')
+          },
+
+          has(target, prop) {
+              return target.has(p)
+          }
+  }
+
+  return new Proxy(map, handler)
+}
+
 
 // This is a fake Map object that uses name keys to track
 //   result cells (<td>s wrapped in jQuery objects), and get and set
@@ -94,7 +119,7 @@ class ValScope {
         td.addClass('error').removeAttr('title').removeClass('convert')
         td.data('value', value).data('prev-val', prev)
       }
-      else if (value === undefined) {
+      else if (value === undefined || Number.isNaN(value)) {
         td.text("")
         td.removeClass('error output').removeAttr('title').removeClass('convert')
         td.data('value', value).data('prev-val', prev)
@@ -144,4 +169,4 @@ class ValScope {
 };
 
 
-export { ValScope }
+export { ValScope, ObjectMapWrap }

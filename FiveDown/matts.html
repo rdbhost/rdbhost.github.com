@@ -1,0 +1,64 @@
+<html>
+<head>
+    <!-- script src="js/expr-eval/dist/numeric_operators.js" type="module"></script -->
+</head>
+    <script type="module">
+        import { Parser, Expression } from "./js/expr-eval/dist/index.js"
+        import { unaryOps, binaryOps, ternaryOps, functions } from './js/expr-eval/dist/numeric_operators.js' 
+        
+        let parserOpts = {
+                operators: {
+                        concatenate: false,
+                        conditional: true,
+                        factorial: false,
+
+                        // Enable and, or, not, <, ==, !=, etc.
+                        logical: true,
+                        comparison: true,
+
+                        // Disable = operator
+                        'in': true,
+                        assignment: false
+                }
+        }
+
+        const parser = new Parser(parserOpts, unaryOps, binaryOps, ternaryOps, functions)
+
+        function ObjectMapWrap(map) {
+
+            const handler = {
+
+                    get(target, prop, receiver) {
+
+                        return target.get(prop)
+                    },
+
+                    set(target, prop, value) {
+
+                        return target.set(prop, value)
+                    },
+
+                    has(target, prop) {
+
+                        return target.has(p)
+                    }
+            }
+
+            return new Proxy(map, handler)
+        }
+
+
+        let obj = {a:1, b:2}
+        let obj2 = new Map([['a',8],['b',2.5]])
+
+        let obj3 = ObjectMapWrap(obj2)
+
+        let e = parser.parse('a+2*b')
+        let r = e.evaluate(obj3)
+
+        debugger
+    </script>
+<body>
+
+</body>
+</html>

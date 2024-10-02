@@ -1,5 +1,5 @@
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name, formula_formatter } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter, result_formatter } from './math-tools.js'
 import { get_storable, replace_table_from_json } from './persistance.js';
 import { format_unit } from './unit-math.js';
 
@@ -17,12 +17,14 @@ function set_contenteditable_cols($row) {
         $rcols = $row.find('.formula, .result, .unit');
 
     if (name == "") { // if name not given, formula and results noteditable
+
         $rcols.attr('contenteditable', 'false')
             .addClass('readonly')
         $row.find('.result, .unit').attr('tabindex', -1)      
         $formula.attr('tabindex', 0);
             
-    } else {    // if name provided, then formula and results are either/or
+    } 
+    else {    // if name provided, then formula and results are either/or
         
         $rcols.attr('contenteditable', 'true')
             .removeClass('output readonly').attr('tabindex', 0)
@@ -44,66 +46,111 @@ function set_contenteditable_cols($row) {
     }
 }
 
+// minimize_table_results - removes all results columns beyond first, from header
+//  and blank_row.  also removes all rows (other than saved blank)
+//
+function minimize_table($table) {
+
+    let $header = $table.find('thead > tr')
+    let $excess = $header.find('th.result:not(:first)')
+    $excess.remove()
+
+    let $blank = $table.data('blank_row')
+    $excess = $blank.find('td.result:not(:first)')
+    $excess.remove()
+
+    $table.find('tbody > tr').remove()
+}
+
+// add row to sheet
+//
+function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
+
+    let $blank = $table.data('blank_row').clone(true, true)
+
+    $blank.find('.desc').text(descr)
+    $blank.find('.name').text(name).data('prev-val', name)
+    $blank.find('.formula').text(formula).data('prev-val', formula)
+    $blank.find('.unit').text(unit).data('prev-val', unit)
+
+    let $results = $blank.find('.result')
+    if (results.length == 0)
+        results.length = $results.length
+    if ($results.length !== results.length) 
+        throw new Error(`results length mismatch ${$results.length} ${results.length}`)
+
+    results.forEach(function(val, i) {
+
+        let $td = $($results.get(i))
+        $td.text(val || "").data('prev-val', val || "")
+        $td.data('alt', i);
+    })
+
+    if ($after) 
+        $after.after($blank)
+    
+    else 
+        $table.find('tbody').append($blank)
+    
+}
+
 // test that a row is blank
 //
 function row_is_blank($row) {
 
-    if ($row.length === 0) { return false }
+    if ($row.length === 0) 
+        return false 
     
-    let blank = (($row.find('.desc').text() == "")
+    let isBlank = (($row.find('.desc').text() == "")
                 &&  ($row.find('.name').text() == "")
                 &&  ($row.find('.formula').text() == "")
                 &&  ($row.find('.unit').text() == ""));
 
-    if (!blank) { return false }
+    if (!isBlank) 
+        return false 
 
     $row.find('.result').each(function(i, td) {
         if ($(td).find('span').text() !== "") {
-            blank = false;
+            isBlank = false;
         }
     })
-    return blank;
-}
-function rows_are_blank($rows) {
-
-    let fail = false;
-    $rows.each(function(i, row) {
-        if (!row_is_blank($(row))) { fail = true; }
-    })
-    return !fail;
+    return isBlank;
 }
 
 // ensures that the sheet ends with 5 blank rows.
 //
 function ensure_five_blank($table) {
 
-    let $blank_row = $table.data('blank_row')
-
     // pad to length 5
     let $lastfive = $table.find('tbody > tr').slice(-5);
     while ($lastfive.length < 5) {
-        let $br = $blank_row.clone(true)
-        $table.find('tbody').append($br);
+        add_row_to_sheet($table, null, "", "", "", [], "")
         $lastfive = $('tbody > tr').slice(-5);
     }
     
     // add blanks so that last five are blank
-    while (!rows_are_blank($lastfive)) {
-        let $br = $blank_row.clone(true)
-        $table.find('tbody').append($br);
-        $lastfive = $table.find('tbody > tr').slice(-5);
-    };
+    while (!row_is_blank($($lastfive.get(0)))
+        || !row_is_blank($($lastfive.get(1)))
+        || !row_is_blank($($lastfive.get(2)))
+        || !row_is_blank($($lastfive.get(3)))
+        || !row_is_blank($($lastfive.get(4))) ) {
+
+            add_row_to_sheet($table, null, "", "", "", [], "")
+            $lastfive = $table.find('tbody > tr').slice(-5);
+    }
+
     // prune off extra blanks at end
     if ($table.find('tbody > tr').length > 5) {
+
         let $sixth = $table.find('tbody > tr').slice(-6,-5);
         while (row_is_blank($sixth)) {
+
             let $tr = $table.find('tbody > tr').last()
             $tr.remove();
             $sixth = $table.find('tbody > tr').slice(-6,-5);
         };
     }
 
-    update_alts($table)
 }
 
 // make all rows draggable to reorder
@@ -243,9 +290,8 @@ function remove_alt(evt) {
 
 // addalt_func - a handler for the add-alternate-result-column button
 //
-function addalt_func(evt) {
+function add_alt_column($table) {
 
-    let $table = evt.data
     remove_draggable_columns($table)
 
     // add additional header column, named Alt #
@@ -258,19 +304,20 @@ function addalt_func(evt) {
 
     // in each row, add one result column
     $table.find('tbody > tr').each(function (i, row) {
+
         let $last = $(row).find('td.result').last()
-        $last.after($last.clone(true));
+        $last.after($last.clone(true))
     });
 
     // in blank_row, add one result column
     let $blank_row = $table.data('blank_row')
     let $last = $blank_row.find('td.result').last()
-    $last.after($last.clone(true));
+    $last.after($last.clone(true))
 
-    update_alts($table);
+    update_alts($table)
     apply_draggable_columns($table)
 
-    $table.trigger("table:alt-update");
+    // $table.trigger("table:alt-update");
 }        
 
 // updates header to show Result, Result 1, Result 2 etc
@@ -329,11 +376,11 @@ function load_sheet($table, sheet_name) {
     if (!saved) 
         throw new Error(`sheet ${sheet_name} not found in localStorage`) 
  
-    $table.find('tbody > tr').remove()
+    minimize_table($table)
     replace_table_from_json($table, saved)
  
     ensure_five_blank($table)
-    table_initialize($table)
+    table_normalize($table)
  
     $table.trigger("table:global-recalc")
 }
@@ -345,19 +392,24 @@ function initialize($table) {
 
     // grab copy of first row, presumed blank.
     let $blank_row = $table.find('tbody > tr').first()
-    set_contenteditable_cols($blank_row)
     $blank_row.remove();
+
+    // initialize blank row
+    set_contenteditable_cols($blank_row)
     $blank_row.find('.result').data('alt', 0)
+
+    // store blank row in $table.data
     $table.data('blank_row', $blank_row)
 
-    $table.find('tbody > tr').remove()
-
+    // remove all other rows from table
+    minimize_table($table)
 }
+ 
 
 // processes all html table rows, saving to data(), saving data to 
 //   DataManager and formatting as necessary
 //
-function table_initialize($table) {
+function table_normalize($table) {
 
     const DM = new DataManager();
     $table.data('DM', DM)
@@ -382,6 +434,8 @@ function table_initialize($table) {
         $form_cell.data('value', $form_cell.text())
         $form_cell.text(formula_formatter($form_cell.text()))
     })
+
+    update_alts($table)
 
     // push values from initial sheet into VALUES[0] MapScope
     $headers.each(function(i, th) {
@@ -409,19 +463,26 @@ function tbody_handlers($table) {
  
         remove_draggable_columns($table)
 
-        let $tr = $(evt.target).closest('tr');
-        let $tr2 = $tr.clone(true, true)
+        let $tr = $(evt.target).closest('tr')
         let name = $tr.find('td.name').text()
+        let descr = $tr.find('td.desc').text()
+        let formula = $tr.find('td.formula').text()
+        let unit = $tr.find('td.unit').text()
+
+        let res = $tr.find('td.result').map(function(i, td) { 
+            return $(td).text() 
+        }).get()
 
         if (name) {
 
             let DM = $table.data('DM')
             while (DM.VALUES[0].has(name)) 
                 name = name+'_';
-            $tr2.find('td.name').text(name)
-            $tr2.find('td.name').data('prev-val',name)
+            add_row_to_sheet($table, $tr, descr, name, formula, res, unit)
+            DM.add_row(name, $tr.find('td.result'), $tr.find('td.unit'))
         }
-        $tr.after($tr2);
+        else 
+            add_row_to_sheet($table, $tr, descr, "", "", [], "")    
 
         apply_draggable_columns($table)
     });
@@ -434,8 +495,8 @@ function tbody_handlers($table) {
 
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('.name').text()
-        let DM = $table.data('DM')
         if (name) {
+            let DM = $table.data('DM')
             DM.remove_row(name) 
             $table.trigger('table:global-recalc')   
         }
@@ -516,7 +577,8 @@ function tbody_handlers($table) {
     $table.find('tbody').on('focusin', '.formula', function(evt) {
 
         let $td = $(evt.target);                    // $td is $<td>
-        if ($td.attr('contenteditable') == 'false') { return }
+        if ($td.attr('contenteditable') == 'false') 
+            return
         $td.text($td.data('value')).removeClass('convert')
     })
     $table.find('tbody').on('focusout', '.formula', function(evt) {
@@ -524,8 +586,9 @@ function tbody_handlers($table) {
         let $td = $(evt.target);                    // t is $<td>
         let $tr = $td.closest('tr');
 
-        if ($td.attr('contenteditable') == 'false') { return }
         set_contenteditable_cols($tr)
+        if ($td.attr('contenteditable') == 'false') 
+            return 
 
         let formula = $td.text()
         $td.text(formula_formatter(formula))
@@ -535,8 +598,6 @@ function tbody_handlers($table) {
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
 
             $td.data("prev-val", formula).data('value', formula);  // store new formula in data
-            // let $res = $tr.find('td.result');
-            //$res.text('');                         // clear non-calced result value
 
             let name = $tr.find('td.name').text();
             $table.trigger("row:formula-change", [name, $td]);       
@@ -546,27 +607,42 @@ function tbody_handlers($table) {
     // handler on result cells pushes data changes into data() and calls
     //   for global recalc
     //   
+    $table.find('tbody').on('focusin', '.result', function(evt) {
+
+        let $td = $(evt.target);                    // $td is $<td>
+        if ($td.attr('contenteditable') == 'false') 
+            return 
+
+        if ($td.data('prev-val') !== undefined) {
+
+            $td.data('polished', $td.text())
+            $td.text($td.data('prev-val'))
+        }
+        else
+            $td.data('polished', '')
+    })
     $table.find('tbody').on('focusout', '.result', function(evt) {
 
         let $t = $(evt.target),
-            $tr = $t.closest('tr'),
-            name = $tr.find('.name').text()
+            $tr = $t.closest('tr')
 
         set_contenteditable_cols($tr)
 
-        if ($t.attr('contenteditable') === 'false') {
-            return;
+        if ($t.attr('contenteditable') === 'false') 
+            return
+
+        let input_val = $t.text()
+        if ($t.data('prev-val') === input_val) {
+
+            $t.text($t.data('polished'))
+            return
         }
 
+        $t.data('prev-val', input_val)
+
+        let name = $tr.find('.name').text()
         let DM = $table.data('DM')
         let scope = DM.VALUES[$t.data('alt')]
-        let input_val = $t.text()
-
-        if ($t.data('prev-val') === input_val) {
-            return
-        } else {
-            $t.data('prev-val', input_val)
-        }
 
         if (input_val === "") {
 
@@ -574,7 +650,6 @@ function tbody_handlers($table) {
         }
         else {
 
-            let DM = $table.data('DM')
             let res = DM.math.data_input_evaluater(input_val, scope)
             scope.set(name, res)
         }
@@ -641,10 +716,13 @@ function tbody_handlers($table) {
     })
 
     // $table becomes available on event obj as evt.data
-    $table.find('thead').on('click', '.alt-add', $table, addalt_func);  
+    $table.find('thead').on('click', '.alt-add', function() {
+
+        $table.trigger('table:add-alt-column', [$table])
+    });  
 
 }
 
-export { initialize, table_initialize, tbody_handlers, set_contenteditable_cols, addalt_func, update_alts, 
-         load_sheet, ensure_five_blank, row_is_blank, rows_are_blank, 
+export { initialize, table_normalize, tbody_handlers, set_contenteditable_cols, update_alts, add_alt_column,
+         load_sheet, ensure_five_blank, row_is_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }

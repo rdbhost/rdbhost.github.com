@@ -1,12 +1,16 @@
 import { save_storable, get_storable, gather_storable, replace_table_from_json, 
     get_next_sheet_name, get_all_sheet_names, remove_sheet_from_storage } from './persistance.js'
-import { ensure_five_blank, initialize, table_initialize, load_sheet  } from './sheet.js'
+import { ensure_five_blank, table_normalize, load_sheet  } from './sheet.js'
 
 // processes sheet_name for display, retrieving a custom name if apropo
 //
 function display_sheet_name(name, titles) {
-    if (name in titles) { return titles[name] }
-    return name.replace('_', ' ').replace('s', 'S')
+    if (name in titles) 
+        return titles[name]
+    if (name.substring(0,5) == 'sheet')
+        name = name.replace('s', 'S')
+
+    return name.replace('_', ' ')
 }
 
 function set_sheet_name_active(current) {
@@ -79,7 +83,7 @@ function menu_initialize(current) {
         // load sheet for new sheet chosen
         load_sheet($table, target_sheet)
 
-        console.log('sheet selected')
+        console.log(`sheet ${target_sheet} selected`)
         return false
     })
 
