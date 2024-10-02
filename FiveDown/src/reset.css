@@ -9,6 +9,10 @@
 	line-height: 1.5;
 	-webkit-tap-highlight-color: transparent;
 
+	/* Animation variables */
+	--animation-duration: 0.3s;
+	--animation-timing: ease-in-out;
+
 	/* Primary colors */
 	--color-primary: #3b82f6;
 	--color-primary-dark: #2563eb;

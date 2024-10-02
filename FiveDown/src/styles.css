@@ -345,13 +345,15 @@ textarea {
 	border: 1px solid var(--color-border);
 	padding: 0.5rem 0.75rem;
 	font-family: 'Roboto Mono', monospace;
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 }
 
 input:focus,
 textarea:focus {
 	border-color: var(--color-primary);
-	box-shadow: 0 0 0 3px var(--color-primary-light);
+	box-shadow: 0 0 0 3px var(--color-primary-light),
+		0 0 10px rgba(59, 130, 246, 0.5);
+	transform: scale(1.02);
 	animation: inputFocus 0.8s ease-in-out;
 }
 
@@ -628,6 +630,122 @@ tr:last-child td.unit:last-child {
 
 th.formula {
 	border-top-right-radius: 0.75rem;
+}
+
+/* Row animation styles */
+tbody > tr {
+	transition: all var(--animation-duration) var(--animation-timing);
+	opacity: 1;
+	max-height: 50px;
+	overflow: hidden;
+}
+
+@keyframes addRow {
+	from {
+		opacity: 0;
+		max-height: 0;
+		transform: translateY(-20px);
+	}
+	to {
+		opacity: 1;
+		max-height: 50px;
+		transform: translateY(0);
+	}
+}
+
+@keyframes removeRow {
+	from {
+		opacity: 1;
+		max-height: 50px;
+		transform: translateY(0);
+	}
+	to {
+		opacity: 0;
+		max-height: 0;
+		transform: translateY(-20px);
+	}
+}
+
+tbody > tr.row-add {
+	animation: addRow var(--animation-duration) var(--animation-timing);
+}
+
+tbody > tr.row-remove {
+	animation: removeRow var(--animation-duration) var(--animation-timing);
+}
+
+/* Drag and drop styles */
+tr.dragging {
+	opacity: 0.5;
+	background-color: var(--color-primary-light);
+	transform: scale(1.02);
+	transition: all var(--animation-duration) var(--animation-timing);
+}
+
+tr.drop-target {
+	border-top: 2px solid var(--color-primary);
+	transition: all var(--animation-duration) var(--animation-timing);
+}
+
+/* Column drag and drop styles */
+th.result.dragging {
+	opacity: 0.5;
+	background-color: var(--color-accent-blue-light);
+}
+
+th.result.drop-target::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background-color: var(--color-primary);
+}
+
+/* Formula change highlight */
+@keyframes formulaChange {
+	0%,
+	100% {
+		background-color: transparent;
+	}
+	50% {
+		background-color: var(--color-primary-light);
+	}
+}
+
+td.formula.changed {
+	animation: formulaChange 1s ease-in-out;
+}
+
+/* Value change highlight */
+@keyframes valueChange {
+	0%,
+	100% {
+		background-color: transparent;
+	}
+	50% {
+		background-color: var(--color-secondary-light);
+	}
+}
+
+td.result.changed {
+	animation: valueChange 1s ease-in-out;
+}
+
+/* Table switch animation */
+@keyframes tableSwitch {
+	0% {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+table.switching {
+	animation: tableSwitch 0.5s ease-out;
 }
 
 /* Responsive design for smaller screens */
