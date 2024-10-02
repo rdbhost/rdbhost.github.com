@@ -3,7 +3,7 @@ body {
 	font-family: 'Roboto', sans-serif;
 	font-size: 16px;
 	line-height: 1.6;
-	background-color: #f0f4f8;
+	background-color: var(--color-background);
 }
 
 /* Container for the table */
@@ -18,8 +18,8 @@ body {
 table {
 	margin-top: -1px;
 	width: 100%;
-	border: 1px solid #d1d5db;
-	background-color: #ffffff;
+	border: 1px solid var(--color-border);
+	background-color: var(--color-surface);
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	border-radius: 0.75rem;
@@ -44,7 +44,7 @@ table {
 thead {
 	position: relative;
 	z-index: 15;
-	border-bottom: 2px solid #d1d5db;
+	border-bottom: 2px solid var(--color-border);
 }
 
 /* Rounded corners for first and last header cells */
@@ -58,23 +58,23 @@ thead tr:first-child th:last-child {
 
 /* Enhanced table header styles with centered text */
 th {
-	background-color: #3b82f6;
+	background-color: var(--color-primary);
 	font-size: 1rem;
 	font-weight: 600;
-	color: #ffffff;
+	color: var(--color-surface);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
 	padding: 1rem 1.25rem;
 	text-align: center;
 	transition: all 0.3s ease;
 	position: relative;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--color-border);
 	z-index: 16;
 }
 
 /* Hover effect for header cells */
 th:hover {
-	background-color: #2563eb;
+	background-color: var(--color-primary-dark);
 	transform: scale(1.05);
 	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
 }
@@ -113,21 +113,22 @@ th.sortable::after {
 	right: 0.5rem;
 	top: 50%;
 	transform: translateY(-50%);
-	color: #ffffff;
+	color: var(--color-surface);
 	font-size: 0.875rem;
 }
+
 /* Result column header styling */
 th.result {
 	position: relative;
 	cursor: move;
 	border-top-left-radius: 1rem;
 	border-top-right-radius: 1rem;
-	border: 1px solid #d1d5db;
-	background-color: #4f46e5;
+	border: 1px solid var(--color-border);
+	background-color: var(--color-accent-blue);
 	padding: 0.75rem 1rem;
 	text-align: center;
 	font-weight: 600;
-	color: #ffffff;
+	color: var(--color-surface);
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	z-index: 17;
@@ -136,7 +137,7 @@ th.result {
 }
 
 th.result:hover {
-	background-color: #4338ca;
+	background-color: var(--color-accent-blue-dark);
 }
 
 /* Drag handle for result column */
@@ -157,12 +158,12 @@ th.unit {
 	overflow: hidden;
 	position: relative;
 	z-index: 16;
-	background-color: #4a86e8;
+	background-color: var(--color-primary);
 	transition: background-color 0.3s ease;
 }
 
 th.unit:hover {
-	background-color: #3b74d9;
+	background-color: var(--color-primary-dark);
 }
 
 /* Unit column border overlay */
@@ -175,7 +176,7 @@ th.unit::after {
 	left: 0;
 	border-top-left-radius: 0.75rem;
 	pointer-events: none;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--color-border);
 	z-index: 1;
 }
 
@@ -190,12 +191,12 @@ th.alt-add {
 	cursor: pointer;
 	border-top-left-radius: 1rem;
 	border-top-right-radius: 1rem;
-	border: 1px solid #d1d5db;
-	background-color: #10b981;
+	border: 1px solid var(--color-border);
+	background-color: var(--color-secondary);
 	padding: 0.75rem 1rem;
 	text-align: center;
 	font-weight: 600;
-	color: #ffffff;
+	color: var(--color-surface);
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	transition: all 0.3s ease;
@@ -205,7 +206,7 @@ th.alt-add {
 
 /* Hover effect for add column header */
 th.alt-add:hover {
-	background-color: #059669;
+	background-color: var(--color-secondary-dark);
 	transform: translateY(-2px) scale(1.05);
 }
 
@@ -230,16 +231,16 @@ tbody {
 }
 
 tbody tr {
-	border-bottom: 1px solid #d1d5db;
+	border-bottom: 1px solid var(--color-border);
 }
 
 /* General cell styling with fade-in animation */
 td {
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--color-border);
 	padding: 1rem 1.25rem;
 	font-size: 0.9375rem;
 	font-weight: 500;
-	color: #1f2937;
+	color: var(--color-text);
 	animation: cellFade 0.3s ease-in-out;
 	transition: all 0.3s ease;
 }
@@ -269,7 +270,7 @@ td:hover:after {
 	pointer-events: none;
 	position: absolute;
 	inset: 0;
-	border: 2px solid #000000;
+	border: 2px solid var(--color-text);
 }
 
 /* Handle column styling */
@@ -277,14 +278,14 @@ td.handle {
 	height: 2.5rem;
 	width: 2.5rem;
 	cursor: move;
-	background-color: #f3f4f6;
+	background-color: var(--color-handle);
 	padding: 0;
 	text-align: center;
 	transition: all 0.3s ease;
 }
 
 td.handle:hover {
-	background-color: #e5e7eb;
+	background-color: var(--color-handle-hover);
 	transform: translateY(-2px) scale(1.05);
 }
 
@@ -306,14 +307,14 @@ td.delete {
 	height: 2.5rem;
 	width: 2.5rem;
 	cursor: pointer;
-	background-color: #f3f4f6;
+	background-color: var(--color-handle);
 	padding: 0;
 	text-align: center;
 	transition: all 0.3s ease;
 }
 
 td.delete:hover {
-	background-color: #fee2e2;
+	background-color: var(--color-accent-red-light);
 	transform: translateY(-2px) scale(1.05);
 }
 
@@ -341,7 +342,7 @@ input,
 textarea {
 	width: 100%;
 	border-radius: 0.25rem;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--color-border);
 	padding: 0.5rem 0.75rem;
 	font-family: 'Roboto Mono', monospace;
 	transition: all 0.3s ease;
@@ -349,8 +350,8 @@ textarea {
 
 input:focus,
 textarea:focus {
-	border-color: #3b82f6;
-	box-shadow: 0 0 0 3px rgba(191, 219, 254, 0.5);
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-light);
 	animation: inputFocus 0.8s ease-in-out;
 }
 
@@ -371,11 +372,10 @@ textarea:focus {
 	margin-bottom: 0;
 	display: flex;
 	align-items: flex-end;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--color-border);
 	border-bottom: none;
-	background-color: #f9fafb;
+	background-color: var(--color-surface);
 	padding: 0.75rem 0.75rem 0.125rem;
-
 	position: relative;
 	z-index: 20;
 	border-top-left-radius: 0.75rem;
@@ -390,33 +390,33 @@ textarea:focus {
 	cursor: text;
 	border-top-left-radius: 1rem;
 	border-top-right-radius: 1rem;
-	border: 1px solid #d1d5db;
+	border: 1px solid var(--color-border);
 	border-bottom: none;
-	background-color: #f3f4f6;
+	background-color: var(--color-handle);
 	padding: 0.75rem 1.25rem;
 	font-size: 0.9375rem;
 	font-weight: 500;
-	color: #4b5563;
+	color: var(--color-text-light);
 	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 	transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 	min-width: 100px;
 }
 
 .project-menu span:hover {
-	background-color: #e5e7eb;
+	background-color: var(--color-handle-hover);
 	transform: translateY(-3px);
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 /* Active tab styling */
 .project-menu .active span {
-	background-color: #2563eb;
-	color: #ffffff;
+	background-color: var(--color-primary-dark);
+	color: var(--color-surface);
 	font-weight: 600;
 	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
 		0 2px 4px -2px rgba(0, 0, 0, 0.1);
 	transform: translateY(-2px);
-	border-bottom: 2px solid #ffffff;
+	border-bottom: 2px solid var(--color-surface);
 	animation: activeTab 0.5s ease-out;
 }
 
@@ -434,9 +434,9 @@ textarea:focus {
 
 /* Editable tab focus state */
 .project-menu span:focus {
-	outline: 2px solid #3b82f6;
-	background-color: #ffffff;
-	color: #1f2937;
+	outline: 2px solid var(--color-primary);
+	background-color: var(--color-surface);
+	color: var(--color-text);
 }
 
 /* Sheet actions container */
@@ -461,24 +461,24 @@ textarea:focus {
 }
 
 #delete-sheet {
-	background-color: #f3f4f6;
-	color: #ef4444;
+	background-color: var(--color-handle);
+	color: var(--color-accent-red);
 }
 
 #delete-sheet:hover {
-	background-color: #fee2e2;
+	background-color: var(--color-accent-red-light);
 	transform: translateY(-2px);
 }
 
 #new-sheet {
-	background-color: #d1fae5;
-	color: #10b981;
-	border: 1px solid #10b981;
+	background-color: var(--color-secondary-light);
+	color: var(--color-secondary);
+	border: 1px solid var(--color-secondary);
 	border-radius: 0.525rem;
 }
 
 #new-sheet:hover {
-	background-color: #d1fae5;
+	background-color: var(--color-secondary-light);
 	transform: translateY(-2px);
 }
 
@@ -491,7 +491,7 @@ textarea:focus {
 	background-color: transparent;
 	border: none;
 	border-radius: 50%;
-	color: #6b7280;
+	color: var(--color-text-light);
 	font-size: 18px;
 	cursor: pointer;
 	transition: all 0.2s ease;
@@ -499,13 +499,14 @@ textarea:focus {
 }
 
 .sheet-delete:hover {
-	background-color: #fee2e2;
-	color: #ef4444;
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
 }
 
 .sheet-delete::before {
 	line-height: 1;
 }
+
 /* Styles for unselected sheets */
 .project-menu span:not(.active) {
 	transform: translateY(2px);
@@ -516,7 +517,7 @@ td.result,
 td.formula {
 	width: auto;
 	max-width: 200px;
-	color: #1e40af;
+	color: var(--color-primary-dark);
 	font-family: 'Roboto Mono', monospace;
 	overflow: visible;
 	text-overflow: ellipsis;
@@ -526,8 +527,8 @@ td.formula {
 
 /* Error styling for result cells with shake animation */
 td.result.error {
-	background-color: #fecaca;
-	color: #b91c1c;
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
 	font-weight: 600;
 	white-space: normal;
 	overflow: visible;
@@ -557,27 +558,27 @@ td.result.error {
 
 /* Read-only cell styling */
 td.readonly {
-	background-color: #f3f4f6;
-	color: #4b5563;
+	background-color: var(--color-handle);
+	color: var(--color-text-light);
 }
 
 /* Output cell styling */
 td.output {
-	background-color: #dcfce7;
+	background-color: var(--color-output);
 	font-weight: 600;
-	color: #166534;
+	color: var(--color-output-text);
 }
 
 /* Alternate add button styling */
 .alt-add {
 	cursor: pointer;
-	background-color: #dbeafe;
-	color: #1d4ed8;
+	background-color: var(--color-primary-light);
+	color: var(--color-primary-dark);
 	transition: all 0.3s ease;
 }
 
 .alt-add:hover {
-	background-color: #bfdbfe;
+	background-color: var(--color-primary);
 	transform: translateY(-2px) scale(1.05);
 }
 
@@ -599,7 +600,7 @@ td.output {
 }
 
 .close-res:hover {
-	color: #ffffff;
+	color: var(--color-surface);
 	transform: translateY(-50%) scale(1.1);
 }
 
@@ -618,11 +619,13 @@ th.min:last-child,
 th.unit:last-child {
 	border-top-right-radius: 0;
 }
+
 tr:last-child td.formula:last-child,
 tr:last-child td.min:last-child,
 tr:last-child td.unit:last-child {
 	border-bottom-right-radius: 0.75rem;
 }
+
 th.formula {
 	border-top-right-radius: 0.75rem;
 }
@@ -679,26 +682,38 @@ th.formula {
 
 /* High contrast mode adjustments */
 @media (prefers-contrast: high) {
-	body {
-		background-color: #ffffff;
+	:root {
+		--color-primary: #000000;
+		--color-primary-dark: #000000;
+		--color-secondary: #000000;
+		--color-secondary-dark: #000000;
+		--color-background: #ffffff;
+		--color-surface: #ffffff;
+		--color-border: #000000;
+		--color-text: #000000;
+		--color-text-light: #000000;
+		--color-accent-blue: #000000;
+		--color-accent-blue-dark: #000000;
+		--color-handle: #ffffff;
+		--color-handle-hover: #e0e0e0;
 	}
 
 	table,
 	th,
 	td {
-		border-color: #000000;
+		border-color: var(--color-border);
 	}
 
 	.project-menu span,
 	th.result,
 	th.alt-add {
-		border-color: #000000;
-		color: #ffffff;
-		background-color: #000000;
+		border-color: var(--color-border);
+		color: var(--color-surface);
+		background-color: var(--color-text);
 	}
 
 	td.handle:hover,
 	td.delete:hover {
-		background-color: #e0e0e0;
+		background-color: var(--color-handle-hover);
 	}
 }
