@@ -514,9 +514,7 @@ textarea:focus {
 	transform: translateY(2px);
 }
 
-/* Styles for formula cells
-   - Limit width and use ellipsis for overflow
-   - Allow full content visibility on hover/focus */
+/* Styles for formula cells */
 td.formula {
 	width: auto;
 	max-width: 200px;
@@ -527,8 +525,7 @@ td.formula {
 	font-family: 'Roboto Mono', monospace;
 	transition: all 0.3s ease;
 }
-/* Show full formula content on hover/focus
-   - Ensure content is visible above other elements */
+
 td.formula:hover,
 td.formula:focus {
 	white-space: normal;
@@ -538,34 +535,54 @@ td.formula:focus {
 	background-color: var(--color-surface);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
-/* Styles for result cells
-   - Allow text wrapping and overflow visibility
-   - Maintain consistent styling with formula cells */
+/* Styles for result cells, including error cells */
 td.result {
 	width: auto;
 	max-width: 200px;
-	white-space: normal;
-	overflow: visible;
-	word-wrap: break-word;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 	color: var(--color-primary-dark);
 	font-family: 'Roboto Mono', monospace;
+	transition: all 0.3s ease;
+	height: 3em; /* Fixed height for all result cells */
+	line-height: 3em; /* Vertical centering for single line content */
 }
-
-/* Styles for error result cells
-   - Highlight errors with distinct background and text color
-   - Ensure full error message visibility */
-td.result.error {
-	background-color: var(--color-accent-red-light);
-	color: var(--color-accent-red);
-	font-weight: 600;
+/* Hover effect for error cells */
+td.result.error:hover {
 	white-space: normal;
 	overflow: visible;
-	word-wrap: break-word;
-	max-width: none;
-	width: auto;
+	height: auto;
+	min-height: 3em;
+	z-index: 10;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+/* Tooltip for error result cells */
+td.result.error::before {
+	content: attr(title);
+	position: absolute;
+	top: -30px;
+	left: 50%;
+	transform: translateX(-50%);
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
+	padding: 5px 10px;
+	border-radius: 4px;
+	font-size: 0.9em;
+	white-space: nowrap;
+	opacity: 0;
+	visibility: hidden;
+	transition: opacity 0.3s, visibility 0.3s;
+	z-index: 10;
 }
 
+/* Show tooltip on hover */
+td.result.error:hover::before {
+	opacity: 1;
+	visibility: visible;
+}
+
+/* Error shake animation */
 @keyframes errorShake {
 	0%,
 	100% {
@@ -584,6 +601,12 @@ td.result.error {
 	80% {
 		transform: translateX(5px);
 	}
+}
+
+td.result.error {
+	animation: errorShake 0.6s ease-in-out;
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
 }
 
 /* Read-only cell styling */
