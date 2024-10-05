@@ -519,8 +519,16 @@ td.result.error {
 	color: #b91c1c;
 	font-weight: 600;
 	white-space: normal;
-	overflow: visible;
 	animation: errorShake 0.6s ease-in-out;
+}
+td.error > div {
+	overflow: visible;
+	text-wrap: nowrap;
+	color: #b91c1c;
+	background: #fecacaca;
+	
+	position: absolute;
+	margin: -10px 0 0 0;
 }
 
 @keyframes errorShake {

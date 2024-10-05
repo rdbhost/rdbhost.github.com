@@ -63,23 +63,6 @@ class MyMath {
       }
     }
 
-    // expression_error checks formulas for parsing errors
-    //
-    expression_error(syntree) { 
-
-      try {
-
-        if (syntree?.name == 'Error') {
-          return syntree.message || "bad formula"
-        }
-        return false
-      }
-      catch (e) {
-
-        return 'bad formula'
-      }
-    } 
-
     // data_input_evaluater evaluates an expression with a scope, and returns
     //  either a valid expression (number, boolean, 2or3 element vector)
     //  or an Error object with the input text as it's message
@@ -92,11 +75,11 @@ class MyMath {
       let syntree = this.parse(expr)
 
       if (typeof syntree === 'object' && syntree?.name === 'Error') 
-        return new Error(expr)
+        return new Error(expr, {cause: 'bad-input'})
       
       let res = this.evaluate(syntree, scope)
       if (!data_valid(res)) 
-        return new Error(expr)
+        return new Error(expr, {cause: 'bad-input'})
 
       return res    
     }
@@ -105,7 +88,6 @@ class MyMath {
 
   // test functions for validating some input forms
   //
-
   let reserved_names = ['in', 'or', 'and', 'not']
   const re = new RegExp("^[a-zA-Z_$][a-zA-Z_$0-9]*$");
   function name_valid(name) {

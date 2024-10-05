@@ -57,7 +57,8 @@ class DataManager {
         else {
             need_update = true;
 
-            if (!name_valid(now)) throw new Error(`invalid name ${now}`) 
+            if (!name_valid(now)) 
+                throw new Error(`invalid name ${now}`) 
 
             if (this.FORMULAS.has(prev)) {
                 let tmp = this.FORMULAS.get(prev);
@@ -186,7 +187,8 @@ class DataManager {
         let _this = this
         let formula = $formulaTd.data('value')
 
-        if (!name_valid(name)) throw new Error(`Error - invalid name ${name}`) 
+        if (!name_valid(name)) 
+            throw new Error(`Error - invalid name ${name}`) 
         
         if (this.FORMULAS.has(name)) {
             this.FORMULAS.delete(name);
@@ -205,13 +207,12 @@ class DataManager {
             // else if formula is invalid, put error message in first result column
             //   and clear other result columns
             let exp = _this.math.parse(formula)
-            let errmsg = _this.math.expression_error(exp)
-            if (errmsg) {
+            if (typeof exp === 'object' && exp.name === 'Error') {
 
                 this.VALUES.forEach(function(scope, _i) { 
                     scope.set(name, "") 
                 })
-                this.VALUES[0].set(name, new Error(errmsg))
+                this.VALUES[0].set(name, exp)
      //           this.UNITS.set(name, "") 
             } 
             
@@ -223,13 +224,6 @@ class DataManager {
     
                     let res = _this.math.evaluate(exp, scope);
                     scope.set(name, res);
-
-                    if (res.cause && res.cause.length) {
-                        res.cause.forEach(function(key) {
-                            let badsrc = scope.getItem(key)
-                            badsrc.addClass('error')
-                        })
-                    }
                 })
     //            let untexp = _this.unit.parse(formula)
     //            let unit = _this.unit.evaluate(untexp, this.UNITS)
