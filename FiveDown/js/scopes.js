@@ -36,8 +36,6 @@ class ValScope {
     constructor (maptype) {
 
       this.localScope = new Map(maptype)
-      this.diagnostics = undefined 
-      this.reset_diagnostics()
     }
   
     // add adds a key and cell pair
@@ -160,13 +158,7 @@ class ValScope {
       return this.diagnostics
     }
 
-    reset_diagnostics() {
-
-      const input = [['missing', []],
-                     ['foundbad', []]]
-      this.diagnostics = new Map(input)
-    }
-};
+}
 
 
 export { ValScope, ObjectMapWrap }

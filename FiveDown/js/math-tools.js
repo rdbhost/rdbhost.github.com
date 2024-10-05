@@ -27,29 +27,6 @@ class MyMath {
       this.parser = new Parser(parserOpts, unaryOps, binaryOps, ternaryOps, functions)
     }
 
-    // evaluate_diagnostics, returns an Error object containing displayable message,
-    //  as well as a 'cause' element containing list of bad source items
-    //
-    evaluate_diagnostics (scope, result) {
-
-      // if scope recorded any key misses, report one of them
-      let missing = scope.get_diagnostics().get('missing')
-      if (missing.length) {
-
-        let first = missing[0]
-        return new Error(`${first} is not available`, {cause: []})
-      }
-      // else if scope recorded any Error object retrievals, report one
-      let foundbad = scope.get_diagnostics().get('foundbad')
-      if (foundbad.length) {
-
-        let first = foundbad[0]
-        return new Error(`${first} is not valid`, {cause: foundbad})
-      }
-
-      return new Error(`bad result ${result}`, {cause: []})
-    }
-
     // parse - process the expression 'expr' into a syntax tree
     //   returns either a syntax tree 'Expression' object, or an Error
     //
@@ -61,10 +38,7 @@ class MyMath {
       }
       catch( e ) {
 
-        //if (e.message.substr(-27) === ', was undefined (undefined)') 
-        //  return new Error(e.message.substr(0,e.message.length-27))
-
-        return new Error(e.message)
+        return new Error(e.message, {cause: "bad-formula"})
       }
     }
 
@@ -74,8 +48,6 @@ class MyMath {
     evaluate(syntree, scope) {
       
       try {
-
-        scope.reset_diagnostics()
 
         // evaluate() with a scope object
         let result = syntree.evaluate(ObjectMapWrap(scope))
@@ -87,8 +59,7 @@ class MyMath {
         //if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
         //  return new Error('formula seems incomplete')
 
-        let foundbad = scope.get_diagnostics().get('foundbad')
-        return new Error(e.message, {cause: foundbad})
+        return new Error(e.message, {cause: "evaluation-error"})
       }
     }
 
