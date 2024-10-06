@@ -1,5 +1,4 @@
 
-// import { parse as jexpr_parse, EvalAstFactory, UNARY_OPERATORS, BINARY_OPERATORS } from './jexpr.js'
 import { Parser, Expression } from "./expr-eval/dist/index.js"
 import { unaryOps, binaryOps, ternaryOps, functions } from './expr-eval/dist/numeric_operators.js' 
 import { ObjectMapWrap, ValScope } from './scopes.js'
@@ -28,29 +27,6 @@ class MyMath {
       this.parser = new Parser(parserOpts, unaryOps, binaryOps, ternaryOps, functions)
     }
 
-    // evaluate_diagnostics, returns an Error object containing displayable message,
-    //  as well as a 'cause' element containing list of bad source items
-    //
-    evaluate_diagnostics (scope, result) {
-
-      // if scope recorded any key misses, report one of them
-      let missing = scope.get_diagnostics().get('missing')
-      if (missing.length) {
-
-        let first = missing[0]
-        return new Error(`${first} is not available`, {cause: []})
-      }
-      // else if scope recorded any Error object retrievals, report one
-      let foundbad = scope.get_diagnostics().get('foundbad')
-      if (foundbad.length) {
-
-        let first = foundbad[0]
-        return new Error(`${first} is not valid`, {cause: foundbad})
-      }
-
-      return new Error(`bad result ${result}`, {cause: []})
-    }
-
     // parse - process the expression 'expr' into a syntax tree
     //   returns either a syntax tree 'Expression' object, or an Error
     //
@@ -62,10 +38,7 @@ class MyMath {
       }
       catch( e ) {
 
-        //if (e.message.substr(-27) === ', was undefined (undefined)') 
-        //  return new Error(e.message.substr(0,e.message.length-27))
-
-        return new Error(e.message)
+        return new Error(e.message, {cause: "bad-formula"})
       }
     }
 
@@ -76,12 +49,9 @@ class MyMath {
       
       try {
 
-        scope.reset_diagnostics()
-
         // evaluate() with a scope object
         let result = syntree.evaluate(ObjectMapWrap(scope))
-        return result;
-
+        return Number.isNaN(result) ? new Error('bad evaluation') : result;
       } 
       catch (e) {
 
@@ -89,27 +59,9 @@ class MyMath {
         //if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
         //  return new Error('formula seems incomplete')
 
-        let foundbad = scope.get_diagnostics().get('foundbad')
-        return new Error(e.message, {cause: foundbad})
+        return new Error(e.message, {cause: "evaluation-error"})
       }
     }
-
-    // expression_error checks formulas for parsing errors
-    //
-    expression_error(syntree) { 
-
-      try {
-
-        if (syntree?.name == 'Error') {
-          return syntree.message || "bad formula"
-        }
-        return false
-      }
-      catch (e) {
-
-        return 'bad formula'
-      }
-    } 
 
     // data_input_evaluater evaluates an expression with a scope, and returns
     //  either a valid expression (number, boolean, 2or3 element vector)
@@ -123,11 +75,11 @@ class MyMath {
       let syntree = this.parse(expr)
 
       if (typeof syntree === 'object' && syntree?.name === 'Error') 
-        return new Error(expr)
+        return new Error(expr, {cause: 'bad-input'})
       
       let res = this.evaluate(syntree, scope)
       if (!data_valid(res)) 
-        return new Error(expr)
+        return new Error(expr, {cause: 'bad-input'})
 
       return res    
     }
@@ -136,18 +88,21 @@ class MyMath {
 
   // test functions for validating some input forms
   //
-
+  let reserved_names = ['in', 'or', 'and', 'not']
   const re = new RegExp("^[a-zA-Z_$][a-zA-Z_$0-9]*$");
   function name_valid(name) {
-    return re.test(name)
+    return reserved_names.indexOf(name) === -1 && re.test(name)
   }
 
   function clean_name(name) {
 
     var nxt = name.replace(/[^a-zA-Z_$0-9]/gi, '_')
-    if (name.match(/^[0-9]/)) {
+    if (name.match(/^[0-9]/)) 
       nxt = '_'+nxt
-    }
+
+    if (reserved_names.indexOf(name) >= 0)
+      nxt = nxt+'_'
+    
     return nxt
   }
 

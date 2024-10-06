@@ -1383,10 +1383,6 @@ function orOperator(a, b) {
   return Boolean(a || b);
 }
 
-function inOperator(a, b) {
-  return contains(b, a);
-}
-
 function sinh(a) {
   return ((Math.exp(a) - Math.exp(-a)) / 2);
 }
@@ -1531,7 +1527,7 @@ function condition(cond, yep, nope) {
 * @param {Integer} exp  The exponent (the 10 logarithm of the adjustment base).
 * @return {Number} The adjusted value.
 */
-
+/*
 function setVar(name, value, variables) {
   if (variables) variables[name] = value;
   return value;
@@ -1588,7 +1584,7 @@ function stringOrArrayIndexOf(target, s) {
 function sign(x) {
   return ((x > 0) - (x < 0)) || +x;
 }
-
+*/
 var ONE_THIRD = 1/3;
 function cbrt(x) {
   return x < 0 ? -Math.pow(-x, ONE_THIRD) : Math.pow(x, ONE_THIRD);
@@ -1639,6 +1635,11 @@ Parser.prototype.parse = function (expr) {
 Parser.prototype.evaluate = function (expr, variables) {
   return this.parse(expr).evaluate(variables);
 };
+
+function inOperator(a, b) {
+  return contains(b, a);
+}
+
 
 /*
 var sharedParser = new Parser({}, unaryOps, binaryOps, ternaryOps, functions)
