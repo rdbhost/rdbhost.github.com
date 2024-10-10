@@ -22,79 +22,275 @@ function getType(a) {
   throw new Error('bad input ${a}')
 }
 
+function validateTypes(types, okTypes) {
+
+  if (!Array.isArray(types))
+    types = [types,]
+  if (!Array.isArray(okTypes))
+    throw new Error(`not an array: ${okTypes}`)
+  types.forEach(function(t) {
+    if (okTypes.indexOf(t) === -1)
+      throw new Error(`data provided with ineligible type ${t}`)
+  })
+}
+
 var unaryOps = {
 
-    sin: function(a) { return Math.sin(a) },
-    cos: function(a) { return Math.cos(a) },
-    tan: function(a) { return Math.tan(a) },
-    asin: function(a) { return Math.asin(a) },
-    acos: function(a) { return Math.acos(a) },
-    atan: function(a) { return Math.atan(a) },
-    sinh: function(a) { return Math.sinh(a) },
-    cosh: function(a) { return Math.cosh(a) },
-    tanh: function(a) { return Math.tanh(a) },
-    asinh: function(a) { return Math.asinh(a) },
-    acosh: function(a) { return Math.acosh(a) },
-    atanh: function(a) { return Math.atanh(a) },
-    sqrt: function(a) { return Math.sqrt(a) },
-    cbrt: function(a) { return Math.cbrt(a) },
-    log: function(a) { return Math.log(a) },
-    log2: function(a) { return Math.log2(a) },
-    ln: function(a) { return Math.log(a) },
-    lg: function(a) { return Math.log10(a) },
-    log10: function(a) { return Math.log10(a) },
-    expm1: function(a) { return Math.expm1(a) },
-    log1p: function(a) { return Math.log1p(a) },
-    abs: function(a) { return Math.abs(a) },
-    ceil: function(a) { return Math.ceil(a) },
-    floor: function(a) { return Math.floor(a) },
-    round: function(a) { return Math.round(a) },
-    trunc: function(a) { return Math.trunc(a) },
-    '-': function(a) { return -1 * a },
-    '+': function(a) { return 1 * a },
-    exp: function(a) { return Math.exp(a) },
-    not: (x) => !x,
-    length: function(x) { return stringOrArrayLength(x) },
-    '!': function(x) { return factorial(x) },
-    sign: function(x) { return Math.sign(x) }
+    sin: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.sin(a) 
+    },
+    cos: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.cos(a) 
+    },
+    tan: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.tan(a) 
+    },
+    asin: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.asin(a) 
+    },
+    acos: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.acos(a) 
+    },
+    atan: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.atan(a) 
+    },
+    sinh: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.sinh(a) 
+    },
+    cosh: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.cosh(a) 
+    },
+    tanh: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.tanh(a) 
+    },
+    asinh: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.asinh(a) 
+    },
+    acosh: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.acosh(a) 
+    },
+    atanh: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.atanh(a) 
+    },
+    sqrt: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.sqrt(a) 
+    },
+    cbrt: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.cbrt(a) 
+    },
+    log: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.log(a) 
+    },
+    log2: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.log2(a) 
+    },
+    ln: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.log(a) 
+    },
+    lg: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.log10(a) 
+    },
+    log10: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.log10(a) 
+    },
+    expm1: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.expm1(a) 
+    },
+    log1p: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.log1p(a) 
+    },
+    abs: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.abs(a) 
+    },
+    ceil: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.ceil(a) 
+    },
+    floor: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.floor(a) 
+    },
+    round: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.round(a) 
+    },
+    trunc: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.trunc(a) 
+    },
+    '-': function(a) { 
+      validateTypes(getType(a), ['number'])
+      return -1 * a 
+    },
+    '+': function(a) { 
+      validateTypes(getType(a), ['number'])
+      return 1 * a 
+    },
+    exp: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return Math.exp(a) 
+    },
+    not: function(x) {
+      validateTypes(getType(a), ['boolean'])
+      return !x
+    },
+    length: function(x) { 
+      validateTypes(getType(a), ['vector'])
+      return stringOrArrayLength(x) 
+    },
+    '!': function(x) { 
+      validateTypes(getType(a), ['number'])
+      return factorial(x) 
+    },
+    sign: function(x) { 
+      validateTypes(getType(a), ['number'])
+      return Math.sign(x) 
+    }
 }
 
 var binaryOps = {
 
-    '+': (a,b) => add(a,b),
-    '-': (a,b) => subtract(a,b),
-    '*': (a,b) => product(a,b),
-    '@': (a,b) => dot_product(a,b),
-    '/': (a,b) => a / b,
-    '%': (a,b) => a % b,
-    '^': (a,b) => power(a,b),
-    '==': (a,b) => a === b,
-    '!=': (a,b) => a !== b,
-    '>': (a,b) => a>b,
-    '<': (a,b) => a<b,
-    '>=': (a,b) => a>=b,
-    '<=': (a,b) => a<=b,
-    and: (a,b) => a && b,
-    or: (a,b) => a || b,
-//    '||': (a,b) => a.concat(b),
-    'in': (a,b) => inOperator(a,b),
+    '+': function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return add(a,b) 
+    },
+    '-': function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return subtract(a,b) 
+    },
+    '*': function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return product(a,b) 
+    },
+    '@': function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return dot_product(a,b) 
+    },
+    '/': function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return a / b 
+    },
+    '%': function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return a % b 
+    },
+    '^': function(a,b) {
+      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      return Math.pow(a,b)
+    },
+    '==': function(a,b) { 
+      let ta = getType(a),
+          tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta !== tb)
+        throw new Error(`both arguments to == must be vector, or both numbers`)
+      return a === b 
+    },
+    '!=': function(a,b) { 
+      let ta = getType(a),
+          tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta !== tb)
+        throw new Error(`both arguments to != must be vector, or both numbers`)
+      return a !== b 
+    },
+    '>': function(a,b) { 
+      let ta = getType(a),
+          tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta !== tb)
+        throw new Error(`both arguments to > must be vector, or both numbers`)
+      return a>b 
+    },
+    '<': function(a,b) { 
+      let ta = getType(a),
+          tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta !== tb)
+        throw new Error(`both arguments to < must be vector, or both numbers`)
+      return a<b 
+    },
+    '>=': function(a,b) { 
+      let ta = getType(a),
+          tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta !== tb)
+        throw new Error(`both arguments to >= must be vectors, or both numbers`)
+      return a>=b 
+    },
+    '<=': function(a,b) { 
+      let ta = getType(a),
+          tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta !== tb)
+        throw new Error(`both arguments to <= must be vectors, or both numbers`)
+      return a<=b 
+    },
+    and: function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['boolean'])
+      return a && b 
+    },
+    or: function(a,b) { 
+      validateTypes([getType(a), getType(b)], ['boolean'])
+      return a || b 
+    }, 
+//    '||': function(a,b) { return a.concat(b) },
+    'in': function(a,b) { 
+      validateTypes([getType(a)], ['number'])
+      validateTypes([getType(b)], ['vector'])
+      return inOperator(a,b) 
+    },
 //    '=': setVar,
-    '[': arrayIndex
+    '[': function(a,b) { 
+      validateTypes([getType(a)], ['vector'])
+      validateTypes([getType(b)], ['number'])
+      return arrayIndex(a,b) 
+    },
 }
 
 var ternaryOps = {
-    '?': (c,y,n) => c ? y : n
-}
+    '?': function(c,y,n) { 
+      return c ? y : n
+    }
+  }
 
 var functions = {
   
-    random: function(a) { return Math.random(a) },
+    random: function(a) { 
+      return Math.random(a) 
+    },
     fac: factorial,
     min: min,
     max: max,
-    hypot: function(a) { return Math.hypot(a) },
+    hypot: function(a) { 
+      return Math.hypot(a) 
+    },
     pow: (a,b) => power(a,b),
-    atan2: function(a) { return Math.atan2(a) },
+    atan2: function(a) { 
+      return Math.atan2(a) 
+    },
 //    'if': condition,
 //    gamma: gamma,
     roundTo: roundTo,
@@ -103,14 +299,6 @@ var functions = {
 //    filter: arrayFilter,
 //    indexOf: stringOrArrayIndexOf,
     join: arrayJoin
-}
-
-function power(a,b) {
-
-  let r = Math.pow(a,b)
-  if (Number.isNaN(r))
-    throw new Error(`bad arguments to ^ ${a} ${b}`)
-  return r
 }
 
 function arrayIndex(array, index) {

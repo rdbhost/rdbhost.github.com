@@ -1,5 +1,5 @@
 // import { FunctionMap, UnitFunctionMap } from './functions.js'
-import { BadFormula, EvaluationError, name_valid, result_formatter } from './math-tools.js'
+import { BadFormula, EvaluationError, BadInput, name_valid, result_formatter } from './math-tools.js'
 
 // ObjectMapWrap - wraps a Map object (including ValScope and UnitScope objects)
 //  to make members of the Map object accessible as simple object attributes
