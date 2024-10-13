@@ -36,8 +36,6 @@ class ValScope {
     constructor (maptype) {
 
       this.localScope = new Map(maptype)
-      this.diagnostics = undefined 
-      this.reset_diagnostics()
     }
   
     // add adds a key and cell pair
@@ -82,15 +80,6 @@ class ValScope {
       else {
 
         let ret = val.data('value')
-        
-        // if stored value is an Error object, add key to foundbad list
-        if (typeof ret === 'object' && ret.message !== undefined) {
-
-          this.diagnostics.get('foundbad').push(key)
-        }
-        else if (ret === undefined || ret === "" || Number.isNaN(ret)) {
-          this.diagnostics.get('foundbad').push(key)
-        }
         return ret 
       }
     }
@@ -99,8 +88,10 @@ class ValScope {
     //
     set (key, value) {
 
-      if (!name_valid(key)) throw new Error(`invalid key ${key}`)
-      if (!this.localScope.has(key)) throw new Error(`key ${key} not found in ValScope`)
+      if (!name_valid(key)) 
+        throw new Error(`invalid key ${key}`)
+      if (!this.localScope.has(key)) 
+        throw new Error(`key ${key} not found in ValScope`)
 
       let td = this.localScope.get(key)
       let prev = td.data('value')
@@ -113,9 +104,12 @@ class ValScope {
         td.data('value', value.value).data('prev-val', prev)
       }
       // if value is an Error object, apply error style, and use error message
-      else if (typeof value == 'object' && value.message !== undefined) {
+      else if (typeof value == 'object' && value.name === 'Error') {
 
-        td.text(`${value.message}`)
+        if (value.cause === 'bad-input')
+          td.text(`${value.message}`)
+        else if (['bad-formula', 'evaluation-error'].indexOf(value.cause) > -1)
+          td.html(`<div>${value.message}</div>`)
         td.addClass('error').removeAttr('title').removeClass('convert')
         td.data('value', value).data('prev-val', prev)
       }
@@ -138,9 +132,6 @@ class ValScope {
         if (!name_valid(key)) 
           throw new Error(`invalid key ${key}`)
 
-        if (!this.localScope.has(key)) 
-          this.diagnostics.get('missing').push(key)
-
         return this.localScope.has(key)
     }
   
@@ -160,13 +151,7 @@ class ValScope {
       return this.diagnostics
     }
 
-    reset_diagnostics() {
-
-      const input = [['missing', []],
-                     ['foundbad', []]]
-      this.diagnostics = new Map(input)
-    }
-};
+}
 
 
 export { ValScope, ObjectMapWrap }

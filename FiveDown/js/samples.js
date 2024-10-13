@@ -34,8 +34,13 @@ const samples = {
                   ["Dot product is @",   "dp", "",    "v0@v1"],
                   ["Cross product is * (same as multiply)", 
                                          "cp", "",    "v0*v1"],
-                  null
-
+                  null,
+                  ["'in' operator",      "in_", "",    "3.0 in v1"],
+                  ["index operator",     "index", "", "v1[0]"],
+                  null,
+                  ["true / false",       "tru", "",   [true, false]],
+                  ["and or ",            "and_or", "", "a or false and tru"],
+                  null,
 
         ]
     }

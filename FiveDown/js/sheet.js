@@ -1,7 +1,7 @@
 import { DataManager } from './datamanager.js'
 import { name_valid, clean_name, formula_formatter, result_formatter } from './math-tools.js'
 import { get_storable, replace_table_from_json } from './persistance.js';
-import { format_unit } from './unit-math.js';
+//import { format_unit } from './unit-math.js';
 
 const MAX_ALTS = 8;
     
@@ -586,10 +586,6 @@ function tbody_handlers($table) {
         let $td = $(evt.target);                    // t is $<td>
         let $tr = $td.closest('tr');
 
-        set_contenteditable_cols($tr)
-        if ($td.attr('contenteditable') == 'false') 
-            return 
-
         let formula = $td.text()
         $td.text(formula_formatter(formula))
         if ($td.attr('data-conversion'))
@@ -602,6 +598,11 @@ function tbody_handlers($table) {
             let name = $tr.find('td.name').text();
             $table.trigger("row:formula-change", [name, $td]);       
         } 
+
+        set_contenteditable_cols($tr)
+        //if ($td.attr('contenteditable') == 'false') 
+        //    return 
+
     })
 
     // handler on result cells pushes data changes into data() and calls
@@ -672,7 +673,7 @@ function tbody_handlers($table) {
         if (unit !== ($td.data("prev-val") || '')) {         // is unit diff from stored?
 
             $td.data("prev-val", unit).data('value', unit);  // store new unit in data
-            let disp = format_unit(unit)
+//            let disp = format_unit(unit)
             if (disp?.message) {
 
                 $td.text(unit).data('value', undefined).data('prev-val', unit)
