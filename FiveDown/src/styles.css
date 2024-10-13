@@ -535,6 +535,7 @@ td.formula:focus {
 	background-color: var(--color-surface);
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+
 /* Styles for result cells, including error cells */
 td.result {
 	width: auto;
@@ -548,38 +549,43 @@ td.result {
 	height: 3em; /* Fixed height for all result cells */
 	line-height: 3em; /* Vertical centering for single line content */
 }
-/* Hover effect for error cells */
-td.result.error:hover {
-	white-space: normal;
-	overflow: visible;
-	height: auto;
-	min-height: 3em;
-	z-index: 10;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-/* Tooltip for error result cells */
-td.result.error::before {
-	content: attr(title);
-	position: absolute;
-	top: -30px;
-	left: 50%;
-	transform: translateX(-50%);
+
+td.result {
+	height: 3em;
+	line-height: 3em;
+} /* Base styles for error state */
+td.result.error {
 	background-color: var(--color-accent-red-light);
 	color: var(--color-accent-red);
-	padding: 5px 10px;
-	border-radius: 4px;
-	font-size: 0.9em;
-	white-space: nowrap;
-	opacity: 0;
-	visibility: hidden;
-	transition: opacity 0.3s, visibility 0.3s;
-	z-index: 10;
+	position: relative;
+	padding: 0.4em 5px 0.4em 25px; /* Left padding for icon */
+	height: auto !important; /* Force override possible inline styles */
+	min-height: 3em;
+	max-height: none !important; /* Remove maximum height limit */
+	white-space: normal !important; /* Allow text wrapping */
+	overflow: visible !important; /* Allow content overflow */
+	z-index: 1; /* Ensure error content displays above other elements */
 }
 
-/* Show tooltip on hover */
-td.result.error:hover::before {
-	opacity: 1;
-	visibility: visible;
+/* Error icon */
+td.result.error::before {
+	content: '⚠️';
+	position: absolute;
+	left: 5px;
+	top: 0.4em;
+	font-size: 0.9em;
+}
+
+/* Error text styles */
+td.result.error > div {
+	line-height: 1.2;
+	word-break: break-word; /* Allow long words to break */
+}
+
+/* Hover effect */
+td.result.error:hover {
+	z-index: 2; /* Increase z-index on hover */
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 /* Error shake animation */
@@ -605,8 +611,16 @@ td.result.error:hover::before {
 
 td.result.error {
 	animation: errorShake 0.6s ease-in-out;
-	background-color: var(--color-accent-red-light);
-	color: var(--color-accent-red);
+}
+
+/* Remove ellipsis */
+td.result.error::after {
+	content: none;
+}
+
+/* Ensure table rows can accommodate increased cell height */
+tbody tr {
+	height: auto !important;
 }
 
 /* Read-only cell styling */
