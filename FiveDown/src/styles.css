@@ -1,15 +1,6 @@
-/* Base body styles */
-body {
-	font-family: 'Roboto', sans-serif;
-	font-size: 16px;
-	line-height: 1.6;
-	background-color: var(--color-background);
-}
-
 /* Container for the table */
 .outer-box {
-	margin-left: auto;
-	margin-right: auto;
+	margin: 0 auto;
 	width: 90%;
 	max-width: 100%;
 }
@@ -20,12 +11,12 @@ table {
 	width: 100%;
 	border: 1px solid var(--color-border);
 	background-color: var(--color-surface);
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-		0 2px 4px -2px rgba(0, 0, 0, 0.1);
-	border-radius: 0.75rem;
+	box-shadow: var(--shadow-md);
+	border-radius: var(--border-radius-lg);
 	overflow: hidden;
 	position: relative;
 	z-index: 10;
+	will-change: opacity, transform;
 	animation: tableAppear 0.6s ease-out;
 }
 
@@ -49,24 +40,23 @@ thead {
 
 /* Rounded corners for first and last header cells */
 thead tr:first-child th:first-child {
-	border-top-left-radius: 1rem;
+	border-top-left-radius: var(--border-radius-xl);
 }
 
 thead tr:first-child th:last-child {
-	border-top-right-radius: 0.75rem;
+	border-top-right-radius: var(--border-radius-lg);
 }
 
 /* Enhanced table header styles with centered text */
 th {
 	background-color: var(--color-primary);
-	font-size: 1rem;
-	font-weight: 600;
+	font: 600 1rem/1.5 'Roboto', sans-serif;
 	color: var(--color-surface);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	padding: 1rem 1.25rem;
+	padding: var(--spacing-md) var(--spacing-lg);
 	text-align: center;
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 	position: relative;
 	border: 1px solid var(--color-border);
 	z-index: 16;
@@ -76,7 +66,7 @@ th {
 th:hover {
 	background-color: var(--color-primary-dark);
 	transform: scale(1.05);
-	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-md);
 }
 
 /* Keep description column left-aligned */
@@ -110,7 +100,7 @@ th.sortable {
 th.sortable::after {
 	content: '↕';
 	position: absolute;
-	right: 0.5rem;
+	right: var(--spacing-sm);
 	top: 50%;
 	transform: translateY(-50%);
 	color: var(--color-surface);
@@ -121,19 +111,18 @@ th.sortable::after {
 th.result {
 	position: relative;
 	cursor: move;
-	border-top-left-radius: 1rem;
-	border-top-right-radius: 1rem;
+	border-top-left-radius: var(--border-radius-xl);
+	border-top-right-radius: var(--border-radius-xl);
 	border: 1px solid var(--color-border);
 	background-color: var(--color-accent-blue);
-	padding: 0.75rem 1rem;
+	padding: var(--spacing-md) var(--spacing-lg);
 	text-align: center;
 	font-weight: 600;
 	color: var(--color-surface);
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-		0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-md);
 	z-index: 17;
 	overflow: hidden;
-	transition: background-color 0.3s ease;
+	transition: background-color var(--animation-duration) var(--animation-timing);
 }
 
 th.result:hover {
@@ -154,12 +143,12 @@ th.result:before {
 
 /* Unit column styling */
 th.unit {
-	border-top-left-radius: 0.75rem;
+	border-top-left-radius: var(--border-radius-lg);
 	overflow: hidden;
 	position: relative;
 	z-index: 16;
 	background-color: var(--color-primary);
-	transition: background-color 0.3s ease;
+	transition: background-color var(--animation-duration) var(--animation-timing);
 }
 
 th.unit:hover {
@@ -170,18 +159,15 @@ th.unit:hover {
 th.unit::after {
 	content: '';
 	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
-	border-top-left-radius: 0.75rem;
+	inset: 0;
+	border-top-left-radius: var(--border-radius-lg);
 	pointer-events: none;
 	border: 1px solid var(--color-border);
 	z-index: 1;
 }
 
 th:last-child {
-	border-top-right-radius: 0.75rem;
+	border-top-right-radius: var(--border-radius-lg);
 }
 
 /* Add column header styling */
@@ -189,17 +175,16 @@ th.alt-add {
 	position: relative;
 	width: 2.5rem;
 	cursor: pointer;
-	border-top-left-radius: 1rem;
-	border-top-right-radius: 1rem;
+	border-top-left-radius: var(--border-radius-xl);
+	border-top-right-radius: var(--border-radius-xl);
 	border: 1px solid var(--color-border);
 	background-color: var(--color-secondary);
-	padding: 0.75rem 1rem;
+	padding: var(--spacing-md) var(--spacing-lg);
 	text-align: center;
 	font-weight: 600;
 	color: var(--color-surface);
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-		0 2px 4px -2px rgba(0, 0, 0, 0.1);
-	transition: all 0.3s ease;
+	box-shadow: var(--shadow-md);
+	transition: all var(--animation-duration) var(--animation-timing);
 	z-index: 17;
 	overflow: hidden;
 }
@@ -237,12 +222,12 @@ tbody tr {
 /* General cell styling with fade-in animation */
 td {
 	border: 1px solid var(--color-border);
-	padding: 1rem 1.25rem;
-	font-size: 0.9375rem;
-	font-weight: 500;
+	padding: var(--spacing-md) var(--spacing-lg);
+	font: 500 0.9375rem/1.6 'Roboto', sans-serif;
 	color: var(--color-text);
-	animation: cellFade 0.3s ease-in-out;
-	transition: all 0.3s ease;
+	will-change: opacity;
+	animation: cellFade var(--animation-duration) ease-in-out;
+	transition: all var(--animation-duration) var(--animation-timing);
 }
 
 @keyframes cellFade {
@@ -262,7 +247,7 @@ td:not(.handle):not(.delete) {
 td:hover {
 	position: relative;
 	transform: scale(1.05);
-	box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-md);
 }
 
 td:hover:after {
@@ -273,18 +258,20 @@ td:hover:after {
 	border: 2px solid var(--color-text);
 }
 
-/* Handle column styling */
-td.handle {
+/* Handle and delete column styling */
+td.handle,
+td.delete {
 	height: 2.5rem;
 	width: 2.5rem;
-	cursor: move;
+	cursor: pointer;
 	background-color: var(--color-handle);
 	padding: 0;
 	text-align: center;
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 }
 
-td.handle:hover {
+td.handle:hover,
+td.delete:hover {
 	background-color: var(--color-handle-hover);
 	transform: translateY(-2px) scale(1.05);
 }
@@ -302,22 +289,6 @@ td.handle:before {
 	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
 }
 
-/* Delete column styling */
-td.delete {
-	height: 2.5rem;
-	width: 2.5rem;
-	cursor: pointer;
-	background-color: var(--color-handle);
-	padding: 0;
-	text-align: center;
-	transition: all 0.3s ease;
-}
-
-td.delete:hover {
-	background-color: var(--color-accent-red-light);
-	transform: translateY(-2px) scale(1.05);
-}
-
 /* Delete icon */
 td.delete:before {
 	content: '';
@@ -330,7 +301,7 @@ td.delete:before {
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: 24px;
-	transition: background-image 0.3s;
+	transition: background-image var(--animation-duration) var(--animation-timing);
 }
 
 td.delete:hover:before {
@@ -341,9 +312,9 @@ td.delete:hover:before {
 input,
 textarea {
 	width: 100%;
-	border-radius: 0.25rem;
+	border-radius: var(--border-radius-sm);
 	border: 1px solid var(--color-border);
-	padding: 0.5rem 0.75rem;
+	padding: var(--spacing-sm) var(--spacing-md);
 	font-family: 'Roboto Mono', monospace;
 	transition: all var(--animation-duration) var(--animation-timing);
 }
@@ -351,8 +322,7 @@ textarea {
 input:focus,
 textarea:focus {
 	border-color: var(--color-primary);
-	box-shadow: 0 0 0 3px var(--color-primary-light),
-		0 0 10px rgba(59, 130, 246, 0.5);
+	box-shadow: 0 0 0 3px var(--color-primary-light), var(--shadow-md);
 	transform: scale(1.02);
 	animation: inputFocus 0.8s ease-in-out;
 }
@@ -373,41 +343,39 @@ textarea:focus {
 .project-menu {
 	margin-bottom: 0;
 	display: flex;
+	flex-wrap: wrap;
 	align-items: flex-end;
+	gap: var(--spacing-sm);
 	border: 1px solid var(--color-border);
 	border-bottom: none;
 	background-color: var(--color-surface);
-	padding: 0.75rem 0.75rem 0.125rem;
+	padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
 	position: relative;
 	z-index: 20;
-	border-top-left-radius: 0.75rem;
-	border-top-right-radius: 0.75rem;
-	flex-wrap: wrap;
-	justify-content: flex-start;
+	border-top-left-radius: var(--border-radius-lg);
+	border-top-right-radius: var(--border-radius-lg);
 }
 
 /* Individual tab styling in project menu */
 .project-menu span {
-	margin-right: 0.5rem;
 	cursor: text;
-	border-top-left-radius: 1rem;
-	border-top-right-radius: 1rem;
+	border-top-left-radius: var(--border-radius-xl);
+	border-top-right-radius: var(--border-radius-xl);
 	border: 1px solid var(--color-border);
 	border-bottom: none;
 	background-color: var(--color-handle);
-	padding: 0.75rem 1.25rem;
-	font-size: 0.9375rem;
-	font-weight: 500;
+	padding: var(--spacing-md) var(--spacing-lg);
+	font: 500 0.9375rem/1.5 'Roboto', sans-serif;
 	color: var(--color-text-light);
-	box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	box-shadow: var(--shadow-sm);
+	transition: all var(--animation-duration) cubic-bezier(0.25, 0.8, 0.25, 1);
 	min-width: 100px;
 }
 
 .project-menu span:hover {
 	background-color: var(--color-handle-hover);
 	transform: translateY(-3px);
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+	box-shadow: var(--shadow-md);
 }
 
 /* Active tab styling */
@@ -415,8 +383,7 @@ textarea:focus {
 	background-color: var(--color-primary-dark);
 	color: var(--color-surface);
 	font-weight: 600;
-	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-		0 2px 4px -2px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-md);
 	transform: translateY(-2px);
 	border-bottom: 2px solid var(--color-surface);
 	animation: activeTab 0.5s ease-out;
@@ -446,18 +413,18 @@ textarea:focus {
 	display: flex;
 	align-items: center;
 	margin-left: auto;
-	padding-bottom: 0.75rem;
+	padding-bottom: var(--spacing-md);
 }
 
 /* Delete and New sheet buttons */
 #delete-sheet,
 #new-sheet {
-	padding: 0.5rem 0.75rem;
-	margin-left: 0.75rem;
-	border-radius: 0.25rem;
+	padding: var(--spacing-sm) var(--spacing-md);
+	margin-left: var(--spacing-md);
+	border-radius: var(--border-radius-sm);
 	font-size: 0.875rem;
 	cursor: pointer;
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 	border: none;
 	font-weight: 600;
 }
@@ -476,7 +443,7 @@ textarea:focus {
 	background-color: var(--color-secondary-light);
 	color: var(--color-secondary);
 	border: 1px solid var(--color-secondary);
-	border-radius: 0.525rem;
+	border-radius: var(--border-radius-md);
 }
 
 #new-sheet:hover {
@@ -496,8 +463,8 @@ textarea:focus {
 	color: var(--color-text-light);
 	font-size: 18px;
 	cursor: pointer;
-	transition: all 0.2s ease;
-	margin-left: 8px;
+	transition: all var(--animation-duration) var(--animation-timing);
+	margin-left: var(--spacing-sm);
 }
 
 .sheet-delete:hover {
@@ -510,7 +477,7 @@ textarea:focus {
 }
 
 /* Styles for unselected sheets */
-.project-menu span:not(.active) {
+.project-menu .inactive {
 	transform: translateY(2px);
 }
 
@@ -523,7 +490,7 @@ td.formula {
 	text-overflow: ellipsis;
 	color: var(--color-primary-dark);
 	font-family: 'Roboto Mono', monospace;
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 }
 
 td.formula:hover,
@@ -533,7 +500,7 @@ td.formula:focus {
 	z-index: 10;
 	position: relative;
 	background-color: var(--color-surface);
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-md);
 }
 
 /* Styles for result cells, including error cells */
@@ -545,26 +512,23 @@ td.result {
 	text-overflow: ellipsis;
 	color: var(--color-primary-dark);
 	font-family: 'Roboto Mono', monospace;
-	transition: all 0.3s ease;
-	height: 3em; /* Fixed height for all result cells */
-	line-height: 3em; /* Vertical centering for single line content */
-}
-
-td.result {
+	transition: all var(--animation-duration) var(--animation-timing);
 	height: 3em;
 	line-height: 3em;
-} /* Base styles for error state */
+}
+
+/* Base styles for error state */
 td.result.error {
 	background-color: var(--color-accent-red-light);
 	color: var(--color-accent-red);
 	position: relative;
-	padding: 0.4em 5px 0.4em 25px; /* Left padding for icon */
-	height: auto !important; /* Force override possible inline styles */
+	padding: 0.4em 5px 0.4em 25px;
+	height: auto !important;
 	min-height: 3em;
-	max-height: none !important; /* Remove maximum height limit */
-	white-space: normal !important; /* Allow text wrapping */
-	overflow: visible !important; /* Allow content overflow */
-	z-index: 1; /* Ensure error content displays above other elements */
+	max-height: none !important;
+	white-space: normal !important;
+	overflow: visible !important;
+	z-index: 1;
 }
 
 /* Error icon */
@@ -579,13 +543,13 @@ td.result.error::before {
 /* Error text styles */
 td.result.error > div {
 	line-height: 1.2;
-	word-break: break-word; /* Allow long words to break */
+	word-break: break-word;
 }
 
 /* Hover effect */
 td.result.error:hover {
-	z-index: 2; /* Increase z-index on hover */
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	z-index: 2;
+	box-shadow: var(--shadow-md);
 }
 
 /* Error shake animation */
@@ -641,7 +605,7 @@ td.output {
 	cursor: pointer;
 	background-color: var(--color-primary-light);
 	color: var(--color-primary-dark);
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 }
 
 .alt-add:hover {
@@ -661,7 +625,7 @@ td.output {
 	right: 8px;
 	top: 50%;
 	transform: translateY(-50%);
-	transition: all 0.3s ease;
+	transition: all var(--animation-duration) var(--animation-timing);
 	padding: 4px;
 	line-height: 1;
 }
@@ -690,11 +654,11 @@ th.unit:last-child {
 tr:last-child td.formula:last-child,
 tr:last-child td.min:last-child,
 tr:last-child td.unit:last-child {
-	border-bottom-right-radius: 0.75rem;
+	border-bottom-right-radius: var(--border-radius-lg);
 }
 
 th.formula {
-	border-top-right-radius: 0.75rem;
+	border-top-right-radius: var(--border-radius-lg);
 }
 
 /* Row animation styles */
@@ -821,17 +785,17 @@ table.switching {
 
 	td,
 	th {
-		padding: 0.75rem 1rem;
+		padding: var(--spacing-md) var(--spacing-lg);
 	}
 
 	.project-menu span {
-		padding: 0.5rem 0.75rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 		font-size: 0.875rem;
 	}
 
 	th.result,
 	th.alt-add {
-		padding: 0.5rem 0.75rem;
+		padding: var(--spacing-sm) var(--spacing-md);
 	}
 
 	td.handle,
