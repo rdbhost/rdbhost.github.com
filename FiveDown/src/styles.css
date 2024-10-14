@@ -543,7 +543,14 @@ td.result.error::before {
 /* Error text styles */
 td.result.error > div {
 	line-height: 1.2;
-	word-break: break-word;
+
+	overflow: visible;
+	text-wrap: nowrap;
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
+	
+	position: absolute;
+	margin: -10px 0 0 0;
 }
 
 /* Hover effect */
