@@ -1,8 +1,17 @@
 
 import { Parser, Expression } from "./expr-eval/dist/index.js"
-import { unaryOps, binaryOps, ternaryOps, functions } from './expr-eval/dist/numeric_operators.js' 
+import { unaryOps, binaryOps, ternaryOps, functions } from './numeric_operators.js' 
 import { ObjectMapWrap, ValScope } from './scopes.js'
 
+// Signal values for identifying types of errors
+//
+var BadFormula = Object.create(null),
+    EvaluationError = Object.create(null),
+    BadInput = Object.create(null)
+
+    
+// options for Silent Matts parser
+//
 let parserOpts = {
         operators: {
                 concatenate: false,
@@ -38,7 +47,7 @@ class MyMath {
       }
       catch( e ) {
 
-        return new Error(e.message, {cause: "bad-formula"})
+        return new Error(e.message, {cause: BadFormula})
       }
     }
 
@@ -51,7 +60,7 @@ class MyMath {
 
         // evaluate() with a scope object
         let result = syntree.evaluate(ObjectMapWrap(scope))
-        return Number.isNaN(result) ? new Error('bad evaluation') : result;
+        return Number.isNaN(result) ? new Error('bad evaluation', {cause: EvaluationError}) : result;
       } 
       catch (e) {
 
@@ -59,7 +68,7 @@ class MyMath {
         //if (e.message.substr(0,35) === 'Cannot read properties of undefined') 
         //  return new Error('formula seems incomplete')
 
-        return new Error(e.message, {cause: "evaluation-error"})
+        return new Error(e.message, {cause: EvaluationError})
       }
     }
 
@@ -79,7 +88,7 @@ class MyMath {
       
       let res = this.evaluate(syntree, scope)
       if (!data_valid(res)) 
-        return new Error(expr, {cause: 'bad-input'})
+        return new Error(expr, {cause: BadInput})
 
       return res    
     }
@@ -166,5 +175,6 @@ class MyMath {
     return formula.replaceAll('@', '•').replaceAll('*', '×');
   }
 
-  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter }
+  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter,
+           BadFormula, BadInput, EvaluationError }
 

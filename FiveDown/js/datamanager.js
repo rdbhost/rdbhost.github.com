@@ -153,7 +153,7 @@ class DataManager {
                 scope.set(key, res)
                 $formulaTd.removeAttr('data-conversion').removeAttr('convert')
 
-                if (res.cause && res.cause.length) {
+                if (res?.cause && res.cause.length) {
                     res.cause.forEach(function(key) {
                         let badsrc = scope.getItem(key)
                         badsrc.addClass('error')

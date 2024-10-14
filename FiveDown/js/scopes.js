@@ -1,5 +1,5 @@
 // import { FunctionMap, UnitFunctionMap } from './functions.js'
-import { name_valid, result_formatter } from './math-tools.js'
+import { BadFormula, EvaluationError, BadInput, name_valid, result_formatter } from './math-tools.js'
 
 // ObjectMapWrap - wraps a Map object (including ValScope and UnitScope objects)
 //  to make members of the Map object accessible as simple object attributes
@@ -106,9 +106,9 @@ class ValScope {
       // if value is an Error object, apply error style, and use error message
       else if (typeof value == 'object' && value.name === 'Error') {
 
-        if (value.cause === 'bad-input')
+        if (value.cause === BadInput)
           td.text(`${value.message}`)
-        else if (['bad-formula', 'evaluation-error'].indexOf(value.cause) > -1)
+        else if ([BadFormula, EvaluationError].indexOf(value.cause) > -1)
           td.html(`<div>${value.message}</div>`)
         td.addClass('error').removeAttr('title').removeClass('convert')
         td.data('value', value).data('prev-val', prev)
