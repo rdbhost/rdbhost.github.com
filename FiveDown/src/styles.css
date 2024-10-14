@@ -532,13 +532,14 @@ td.result.error {
 }
 
 /* Error icon */
+/*
 td.result.error::before {
 	content: '⚠️';
 	position: absolute;
 	left: 5px;
 	top: 0.4em;
 	font-size: 0.9em;
-}
+}*/
 
 /* Error text styles */
 td.result.error > div {
