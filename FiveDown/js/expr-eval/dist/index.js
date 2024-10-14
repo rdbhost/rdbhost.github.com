@@ -169,17 +169,18 @@ function evaluate(tokens, expr, values) {
     } else if (type === IOP2) {
       n2 = nstack.pop();
       n1 = nstack.pop();
-      if (item.value === 'and') {
-        nstack.push(n1 ? !!evaluate(n2, expr, values) : false);
-      } else if (item.value === 'or') {
-        nstack.push(n1 ? true : !!evaluate(n2, expr, values));
-      } else if (item.value === '=') {
-        f = expr.binaryOps[item.value];
-        nstack.push(f(n1, evaluate(n2, expr, values), values));
-      } else {
+// DVK - disabled to force handling by injected code
+//      if (item.value === 'and') {
+//        nstack.push(n1 ? !!evaluate(n2, expr, values) : false);
+//      } else if (item.value === 'or') {
+//        nstack.push(n1 ? true : !!evaluate(n2, expr, values));
+//      } else if (item.value === '=') {
+//        f = expr.binaryOps[item.value];
+//        nstack.push(f(n1, evaluate(n2, expr, values), values));
+//      } else {
         f = expr.binaryOps[item.value];
         nstack.push(f(resolveExpression(n1, values), resolveExpression(n2, values)));
-      }
+//      }
     } else if (type === IOP3) {
       n3 = nstack.pop();
       n2 = nstack.pop();

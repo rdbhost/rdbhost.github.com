@@ -22,16 +22,33 @@ function getType(a) {
   throw new Error('bad input ${a}')
 }
 
-function validateTypes(types, okTypes) {
+function validateTypes(types, okTypes, warn) {
 
   if (!Array.isArray(types))
     types = [types,]
   if (!Array.isArray(okTypes))
     throw new Error(`not an array: ${okTypes}`)
   types.forEach(function(t) {
-    if (okTypes.indexOf(t) === -1)
-      throw new Error(`data provided with ineligible type ${t}`)
+    if (okTypes.indexOf(t) === -1) {
+      if (!warn) 
+        warn = `data provided with ineligible type ${t}`
+      throw new Error(warn)
+    }
   })
+}
+
+function array_comparitor(a,b) {
+  if (a.length > b.length)
+    return 1
+  if (a.length < b.length)
+    return -1
+  for (let i=0; i<a.length; i++) {
+    if (a[i] > b[i])
+      return 1
+    if (a[i] < b[i])
+      return -1
+  }
+  return 0
 }
 
 var unaryOps = {
@@ -86,6 +103,8 @@ var unaryOps = {
     },
     sqrt: function(a) { 
       validateTypes(getType(a), ['number'])
+      if (a < 0)
+        throw new Error(`sqrt needs positive number argument`)
       return Math.sqrt(a) 
     },
     cbrt: function(a) { 
@@ -152,9 +171,9 @@ var unaryOps = {
       validateTypes(getType(a), ['number'])
       return Math.exp(a) 
     },
-    not: function(x) {
+    not: function(a) {
       validateTypes(getType(a), ['boolean'])
-      return !x
+      return !a
     },
     length: function(x) { 
       validateTypes(getType(a), ['vector'])
@@ -185,19 +204,26 @@ var binaryOps = {
       return product(a,b) 
     },
     '@': function(a,b) { 
-      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      validateTypes([getType(a), getType(b)], ['vector'])
       return dot_product(a,b) 
     },
     '/': function(a,b) { 
-      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      let ta = getType(a), tb = getType(b)
+      validateTypes([ta, tb], ['number', 'vector'])
+      if (ta === tb && ta === 'vector')
+        throw new Error(`/ is not defined for two vectors`)
+      if (tb === 'vector')
+        throw new Error(`scalar / vector is not defined`)
+      if (ta === 'vector')
+        return binaryOps['*'](1/b, a)
       return a / b 
     },
     '%': function(a,b) { 
-      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      validateTypes([getType(a), getType(b)], ['number'])
       return a % b 
     },
     '^': function(a,b) {
-      validateTypes([getType(a), getType(b)], ['number', 'vector'])
+      validateTypes([getType(a), getType(b)], ['number'])
       return Math.pow(a,b)
     },
     '==': function(a,b) { 
@@ -206,6 +232,8 @@ var binaryOps = {
       validateTypes([ta, tb], ['number', 'vector'])
       if (ta !== tb)
         throw new Error(`both arguments to == must be vector, or both numbers`)
+      if (ta === 'vector')
+        return array_comparitor(a,b) === 0
       return a === b 
     },
     '!=': function(a,b) { 
@@ -214,38 +242,40 @@ var binaryOps = {
       validateTypes([ta, tb], ['number', 'vector'])
       if (ta !== tb)
         throw new Error(`both arguments to != must be vector, or both numbers`)
+      if (ta === 'vector')
+        return array_comparitor(a,b) !== 0
       return a !== b 
     },
     '>': function(a,b) { 
       let ta = getType(a),
           tb = getType(b)
-      validateTypes([ta, tb], ['number', 'vector'])
-      if (ta !== tb)
-        throw new Error(`both arguments to > must be vector, or both numbers`)
+      validateTypes([ta, tb], ['number'])
+//      if (ta !== tb)
+//        throw new Error(`both arguments to > must be vector, or both numbers`)
       return a>b 
     },
     '<': function(a,b) { 
       let ta = getType(a),
           tb = getType(b)
-      validateTypes([ta, tb], ['number', 'vector'])
-      if (ta !== tb)
-        throw new Error(`both arguments to < must be vector, or both numbers`)
+      validateTypes([ta, tb], ['number'])
+//      if (ta !== tb)
+//        throw new Error(`both arguments to < must be vector, or both numbers`)
       return a<b 
     },
     '>=': function(a,b) { 
       let ta = getType(a),
           tb = getType(b)
-      validateTypes([ta, tb], ['number', 'vector'])
-      if (ta !== tb)
-        throw new Error(`both arguments to >= must be vectors, or both numbers`)
+      validateTypes([ta, tb], ['number'])
+//      if (ta !== tb)
+//        throw new Error(`both arguments to >= must be vectors, or both numbers`)
       return a>=b 
     },
     '<=': function(a,b) { 
       let ta = getType(a),
           tb = getType(b)
-      validateTypes([ta, tb], ['number', 'vector'])
-      if (ta !== tb)
-        throw new Error(`both arguments to <= must be vectors, or both numbers`)
+      validateTypes([ta, tb], ['number'])
+//      if (ta !== tb)
+//        throw new Error(`both arguments to <= must be vectors, or both numbers`)
       return a<=b 
     },
     and: function(a,b) { 
@@ -271,7 +301,11 @@ var binaryOps = {
 }
 
 var ternaryOps = {
+
     '?': function(c,y,n) { 
+      validateTypes([getType(c)], ['boolean'])
+      if (getType(y) !== getType(n))
+        throw new Error(`2nd and 3rd args to ? op should be same type ${getType(y)} != ${getType(n)}`)
       return c ? y : n
     }
   }
@@ -287,7 +321,7 @@ var functions = {
     hypot: function(a) { 
       return Math.hypot(a) 
     },
-    pow: (a,b) => power(a,b),
+//    pow: (a,b) => power(a,b),
     atan2: function(a) { 
       return Math.atan2(a) 
     },
