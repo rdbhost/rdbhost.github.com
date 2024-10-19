@@ -123,10 +123,6 @@ var unaryOps = {
       validateTypes(getType(a), ['number'])
       return Math.log(a) 
     },
-    lg: function(a) { 
-      validateTypes(getType(a), ['number'])
-      return Math.log10(a) 
-    },
     log10: function(a) { 
       validateTypes(getType(a), ['number'])
       return Math.log10(a) 
@@ -160,12 +156,12 @@ var unaryOps = {
       return Math.trunc(a) 
     },
     '-': function(a) { 
-      validateTypes(getType(a), ['number'])
-      return -1 * a 
+      validateTypes(getType(a), ['number', 'vector'])
+      return product(-1,a) 
     },
     '+': function(a) { 
-      validateTypes(getType(a), ['number'])
-      return 1 * a 
+      validateTypes(getType(a), ['number', 'vector'])
+      return product(1,a) 
     },
     exp: function(a) { 
       validateTypes(getType(a), ['number'])
@@ -175,17 +171,17 @@ var unaryOps = {
       validateTypes(getType(a), ['boolean'])
       return !a
     },
-    length: function(x) { 
+    length: function(a) { 
       validateTypes(getType(a), ['vector'])
-      return stringOrArrayLength(x) 
+      return stringOrArrayLength(a) 
     },
-    '!': function(x) { 
+/*    '!': function(a) { 
       validateTypes(getType(a), ['number'])
-      return factorial(x) 
-    },
-    sign: function(x) { 
+      return factorial(a) 
+    }, */
+    sign: function(a) { 
       validateTypes(getType(a), ['number'])
-      return Math.sign(x) 
+      return Math.sign(a) 
     }
 }
 
