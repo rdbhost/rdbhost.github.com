@@ -67,10 +67,14 @@ var unaryOps = {
     },
     asin: function(a) { 
       validateTypes(getType(a), ['number'])
+      if (a > 1 || a < -1)
+        throw new Error(`asin takes values between -1 and 1`)
       return Math.asin(a) 
     },
     acos: function(a) { 
       validateTypes(getType(a), ['number'])
+      if (a > 1 || a < -1)
+        throw new Error(`acos takes values between -1 and 1`)
       return Math.acos(a) 
     },
     atan: function(a) { 
@@ -99,6 +103,8 @@ var unaryOps = {
     },
     atanh: function(a) { 
       validateTypes(getType(a), ['number'])
+      if (a > 1 || a < -1)
+        throw new Error(`atanh takes values between -1 and 1`)
       return Math.atanh(a) 
     },
     sqrt: function(a) { 

@@ -55,11 +55,6 @@ class MyMath {
     //   returns a numerical result (scalar or vector), or an Error object
     // 
     evaluate(syntree, scope) {
-      
-      if (typeof syntree === 'object' && syntree.name === 'Error') {
-
-        return syntree
-      }
 
       try {
 

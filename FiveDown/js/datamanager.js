@@ -138,7 +138,7 @@ class DataManager {
             // console.log('formula '+formula)
 
             let exp = _this.math.parse(formula)
-            let res = _this.math.evaluate(exp, scope)
+            let res = (exp.name === 'Error' ? exp : _this.math.evaluate(exp, scope))
 
  //           let unit = _this.UNITS.getItem(key)
  //           let factor = unit.data('conversion_factor')
