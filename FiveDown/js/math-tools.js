@@ -56,6 +56,11 @@ class MyMath {
     // 
     evaluate(syntree, scope) {
       
+      if (typeof syntree === 'object' && syntree.name === 'Error') {
+
+        return syntree
+      }
+
       try {
 
         // evaluate() with a scope object
