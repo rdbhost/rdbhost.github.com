@@ -555,7 +555,6 @@ td.result.error:hover > div {
 }
 
 /* Error shake animation */
-/* 错误抖动动画 */
 @keyframes errorShake {
 	0%,
 	100% {
