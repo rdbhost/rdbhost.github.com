@@ -120,10 +120,15 @@ td.result {
 	height: 3em;
 	line-height: 3em;
 	position: relative;
+	z-index: 1;
 }
 
 th.result:hover {
-	background-color: var(--color-accent-blue-dark);
+	z-index: 100;
+	background-color: var(--color-surface);
+	box-shadow: var(--shadow-md);
+	overflow: visible;
+	white-space: normal;
 }
 
 /* Drag handle for result column */
@@ -225,6 +230,8 @@ td {
 	will-change: opacity;
 	animation: cellFade var(--animation-duration) ease-in-out;
 	transition: all var(--animation-duration) var(--animation-timing);
+	overflow: visible;
+	position: relative;
 }
 
 @keyframes cellFade {
@@ -245,6 +252,7 @@ td:hover {
 	position: relative;
 	transform: scale(1.05);
 	box-shadow: var(--shadow-md);
+	z-index: 99;
 }
 
 td:hover:after {
@@ -516,11 +524,11 @@ td.result {
 
 /* Base styles for error state */
 td.result.error {
+	position: relative;
+	z-index: 2;
 	background-color: var(--color-accent-red-light);
 	color: var(--color-accent-red);
-	padding: 0 5px;
 	overflow: visible;
-	z-index: 10;
 }
 
 /* Error icon */
@@ -546,6 +554,18 @@ td.result.error > div {
 	display: flex;
 	align-items: center;
 	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	border-radius: var(--border-radius-sm);
+}
+/* Cell interaction states */
+td:focus-within {
+	z-index: 102;
+}
+td.result + td {
+	position: relative;
+	z-index: 1;
+}
+td.result.error:hover {
+	z-index: 101;
 }
 
 /* Hover effect */
