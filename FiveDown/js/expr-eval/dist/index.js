@@ -82,13 +82,13 @@ function simplify(tokens, unaryOps, binaryOps, ternaryOps, values) {
       n3 = nstack.pop();
       n2 = nstack.pop();
       n1 = nstack.pop();
-      if (item.value === '?') {
-        nstack.push(n1.value ? n2.value : n3.value);
-      } else {
+      //if (item.value === '?') {
+      //  nstack.push(n1.value ? n2.value : n3.value);
+      //} else {
         f = ternaryOps[item.value];
         item = new Instruction(INUMBER, f(n1.value, n2.value, n3.value));
         nstack.push(item);
-      }
+      //}
     } else if (type === IOP1 && nstack.length > 0) {
       n1 = nstack.pop();
       f = unaryOps[item.value];
@@ -185,12 +185,12 @@ function evaluate(tokens, expr, values) {
       n3 = nstack.pop();
       n2 = nstack.pop();
       n1 = nstack.pop();
-      if (item.value === '?') {
-        nstack.push(evaluate(n1 ? n2 : n3, expr, values));
-      } else {
+      //if (item.value === '?') {
+      //  nstack.push(evaluate(n1 ? n2 : n3, expr, values));
+      //} else {
         f = expr.ternaryOps[item.value];
         nstack.push(f(resolveExpression(n1, values), resolveExpression(n2, values), resolveExpression(n3, values)));
-      }
+      //}
     } else if (type === IVAR) {
       if (item.value in expr.functions) {
         nstack.push(expr.functions[item.value]);
@@ -339,11 +339,11 @@ function expressionToString(tokens, toJS) {
       n2 = nstack.pop();
       n1 = nstack.pop();
       f = item.value;
-      if (f === '?') {
-        nstack.push('(' + n1 + ' ? ' + n2 + ' : ' + n3 + ')');
-      } else {
+      //if (f === '?') {
+      //  nstack.push('(' + n1 + ' ? ' + n2 + ' : ' + n3 + ')');
+      //} else {
         throw new Error('invalid Expression');
-      }
+      //}
     } else if (type === IVAR || type === IVARNAME) {
       nstack.push(item.value);
     } else if (type === IOP1) {

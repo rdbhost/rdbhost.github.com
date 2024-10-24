@@ -290,14 +290,14 @@ var binaryOps = {
     }, 
 //    '||': function(a,b) { return a.concat(b) },
     'in': function(a,b) { 
-      validateTypes([getType(a)], ['number'])
-      validateTypes([getType(b)], ['vector'])
+      validateTypes(getType(a), ['number'])
+      validateTypes(getType(b), ['vector'])
       return inOperator(a,b) 
     },
 //    '=': setVar,
     '[': function(a,b) { 
-      validateTypes([getType(a)], ['vector'])
-      validateTypes([getType(b)], ['number'])
+      validateTypes(getType(a), ['vector'])
+      validateTypes(getType(b), ['number'])
       return arrayIndex(a,b) 
     },
 }
@@ -305,7 +305,7 @@ var binaryOps = {
 var ternaryOps = {
 
     '?': function(c,y,n) { 
-      validateTypes([getType(c)], ['boolean'])
+      validateTypes(getType(c), ['boolean'])
       if (getType(y) !== getType(n))
         throw new Error(`2nd and 3rd args to ? op should be same type ${getType(y)} != ${getType(n)}`)
       return c ? y : n
