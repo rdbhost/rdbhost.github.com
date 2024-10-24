@@ -108,25 +108,27 @@ th.sortable::after {
 }
 
 /* Result column header styling */
-th.result {
-	position: relative;
-	cursor: move;
-	border-top-left-radius: var(--border-radius-xl);
-	border-top-right-radius: var(--border-radius-xl);
-	border: 1px solid var(--color-border);
-	background-color: var(--color-accent-blue);
-	padding: var(--spacing-md) var(--spacing-lg);
-	text-align: center;
-	font-weight: 600;
-	color: var(--color-surface);
-	box-shadow: var(--shadow-md);
-	z-index: 17;
+td.result {
+	width: auto;
+	max-width: 200px;
+	white-space: nowrap;
 	overflow: hidden;
-	transition: background-color var(--animation-duration) var(--animation-timing);
+	text-overflow: ellipsis;
+	color: var(--color-primary-dark);
+	font-family: 'Roboto Mono', monospace;
+	transition: all var(--animation-duration) var(--animation-timing);
+	height: 3em;
+	line-height: 3em;
+	position: relative;
+	z-index: 1;
 }
 
 th.result:hover {
-	background-color: var(--color-accent-blue-dark);
+	z-index: 100;
+	background-color: var(--color-surface);
+	box-shadow: var(--shadow-md);
+	overflow: visible;
+	white-space: normal;
 }
 
 /* Drag handle for result column */
@@ -228,6 +230,8 @@ td {
 	will-change: opacity;
 	animation: cellFade var(--animation-duration) ease-in-out;
 	transition: all var(--animation-duration) var(--animation-timing);
+	overflow: visible;
+	position: relative;
 }
 
 @keyframes cellFade {
@@ -248,6 +252,7 @@ td:hover {
 	position: relative;
 	transform: scale(1.05);
 	box-shadow: var(--shadow-md);
+	z-index: 99;
 }
 
 td:hover:after {
@@ -519,16 +524,11 @@ td.result {
 
 /* Base styles for error state */
 td.result.error {
+	position: relative;
+	z-index: 2;
 	background-color: var(--color-accent-red-light);
 	color: var(--color-accent-red);
-	position: relative;
-	padding: 0.4em 5px 0.4em 25px;
-	height: auto !important;
-	min-height: 3em;
-	max-height: none !important;
-	white-space: normal !important;
-	overflow: visible !important;
-	z-index: 1;
+	overflow: visible;
 }
 
 /* Error icon */
@@ -543,21 +543,35 @@ td.result.error::before {
 
 /* Error text styles */
 td.result.error > div {
-	line-height: 1.2;
-
-	overflow: visible;
-	text-wrap: nowrap;
-	background-color: var(--color-accent-red-light);
-	color: var(--color-accent-red);
-	
 	position: absolute;
-	margin: -10px 0 0 0;
+	left: 0;
+	top: 0;
+	white-space: nowrap;
+	overflow: visible;
+	background-color: var(--color-accent-red-light);
+	padding: 0 5px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+	border-radius: var(--border-radius-sm);
+}
+/* Cell interaction states */
+td:focus-within {
+	z-index: 102;
+}
+td.result + td {
+	position: relative;
+	z-index: 1;
+}
+td.result.error:hover {
+	z-index: 101;
 }
 
 /* Hover effect */
-td.result.error:hover {
-	z-index: 2;
-	box-shadow: var(--shadow-md);
+td.result.error:hover > div {
+	z-index: 20;
+	box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Error shake animation */
@@ -571,14 +585,18 @@ td.result.error:hover {
 	50%,
 	70%,
 	90% {
-		transform: translateX(-5px);
+		transform: translateX(-2px);
 	}
 	20%,
 	40%,
 	60%,
 	80% {
-		transform: translateX(5px);
+		transform: translateX(2px);
 	}
+}
+
+td.result.error {
+	animation: errorShake 0.5s ease-in-out;
 }
 
 td.result.error {

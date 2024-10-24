@@ -307,3 +307,183 @@ video {
 ::-webkit-scrollbar-thumb:hover {
 	background-color: var(--color-text-light);
 }
+
+/* Text selection style */
+::selection {
+	background-color: var(--color-primary-light);
+	color: var(--color-text);
+}
+
+/* Focus outline style */
+:focus {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+}
+
+/* Screen reader only class for accessibility */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border-width: 0;
+}
+
+/* Basic transition effect */
+.transition {
+	transition: all var(--animation-duration) var(--animation-timing);
+}
+
+/* Flex layout containers */
+.flex {
+	display: flex;
+}
+
+.flex-col {
+	flex-direction: column;
+}
+
+/* Grid layout container */
+.grid {
+	display: grid;
+}
+
+/* Text alignment utilities */
+.text-left {
+	text-align: left;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.text-right {
+	text-align: right;
+}
+
+/* Responsive hiding classes */
+@media (max-width: 640px) {
+	.hidden-sm {
+		display: none;
+	}
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+	.hidden-md {
+		display: none;
+	}
+}
+
+@media (min-width: 1025px) {
+	.hidden-lg {
+		display: none;
+	}
+}
+
+/* Print styles */
+@media print {
+	body {
+		background-color: #fff;
+		color: #000;
+	}
+
+	a {
+		text-decoration: underline;
+	}
+
+	.no-print {
+		display: none;
+	}
+}
+
+/* Table-related styles */
+table {
+	width: 100%;
+	border-collapse: separate;
+	border-spacing: 0;
+}
+
+th,
+td {
+	padding: 0;
+	text-align: left;
+}
+
+/* Input and contenteditable element styles */
+[contenteditable='true'] {
+	outline: none;
+	caret-color: var(--color-primary);
+}
+
+/* Drag-related styles */
+[draggable] {
+	user-select: none;
+	-webkit-user-drag: element;
+}
+
+/* SVG icon styles */
+.icon {
+	display: inline-block;
+	width: 1em;
+	height: 1em;
+	stroke-width: 0;
+	stroke: currentColor;
+	fill: currentColor;
+}
+
+/* Error state styles */
+.error {
+	border-color: var(--color-accent-red);
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
+}
+
+/* Math formula styles */
+.formula {
+	font-family: 'Roboto Mono', monospace;
+}
+
+/* Animation-related styles */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes slideIn {
+	from {
+		transform: translateY(-10px);
+		opacity: 0;
+	}
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+/* Common animation classes */
+.animate-fade-in {
+	animation: fadeIn var(--animation-duration) var(--animation-timing);
+}
+
+.animate-slide-in {
+	animation: slideIn var(--animation-duration) var(--animation-timing);
+}
+
+/* Accessibility enhancement */
+.visually-hidden:not(:focus):not(:active) {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
