@@ -13,13 +13,13 @@ function getType(a) {
     if (t.length === a.length)
       return 'vector'
 
-    throw new Error(`bad data ${typeof a}`)
+    throw new Error(`bad data type [${typeof a}]`)
   }
 
   if (a+0 === a)
     return 'number'
 
-  throw new Error('bad input ${a}')
+  throw new Error(`bad input ${a}`)
 }
 
 function validateTypes(types, okTypes, warn) {
@@ -31,7 +31,7 @@ function validateTypes(types, okTypes, warn) {
   types.forEach(function(t) {
     if (okTypes.indexOf(t) === -1) {
       if (!warn) 
-        warn = `data provided with ineligible type ${t}`
+        warn = `data provided with ineligible type [${t}]`
       throw new Error(warn)
     }
   })
@@ -110,7 +110,7 @@ var unaryOps = {
     sqrt: function(a) { 
       validateTypes(getType(a), ['number'])
       if (a < 0)
-        throw new Error(`sqrt needs positive number argument`)
+        throw new Error(`sqrt needs positive  number argument`)
       return Math.sqrt(a) 
     },
     cbrt: function(a) { 
@@ -231,9 +231,9 @@ var binaryOps = {
     '==': function(a,b) { 
       let ta = getType(a),
           tb = getType(b)
-      validateTypes([ta, tb], ['number', 'vector'])
+      validateTypes([ta, tb], ['number', 'vector', 'boolean'])
       if (ta !== tb)
-        throw new Error(`both arguments to == must be vector, or both numbers`)
+        throw new Error(`both arguments to == must be vector, or both numbers or both boolean`)
       if (ta === 'vector')
         return array_comparitor(a,b) === 0
       return a === b 
@@ -241,9 +241,9 @@ var binaryOps = {
     '!=': function(a,b) { 
       let ta = getType(a),
           tb = getType(b)
-      validateTypes([ta, tb], ['number', 'vector'])
+      validateTypes([ta, tb], ['number', 'vector', 'boolean'])
       if (ta !== tb)
-        throw new Error(`both arguments to != must be vector, or both numbers`)
+        throw new Error(`both arguments to != must be vector, or both numbers or both boolean`)
       if (ta === 'vector')
         return array_comparitor(a,b) !== 0
       return a !== b 
@@ -307,7 +307,7 @@ var ternaryOps = {
     '?': function(c,y,n) { 
       validateTypes(getType(c), ['boolean'])
       if (getType(y) !== getType(n))
-        throw new Error(`2nd and 3rd args to ? op should be same type ${getType(y)} != ${getType(n)}`)
+        throw new Error(`2nd and 3rd args to ? op should be same type [${getType(y)} != ${getType(n)}]`)
       return c ? y : n
     }
   }
@@ -318,8 +318,31 @@ var functions = {
       return Math.random(a) 
     },
     fac: factorial,
-    min: min,
-    max: max,
+    min: function(array) {
+
+      if (arguments.length === 1 && Array.isArray(array)) {
+      
+        return min.apply(Math, array)
+      } 
+      else {
+  
+        let types = Array.from(arguments).map(function(a) { return getType(a) })
+        validateTypes(types, ['number'])
+        return Math.min.apply(Math, arguments)
+      }
+    },
+    max: function(array) {
+      if (arguments.length === 1 && Array.isArray(array)) {
+      
+        return max.apply(Math, array)
+      } 
+      else {
+  
+        let types = Array.from(arguments).map(function(a) { return getType(a) })
+        validateTypes(types, ['number'])
+        return Math.max.apply(Math, arguments)
+      }
+    },
     hypot: function(a) { 
       return Math.hypot(a) 
     },
@@ -329,12 +352,15 @@ var functions = {
     },
 //    'if': condition,
 //    gamma: gamma,
-    roundTo: roundTo,
+    roundTo: function(a, b) {
+      validateTypes([getType(a), getType(b)], ['number'])
+      return roundTo(a,b)
+    },
 //    map: arrayMap,
 //    fold: arrayFold,
 //    filter: arrayFilter,
 //    indexOf: stringOrArrayIndexOf,
-    join: arrayJoin
+//    join: arrayJoin
 }
 
 function arrayIndex(array, index) {
@@ -384,7 +410,7 @@ function roundTo(value, exp) {
     value = value.toString().split('e');
     return +(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp));
 }
-
+/*
 function arrayJoin(sep, a) {
 
     if (!Array.isArray(a)) {
@@ -392,12 +418,12 @@ function arrayJoin(sep, a) {
     }
   
     return a.join(sep);
-}
+} */
   
 function inOperator(a, b) {
 
   if (!Array.isArray(b))
-    throw new Error(`'in' operator needs a vector, not ${typeof b}`)
+    throw new Error(`'in' operator needs a vector, not [${typeof b}]`)
   return contains(b, a);
 }
 
@@ -463,7 +489,7 @@ function cross_product(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b)) 
      throw new Error('cross product operates on vectors') 
   if (a.length !== 3 || b.length !== 3) 
-     throw new Error('vectors must be length 3') 
+     throw new Error('cross product vectors must be length 3') 
 
   return [
       a[1]*b[2] - a[2]*b[1],

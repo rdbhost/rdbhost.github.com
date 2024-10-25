@@ -46,6 +46,12 @@ const samples = {
                   null,
                   ["ref",                     "ref",        "",    "a"],
                   null,
+                  ["equals",                  "eq",         "",  "a == b"],
+                  ["not equal",               "neq",        "",  "a != b"],
+                  ["greater than",            "gt",         "",  "a > b"],
+                  ["less than",               "lt",         "",  "a < b"],
+                  ["greater or equal",        "ge",         "",  "a >= b"],
+                  ["less than or equal",      "le",         "",  "a <= b"],
         ]
     },
     unary: {                  
@@ -107,6 +113,12 @@ const samples = {
                   ["Second value",            "b",          "cm",   [3.0, [1.0,-1,-2], [5.0,6.1,1], 2, false] ],
                   ["Third value",             "c",          "",     [5, true, 4.1, [1,2], false] ],
                   null,
+                  ["Round To",                "round_to",   "",     "roundTo(a,b)"],
+                  ["Minimum",                 "min_",       "",     "min(a,b)"],
+                  ["Maximum",                 "max_",       "",     "max(a,b)"],
+                  ["Minimum",                 "min_a",       "",     "min(a)"],
+                  ["Maximum",                 "max_a",       "",     "max(a)"],
+
         ]
     },
     ternary: {
