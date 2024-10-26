@@ -96,14 +96,14 @@ const samples = {
                   ["log base 2",              "log2_",      "",   "log2(a)"],
                   ["log base 10",             "log10_",     "",   "log10(a)"],
                   null,
-                  ["e^x - 1",                 "exp_minus_1", "",  "expm1(a)"],
                   ["ln(1+x)",                 "log_1p",     "",   "log1p(a)"],
                   ["e^x",                     "e_p",        "",   "exp(a)"],
+                  ["e^x - 1",                 "exp_minus_1", "",  "expm1(a)"],
                   null,
 
         ]
     },
-    binary: {
+    functions: {
         "header": ["scalar, scalar", "vector, vector", "scalar, vector", "vector, scalar", "boolean"],
         "rows":   [null,
     
@@ -116,8 +116,14 @@ const samples = {
                   ["Round To",                "round_to",   "",     "roundTo(a,b)"],
                   ["Minimum",                 "min_",       "",     "min(a,b)"],
                   ["Maximum",                 "max_",       "",     "max(a,b)"],
-                  ["Minimum",                 "min_a",       "",     "min(a)"],
-                  ["Maximum",                 "max_a",       "",     "max(a)"],
+                  ["Minimum",                 "min_a",       "",    "min(a)"],
+                  ["Maximum",                 "max_a",       "",    "max(a)"],
+                  null,
+                  ["factorial",               "fac",         "",    "fac(a)"],
+                  ['atan2',                   "atan2",       "",    "atan2(a,b)"],
+                  ['hypot',                   "hypot",       "",    "hypot(a,b)"],
+                  ['hypot',                   "hypot_",      "",    "hypot(a)"],
+                  null,
 
         ]
     },

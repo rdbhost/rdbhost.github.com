@@ -315,9 +315,13 @@ var ternaryOps = {
 var functions = {
   
     random: function(a) { 
+      validateTypes(getType(a), ['number'])
       return Math.random(a) 
     },
-    fac: factorial,
+    fac: function(a) { 
+      validateTypes(getType(a), ['number'])
+      return factorial(a)
+    },
     min: function(array) {
 
       if (arguments.length === 1 && Array.isArray(array)) {
@@ -343,12 +347,22 @@ var functions = {
         return Math.max.apply(Math, arguments)
       }
     },
-    hypot: function(a) { 
-      return Math.hypot(a) 
+    hypot: function hypot(array) { 
+      if (arguments.length === 1 && Array.isArray(array)) {
+      
+        return hypot.apply(Math, array)
+      } 
+      else {
+  
+        let types = Array.from(arguments).map(function(a) { return getType(a) })
+        validateTypes(types, ['number'])
+        return Math.hypot.apply(Math, arguments) 
+      }
     },
 //    pow: (a,b) => power(a,b),
-    atan2: function(a) { 
-      return Math.atan2(a) 
+    atan2: function(a, b) { 
+      validateTypes([getType(a),getType(b)], ['number'])
+      return Math.atan2(a, b) 
     },
 //    'if': condition,
 //    gamma: gamma,
@@ -518,6 +532,67 @@ function product(a, b) {
       return a * b
   }
 }
+
+// Gamma function from math.js
+function gamma(n) {
+  var t, x;
+
+  if (isInteger(n)) {
+    if (n <= 0) {
+      return isFinite(n) ? Infinity : NaN;
+    }
+
+    if (n > 171) {
+      return Infinity; // Will overflow
+    }
+
+    var value = n - 2;
+    var res = n - 1;
+    while (value > 1) {
+      res *= value;
+      value--;
+    }
+
+    if (res === 0) {
+      res = 1; // 0! is per definition 1
+    }
+
+    return res;
+  }
+
+  if (n < 0.5) {
+    return Math.PI / (Math.sin(Math.PI * n) * gamma(1 - n));
+  }
+
+  if (n >= 171.35) {
+    return Infinity; // will overflow
+  }
+
+  if (n > 85.0) { // Extended Stirling Approx
+    var twoN = n * n;
+    var threeN = twoN * n;
+    var fourN = threeN * n;
+    var fiveN = fourN * n;
+    return Math.sqrt(2 * Math.PI / n) * Math.pow((n / Math.E), n) *
+      (1 + (1 / (12 * n)) + (1 / (288 * twoN)) - (139 / (51840 * threeN)) -
+      (571 / (2488320 * fourN)) + (163879 / (209018880 * fiveN)) +
+      (5246819 / (75246796800 * fiveN * n)));
+  }
+
+  --n;
+  x = GAMMA_P[0];
+  for (var i = 1; i < GAMMA_P.length; ++i) {
+    x += GAMMA_P[i] / (n + i);
+  }
+
+  t = n + GAMMA_G + 0.5;
+  return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
+}
+function isInteger(value) {
+  return isFinite(value) && (value === Math.round(value));
+}
+
+
 
   
 export { functions, unaryOps, binaryOps, ternaryOps }
