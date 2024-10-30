@@ -55,7 +55,7 @@ class MyMath {
     //   returns a numerical result (scalar or vector), or an Error object
     // 
     evaluate(syntree, scope) {
-      
+
       try {
 
         // evaluate() with a scope object
