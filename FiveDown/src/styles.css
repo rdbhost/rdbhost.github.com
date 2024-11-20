@@ -50,7 +50,7 @@ thead tr:first-child th:last-child {
 /* Enhanced table header styles with centered text */
 th {
 	background-color: var(--color-primary);
-	font-size: 12px;
+	font-size: 0.75rem;
 	color: var(--color-surface);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
@@ -120,7 +120,7 @@ th.result {
 	font-weight: 600;
 	color: var(--color-surface);
 	box-shadow: var(--shadow-md);    
-	font-size: 12px;
+	font-size: 0.75rem;
 	z-index: 17;
 	overflow: hidden;
 	transition: background-color var(--animation-duration) var(--animation-timing);
@@ -224,7 +224,7 @@ tbody tr {
 td {
 	border: 1px solid var(--color-border);
 	padding: 0 10px;
-    font-size: 10px;
+    font-size: 0.625rem;
 	color: var(--color-text);
 	will-change: opacity;
 	animation: cellFade var(--animation-duration) ease-in-out;
@@ -910,7 +910,7 @@ table.switching {
 .project-menu .sheet-selecter .sheet-delete {
 	color: var(--color-primary);
 	background-color: #f5faff;
-	font-size: 14px;
+	font-size: 0.875rem;
 	width: 20px;
 	height: 20px;
 	padding-bottom: 3px;
