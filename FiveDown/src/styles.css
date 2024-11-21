@@ -296,7 +296,7 @@ tbody tr {
 /* General cell styling with fade-in animation */
 td {
 	border: 1px solid var(--color-border);
-	padding: var(--spacing-md) var(--spacing-lg);
+	padding: 0px var(--spacing-xs);
 	font: 500 0.9375rem/1.6 'Roboto', sans-serif;
 	color: var(--color-text);
 	will-change: opacity;
@@ -596,7 +596,7 @@ td.result.error {
 	background-color: var(--color-accent-red-light);
 	color: var(--color-accent-red);
 	position: relative;
-	padding: 0.4em 5px 0.4em 25px;
+	padding: 0 var(--spacing-xs);
 	height: auto !important;
 	min-height: 3em;
 	max-height: none !important;
