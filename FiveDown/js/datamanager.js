@@ -95,8 +95,10 @@ class DataManager {
                 throw new Error(`invalid name ${name}`) 
     
             $row.find('.result').each(function(i, td) {
+
                 let $td = $(td);
                 if ($td.data('alt') == altnum) {
+                    
                     _this.VALUES[altnum].addItem(name, $td);
                     let val = _this.math.data_input_evaluater($td.text(), _this.VALUES[altnum]);
                     _this.VALUES[altnum].set(name, val);
@@ -131,6 +133,9 @@ class DataManager {
 
         let _this = this
         let scope = this.VALUES[altnum]
+
+        if (!scope)
+            throw new Error(`this.VALUES[${altnum}] is nullish`)
 
         this.FORMULAS.forEach(function($formulaTd, key) {
 

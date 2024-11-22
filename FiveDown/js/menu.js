@@ -1,10 +1,11 @@
-import { save_storable, get_storable, gather_storable, replace_table_from_json, 
+import { save_storable, get_storable, gather_storable, 
     get_next_sheet_name, get_all_sheet_names, remove_sheet_from_storage } from './persistance.js'
-import { ensure_five_blank, table_normalize, load_sheet  } from './sheet.js'
+import { load_sheet, remove_draggable_rows, remove_draggable_columns  } from './sheet.js'
 
 // processes sheet_name for display, retrieving a custom name if apropo
 //
 function display_sheet_name(name, titles) {
+
     if (name in titles) 
         return titles[name]
     if (name.substring(0,5) == 'sheet')
@@ -19,6 +20,7 @@ function set_sheet_name_active(current) {
     $spans.removeClass('active').find('button').hide() // attr('disabled', 1)
     let $cur = $('#'+current)
     $cur.addClass('active')
+
     if ($spans.length > 1) {
         $cur.find('button').show() // removeAttr('disabled')
     }
@@ -42,6 +44,7 @@ function menu_initialize(current) {
         let titles = get_storable('titles')
 
         sheet_names.forEach(function(name, i) {
+            
             $new = $first.clone(true)
             $new.attr('id', name)
             $new.find('span').text(display_sheet_name(name, titles))
@@ -68,11 +71,16 @@ function menu_initialize(current) {
         let $table = $('table')
 
         // if button is for current sheet, ignore it and return
-        if (status['active_sheet'] === target_sheet) { return }
+        if (status['active_sheet'] === target_sheet) 
+            return 
 
         // save data from current sheet to localStorage
         let data =  gather_storable($table)
         save_storable(status['active_sheet'], data)
+
+        // remove draggable/droppable handlers
+        remove_draggable_rows()
+        remove_draggable_columns()
 
         // save new sheet selection to localStorage status
         save_storable('status', {'active_sheet': target_sheet})
@@ -106,6 +114,10 @@ function menu_initialize(current) {
         $target.remove()
         remove_sheet_from_storage(target_id)
 
+        // remove draggable/droppable handlers
+        remove_draggable_rows()
+        remove_draggable_columns()
+       
         setTimeout(() => $alt.trigger('click'), 0)
 
         console.log(`sheet delete button clicked ${target_id}`)
@@ -168,6 +180,10 @@ function menu_initialize(current) {
         save_storable('status', {'active_sheet': target_sheet} )
         save_storable(target_sheet, data)
 
+        // remove draggable/droppable handlers
+        remove_draggable_rows()
+        remove_draggable_columns()
+ 
         // set active on active page btn, remove from others
         set_sheet_name_active(target_sheet)
 

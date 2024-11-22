@@ -3,7 +3,8 @@ import { name_valid, clean_name, formula_formatter, result_formatter } from './m
 import { get_storable, replace_table_from_json } from './persistance.js';
 //import { format_unit } from './unit-math.js';
 
-const MAX_ALTS = 8;
+const MAX_ALTS = 8
+var draggable_rows = 0
     
 // set_contenteditable_cols -- function to examine a row, and set 
 //   style and editability of formula, result, and unit cells
@@ -83,7 +84,7 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
 
         let $td = $($results.get(i))
         $td.text(val || "").data('prev-val', val || "")
-        $td.data('alt', i);
+        $td.data('alt', i)
     })
 
     if ($after) 
@@ -111,10 +112,10 @@ function row_is_blank($row) {
 
     $row.find('.result').each(function(i, td) {
         if ($(td).find('span').text() !== "") {
-            isBlank = false;
+            isBlank = false
         }
     })
-    return isBlank;
+    return isBlank
 }
 
 // ensures that the sheet ends with 5 blank rows.
@@ -148,7 +149,7 @@ function ensure_five_blank($table) {
             let $tr = $table.find('tbody > tr').last()
             $tr.remove();
             $sixth = $table.find('tbody > tr').slice(-6,-5);
-        };
+        }
     }
 
 }
@@ -157,6 +158,10 @@ function ensure_five_blank($table) {
 //  all rows are both draggable and also drop targets.
 //
 function apply_draggable_rows($table) {
+
+    if (draggable_rows > 0)
+        throw new Error('applying draggable rows repeatedly')
+    draggable_rows += 1
 
     let drag_opts = {
         axis: "y",              // only vertical dragging
@@ -174,6 +179,7 @@ function apply_draggable_rows($table) {
         }
     }    
 
+    console.log('applying draggable rows')
     let $rows = $table.find('tbody > tr')
     $rows.draggable(drag_opts).droppable(drop_opts)
 }
@@ -182,6 +188,11 @@ function apply_draggable_rows($table) {
 //
 function remove_draggable_rows($table) {
 
+    if (draggable_rows < 1)
+        throw new Error('removing draggable rows where none exist')
+    draggable_rows -= 1
+
+    console.log('removing draggable rows')
     $table.find('tbody > tr').draggable('destroy').droppable('destroy')
 }
 
@@ -238,6 +249,7 @@ function apply_draggable_columns($table) {
     }    
 
     // let $t = $('thead th.result')
+    console.log('applying draggable columns')
     $table.find('thead th.result').draggable(drag_opts).droppable(drop_opts)
     $table.find('thead th.alt-add').droppable(drop_opts)
 }
@@ -246,6 +258,7 @@ function apply_draggable_columns($table) {
 //
 function remove_draggable_columns($table) {
 
+    console.log('removing draggable columns')
     $table.find('thead > th.result').draggable('destroy').droppable('destroy')
     $table.find('thead > th.alt-add').droppable('destroy')
 }
@@ -314,10 +327,12 @@ function add_alt_column($table) {
     let $last = $blank_row.find('td.result').last()
     $last.after($last.clone(true))
 
-    update_alts($table)
+    let colnum = update_alts($table)-1
     apply_draggable_columns($table)
 
+    // TODO - add populate_values_for_alt
     // $table.trigger("table:alt-update");
+    return colnum
 }        
 
 // updates header to show Result, Result 1, Result 2 etc
@@ -365,6 +380,8 @@ function update_alts($table) {
         headers.find('button.close-res').hide();
         headers.find('button.close-res').off();
     }
+
+    return headers.length
 }
 
 // load data for given sheet_name from localStorage, and populate html table
@@ -641,9 +658,10 @@ function tbody_handlers($table) {
 
         $t.data('prev-val', input_val)
 
-        let name = $tr.find('.name').text()
+        let name = $tr.find('.name').text() 
         let DM = $table.data('DM')
-        let scope = DM.VALUES[$t.data('alt')]
+        let scope = DM.VALUES[$t.data('alt')] 
+        if (!scope) debugger
 
         if (input_val === "") {
 
