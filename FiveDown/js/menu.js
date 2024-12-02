@@ -79,7 +79,7 @@ function menu_initialize(current) {
         save_storable(status['active_sheet'], data)
 
         // remove draggable/droppable handlers
-        remove_draggable_rows()
+        remove_draggable_rows($table)
         remove_draggable_columns()
 
         // save new sheet selection to localStorage status
@@ -115,7 +115,7 @@ function menu_initialize(current) {
         remove_sheet_from_storage(target_id)
 
         // remove draggable/droppable handlers
-        remove_draggable_rows()
+        remove_draggable_rows($('table'))
         remove_draggable_columns()
        
         setTimeout(() => $alt.trigger('click'), 0)
@@ -181,7 +181,7 @@ function menu_initialize(current) {
         save_storable(target_sheet, data)
 
         // remove draggable/droppable handlers
-        remove_draggable_rows()
+        remove_draggable_rows($table)
         remove_draggable_columns()
  
         // set active on active page btn, remove from others
