@@ -116,11 +116,11 @@ thead tr:first-child th:last-child {
 /* Enhanced table header styles with centered text */
 th {
 	background-color: var(--color-primary);
-	font: 600 1rem/1.5 'Roboto', sans-serif;
+	font-size: 0.75rem;
 	color: var(--color-surface);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	padding: var(--spacing-md) var(--spacing-lg);
+	padding: 0 var(--spacing-lg);
 	text-align: center;
 	transition: all var(--animation-duration) var(--animation-timing);
 	position: relative;
@@ -181,11 +181,12 @@ th.result {
 	border-top-right-radius: var(--border-radius-xl);
 	border: 1px solid var(--color-border);
 	background-color: var(--color-accent-blue);
-	padding: var(--spacing-md) var(--spacing-lg);
+	padding: 0 var(--spacing-lg);
 	text-align: center;
 	font-weight: 600;
 	color: var(--color-surface);
-	box-shadow: var(--shadow-md);
+	box-shadow: var(--shadow-md);    
+	font-size: 0.75rem;
 	z-index: 17;
 	overflow: hidden;
 	transition: background-color var(--animation-duration) var(--animation-timing);
@@ -245,7 +246,7 @@ th.alt-add {
 	border-top-right-radius: var(--border-radius-xl);
 	border: 1px solid var(--color-border);
 	background-color: var(--color-secondary);
-	padding: var(--spacing-md) var(--spacing-lg);
+	padding: 10px var(--spacing-lg);
 	text-align: center;
 	font-weight: 600;
 	color: var(--color-surface);
@@ -280,7 +281,7 @@ th.alt-add:after {
 	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M256 112v288M400 256H112'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: center;
-	background-size: 24px;
+	background-size: 10px;
 }
 
 /* Table body styling */
@@ -302,6 +303,7 @@ td {
 	will-change: opacity;
 	animation: cellFade var(--animation-duration) ease-in-out;
 	transition: all var(--animation-duration) var(--animation-timing);
+	min-height: 2.3rem;
 }
 
 @keyframes cellFade {
@@ -335,7 +337,7 @@ td:hover:after {
 /* Handle and delete column styling */
 td.handle,
 td.delete {
-	height: 2.5rem;
+	height: 10px;
 	width: 2.5rem;
 	cursor: pointer;
 	background-color: var(--color-handle);
@@ -361,6 +363,7 @@ td.handle:before {
 	background-position: center;
 	background-repeat: no-repeat;
 	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
+	background-size: 15px;
 }
 
 /* Delete icon */
@@ -374,7 +377,7 @@ td.delete:before {
 	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M368 368L144 144M368 144L144 368'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: center;
-	background-size: 24px;
+	background-size: 15px;
 	transition: background-image var(--animation-duration) var(--animation-timing);
 }
 
@@ -868,7 +871,7 @@ table.switching {
 
 	td,
 	th {
-		padding: var(--spacing-md) var(--spacing-lg);
+		padding: 0 var(--spacing-lg);
 	}
 
 	.project-menu > span {
@@ -982,7 +985,7 @@ table.switching {
 .project-menu .sheet-selecter .sheet-delete {
 	color: var(--color-primary);
 	background-color: #f5faff;
-	font-size: 14px;
+	font-size: 0.875rem;
 	width: 20px;
 	height: 20px;
 	padding-bottom: 3px;
