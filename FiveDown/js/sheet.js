@@ -151,7 +151,6 @@ function ensure_five_blank($table) {
             $sixth = $table.find('tbody > tr').slice(-6,-5);
         }
     }
-
 }
 
 // make all rows draggable to reorder
