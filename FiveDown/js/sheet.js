@@ -690,7 +690,7 @@ function tbody_handlers($table) {
         if (unit !== ($td.data("prev-val") || '')) {         // is unit diff from stored?
 
             $td.data("prev-val", unit).data('value', unit);  // store new unit in data
-//            let disp = format_unit(unit)
+            let disp = unit // format_unit(unit)
             if (disp?.message) {
 
                 $td.text(unit).data('value', undefined).data('prev-val', unit)
