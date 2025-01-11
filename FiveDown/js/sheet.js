@@ -308,9 +308,11 @@ function add_alt_column($table) {
 
     // add additional header column, named Alt #
     let $pluscol = $table.find('th.alt-add').first()
-    let $h = $table.find('th.result').last().remove()
+    let $h = $table.find('th.result').last().detach() // remove()
     $pluscol.before($h.clone(true))  // restores starting col set
 
+    $h.data('custom_name', '') // remove custom name from clonable header
+    $h.data('alt', null)
     let $new = $h.clone(true)
     $pluscol.before($new)
 
