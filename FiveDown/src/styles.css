@@ -36,6 +36,7 @@
 	height: 1.5em;
   }
   
+
   #new-sheet {
 	font-size: 0.875rem;
 	border: none;
@@ -114,13 +115,13 @@
 	/* Subtle shadow effect */
   }
   
-  th.alt-add  {
+  th.alt-add {
 	
 	border-top-left-radius: 1.2rem;
 	border-top-right-radius: 1.2rem;
   }	
 
-  th.alt-add, td.alt-add {
+  th.alt-add {
 	
 	text-align: center;
 	background-color: rgb(239 246 255 );
