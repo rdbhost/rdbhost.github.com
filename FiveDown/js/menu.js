@@ -112,11 +112,12 @@ function menu_initialize(current) {
             throw new Error('trying to delete last sheet')  
 
         $target.remove()
+        remove_sheet_from_storage(target_id)
 
-
-        // remove draggable/droppable handlers
-        // remove_draggable_rows($('table'))
-        // remove_draggable_columns($('table'))
+        // -- DVK redundant with $alt.trigger handler
+        // remove draggable/droppable handlers 
+        //remove_draggable_rows($('table'))
+        //remove_draggable_columns($('table'))
        
         setTimeout(() => $alt.trigger('click'), 0)
         setTimeout(() => remove_sheet_from_storage(target_id), 0.1)

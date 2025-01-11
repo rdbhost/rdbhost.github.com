@@ -1,0 +1,691 @@
+:root {
+	-webkit-text-size-adjust: 100%;
+	-moz-tab-size: 4;
+	tab-size: 4;
+	line-height: 1.5;
+	-webkit-tap-highlight-color: transparent;
+
+	/* 
+	--
+	--
+
+	/* Primary colors */
+	--color-primary: #3b82f6;
+	--color-primary-dark: #2563eb;
+	--color-primary-light: #bfdbfe;
+
+	/* Secondary colors */
+	--color-secondary: #10b981;
+	--color-secondary-dark: #059669;
+	--color-secondary-light: #d1fae5;
+
+	/* Neutral colors */
+	--color-background: #f0f4f8;
+	--color-surface: #ffffff;
+	--color-border: #d1d5db;
+	--color-text: #1f2937;
+	--color-text-light: #4b5563;
+
+	/* Accent colors */
+	--color-accent-blue: #4f46e5;
+	--color-accent-blue-dark: #4338ca;
+	--color-accent-red: #ef4444;
+	--color-accent-red-light: #fee2e2;
+
+	/* Other colors */
+	--color-handle: #f3f4f6;
+	--color-handle-hover: #e5e7eb;
+	--color-output: #dcfce7;
+	--color-output-text: #166534;
+
+	/* Spacing variables */
+	--spacing-xs: 0.25rem;
+	--spacing-sm: 0.5rem;
+	--spacing-md: 1rem;
+	--spacing-lg: 1.25rem;
+	--spacing-xl: 1.5rem;
+
+	/* Border radius variables */
+	--border-radius-sm: 0.25rem;
+	--border-radius-md: 0.5rem;
+	--border-radius-lg: 0.75rem;
+	--border-radius-xl: 1rem;
+
+	/* Box shadow variables */
+	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+		0 2px 4px -1px rgba(0, 0, 0, 0.06);
+	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+		0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Container for the table */
+.outer-box {
+	margin: 0 auto;
+	width: 90%;
+	max-width: 100%;
+}
+
+/* Table base styling with fade-in animation */
+table {
+	margin-top: -1px;
+	width: 100%;
+	border: 1px solid var(--color-border);
+	background-color: var(--color-surface);
+	box-shadow: var(--shadow-md);
+	border-radius: var(--border-radius-lg);
+	overflow: hidden;
+	position: relative;
+	z-index: 10;
+	
+	
+
+	text-indent: 0;
+	border-color: inherit;
+	border-collapse: collapse;
+}
+
+/* Table header styling */
+thead {
+	position: relative;
+	z-index: 15;
+	border-bottom: 2px solid var(--color-border);
+}
+
+/* Rounded corners for first and last header cells */
+thead tr:first-child th:first-child {
+	border-top-left-radius: var(--border-radius-xl);
+}
+
+thead tr:first-child th:last-child {
+	border-top-right-radius: var(--border-radius-lg);
+}
+
+/* Enhanced table header styles with centered text */
+th {
+	background-color: var(--color-primary);
+	font: 600 1rem/1.5 'Roboto', sans-serif;
+	color: var(--color-surface);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	padding: var(--spacing-md) var(--spacing-lg);
+	text-align: center;
+	
+	position: relative;
+	border: 1px solid var(--color-border);
+	z-index: 16;
+}
+
+/* Keep description column left-aligned */
+th.description {
+	text-align: left;
+}
+
+/* Improved alignment for specific columns */
+th.result,
+th.formula,
+th.min,
+th.unit {
+	text-align: center;
+}
+
+/* Multi-line header text with ellipsis */
+th .header-text {
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-height: 2.4em;
+}
+
+/* Sort indicator styles */
+th.sortable {
+	cursor: pointer;
+}
+
+th.sortable::after {
+	content: '↕';
+	position: absolute;
+	right: var(--spacing-sm);
+	top: 50%;
+
+	color: var(--color-surface);
+	font-size: 0.875rem;
+}
+
+/* Result column header styling */
+th.result {
+	position: relative;
+	cursor: move;
+	border-top-left-radius: var(--border-radius-xl);
+	border-top-right-radius: var(--border-radius-xl);
+	border: 1px solid var(--color-border);
+	background-color: var(--color-accent-blue);
+	padding: var(--spacing-md) var(--spacing-lg);
+	text-align: center;
+	font-weight: 600;
+	color: var(--color-surface);
+	box-shadow: var(--shadow-md);
+	z-index: 17;
+	overflow: hidden;
+	
+}
+
+/* Drag handle for result column */
+th.result:before {
+	content: '⋮⋮';
+	position: absolute;
+	left: 8px;
+	top: 50%;
+
+	cursor: move;
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 14px;
+}
+
+/* Unit column styling */
+th.unit {
+	border-top-left-radius: var(--border-radius-lg);
+	overflow: hidden;
+	position: relative;
+	z-index: 16;
+	background-color: var(--color-primary);
+	
+}
+
+/* Unit column border overlay */
+th.unit::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-top-left-radius: var(--border-radius-lg);
+	pointer-events: none;
+	border: 1px solid var(--color-border);
+	z-index: 1;
+}
+
+th:last-child {
+	border-top-right-radius: var(--border-radius-lg);
+}
+
+/* Add column header styling */
+th.alt-add {
+	position: relative;
+	width: 2.5rem;
+	cursor: pointer;
+	border-top-left-radius: var(--border-radius-xl);
+	border-top-right-radius: var(--border-radius-xl);
+	border: 1px solid var(--color-border);
+	background-color: var(--color-secondary);
+	padding: var(--spacing-md) var(--spacing-lg);
+	text-align: center;
+	font-weight: 600;
+	color: var(--color-surface);
+	box-shadow: var(--shadow-md);
+	
+	z-index: 17;
+	overflow: hidden;
+}
+
+/* Basic element style reset */
+body {
+	font-size: 16px;
+	line-height: 1.6;
+	background-color: var(--color-background);
+}
+
+
+/* Plus icon for add column header */
+th.alt-add:after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='white' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M256 112v288M400 256H112'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 24px;
+}
+
+/* Table body styling */
+tbody {
+	position: relative;
+	z-index: 5;
+}
+
+tbody tr {
+	border-bottom: 1px solid var(--color-border);
+}
+
+/* General cell styling with fade-in animation */
+td {
+	border: 1px solid var(--color-border);
+	padding: var(--spacing-md) var(--spacing-lg);
+	font: 500 0.9375rem/1.6 'Roboto', sans-serif;
+	color: var(--color-text);
+	
+	
+	
+}
+
+td:not(.handle):not(.delete) {
+	text-align: left;
+}
+
+/* Handle and delete column styling */
+td.handle,
+td.delete {
+	height: 2.5rem;
+	width: 2.5rem;
+	cursor: pointer;
+	background-color: var(--color-handle);
+	padding: 0;
+	text-align: center;
+	
+}
+
+/* Handle icon */
+td.handle:before {
+	content: '';
+	display: flex;
+	height: 100%;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2'%3E%3Cpath d='M3 12h18M3 6h18M3 18h18'/%3E%3C/svg%3E");
+}
+
+/* Delete icon */
+td.delete:before {
+	content: '';
+	display: flex;
+	height: 100%;
+	width: 100%;
+	align-items: center;
+	justify-content: center;
+	background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' class='ionicon' viewBox='0 0 512 512'%3E%3Cpath fill='none' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='32' d='M368 368L144 144M368 144L144 368'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 24px;
+	
+}
+
+/* Input and textarea styling */
+input,
+textarea {
+	width: 100%;
+	border-radius: var(--border-radius-sm);
+	border: 1px solid var(--color-border);
+	padding: var(--spacing-sm) var(--spacing-md);
+	font-family: 'Roboto Mono', monospace;
+	
+}
+
+input:focus,
+textarea:focus {
+	border-color: var(--color-primary);
+	box-shadow: 0 0 0 3px var(--color-primary-light), var(--shadow-md);
+
+	
+}
+
+/* Project menu styling */
+.project-menu {
+	margin-bottom: 0;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-end;
+	gap: var(--spacing-sm);
+	border: 1px solid var(--color-border);
+	border-bottom: none;
+	background-color: var(--color-surface);
+	padding: var(--spacing-md) var(--spacing-md) var(--spacing-xs);
+	position: relative;
+	z-index: 20;
+	border-top-left-radius: var(--border-radius-lg);
+	border-top-right-radius: var(--border-radius-lg);
+}
+
+/* Individual tab styling in project menu */
+.project-menu > span {
+	cursor: text;
+	border-top-left-radius: var(--border-radius-xl);
+	border-top-right-radius: var(--border-radius-xl);
+	border: 1px solid var(--color-border);
+	border-bottom: none;
+	background-color: var(--color-handle);
+	padding: var(--spacing-md) var(--spacing-lg);
+	font: 500 0.9375rem/1.5 'Roboto', sans-serif;
+	color: var(--color-text-light);
+	box-shadow: var(--shadow-sm);
+	
+	min-width: 100px;
+}
+
+/* Active tab styling */
+.project-menu .active span {
+	background-color: var(--color-primary-dark);
+	color: var(--color-surface);
+	font-weight: 600;
+	box-shadow: var(--shadow-md);
+
+	border-bottom: 2px solid var(--color-surface);
+	
+}
+
+/* Editable tab focus state */
+.project-menu > span:focus {
+	outline: 2px solid var(--color-primary);
+	background-color: var(--color-surface);
+	color: var(--color-text);
+}
+
+/* Sheet actions container */
+.sheet-actions {
+	display: flex;
+	align-items: center;
+	margin-left: auto;
+	padding-bottom: var(--spacing-md);
+}
+
+/* Delete and New sheet buttons */
+#delete-sheet,
+#new-sheet {
+	padding: var(--spacing-sm) var(--spacing-md);
+	margin-left: var(--spacing-md);
+	border-radius: var(--border-radius-sm);
+	font-size: 0.875rem;
+	cursor: pointer;
+	
+	border: none;
+	font-weight: 600;
+}
+
+#delete-sheet {
+	background-color: var(--color-handle);
+	color: var(--color-accent-red);
+}
+
+#new-sheet {
+	background-color: var(--color-secondary-light);
+	color: var(--color-secondary);
+	border: 1px solid var(--color-secondary);
+	border-radius: var(--border-radius-md);
+}
+
+.sheet-delete {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	background-color: transparent;
+	border: none;
+	border-radius: 50%;
+	color: var(--color-text-light);
+	font-size: 18px;
+	cursor: pointer;
+	
+	margin-left: var(--spacing-sm);
+}
+
+.sheet-delete::before {
+	line-height: 1;
+}
+
+/* Styles for unselected sheets */
+.project-menu .inactive {
+
+}
+
+/* Styles for formula cells */
+td.formula {
+	width: auto;
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--color-primary-dark);
+	font-family: 'Roboto Mono', monospace;
+	
+}
+
+td.formula:focus {
+	white-space: normal;
+	overflow: visible;
+	z-index: 10;
+	position: relative;
+	background-color: var(--color-surface);
+	box-shadow: var(--shadow-md);
+}
+
+/* Styles for result cells, including error cells */
+td.result {
+	width: auto;
+	max-width: 200px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	color: var(--color-primary-dark);
+	font-family: 'Roboto Mono', monospace;
+	
+	height: 3em;
+	line-height: 3em;
+}
+
+/* Base styles for error state */
+td.result.error {
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
+	position: relative;
+	padding: 0.4em 5px 0.4em 25px;
+	height: auto !important;
+	min-height: 3em;
+	max-height: none !important;
+	white-space: normal !important;
+	overflow: visible !important;
+	z-index: 1;
+}
+
+
+/* Error text styles */
+td.result.error > div {
+	line-height: 1.2;
+
+	overflow: visible;
+	text-wrap: nowrap;
+	background-color: var(--color-accent-red-light);
+	color: var(--color-accent-red);
+	
+	position: absolute;
+	margin: -10px 0 0 0;
+}
+
+td.result.error {
+	
+}
+
+/* Remove ellipsis */
+td.result.error::after {
+	content: none;
+}
+
+/* Ensure table rows can accommodate increased cell height */
+tbody tr {
+	height: auto !important;
+}
+
+/* Read-only cell styling */
+td.readonly {
+	background-color: var(--color-handle);
+	color: var(--color-text-light);
+}
+
+/* Output cell styling */
+td.output {
+	background-color: var(--color-output);
+	font-weight: 600;
+	color: var(--color-output-text);
+}
+
+/* Alternate add button styling */
+.alt-add {
+	cursor: pointer;
+	background-color: var(--color-primary-light);
+	color: var(--color-primary-dark);
+	
+}
+
+/* Close button for result columns */
+.close-res {
+	cursor: pointer;
+	background: none;
+	border: none;
+	color: rgba(255, 255, 255, 0.7);
+	font-size: 16px;
+	font-weight: bold;
+	position: absolute;
+	right: 8px;
+	top: 50%;
+
+	
+	padding: 4px;
+	line-height: 1;
+}
+
+/* Styles for specific columns */
+th.formula,
+th.min,
+th.unit,
+td.formula,
+td.min,
+td.unit {
+	position: relative;
+}
+
+th.formula:last-child,
+th.min:last-child,
+th.unit:last-child {
+	border-top-right-radius: 0;
+}
+
+tr:last-child td.formula:last-child,
+tr:last-child td.min:last-child,
+tr:last-child td.unit:last-child {
+	border-bottom-right-radius: var(--border-radius-lg);
+}
+
+th.formula {
+	border-top-right-radius: var(--border-radius-lg);
+}
+
+/* Row animation styles */
+tbody > tr {
+	
+	opacity: 1;
+	max-height: 50px;
+	overflow: hidden;
+}
+
+tbody > tr.row-add {
+	
+}
+
+tbody > tr.row-remove {
+	
+}
+
+/* Drag and drop styles */
+tr.dragging {
+	opacity: 0.5;
+	background-color: var(--color-primary-light);
+
+	
+}
+
+tr.drop-target {
+	border-top: 2px solid var(--color-primary);
+	
+}
+
+/* Column drag and drop styles */
+th.result.dragging {
+	opacity: 0.5;
+	background-color: var(--color-accent-blue-light);
+}
+
+th.result.drop-target::after {
+	content: '';
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 4px;
+	background-color: var(--color-primary);
+}
+
+td.formula.changed {
+	
+}
+
+td.result.changed {
+	
+}
+
+table.switching {
+	
+}
+
+/* Project Menu CSS Start 13 Nov 2024 */
+.project-menu{
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	background-color: transparent;
+	border: none;
+	padding: 0;
+}
+.project-menu .sheet-selecter{
+	padding: 10px 15px;
+	text-transform: capitalize;
+	border-radius: var(--border-radius-lg);
+	border: 1px solid var(--color-border);
+	background-color: #fff;
+	text-align: center;
+	cursor: pointer;
+}
+.project-menu .sheet-selecter.active span{
+	background: transparent;
+    color: #fff;
+	box-shadow: none;
+	border: none;
+	font-weight: bold;
+}
+.project-menu .sheet-selecter.active {
+	background-color: var(--color-primary);
+}
+.project-menu .sheet-selecter .sheet-delete {
+	color: var(--color-primary);
+	background-color: #f5faff;
+	font-size: 14px;
+	width: 20px;
+	height: 20px;
+	padding-bottom: 3px;
+}
+.project-menu .sheet-delete {
+	background-color: #fff;
+	color: var(--color-primary);
+}
+#new-sheet{
+	background-color: #eef7ff;
+	color: var(--color-primary);
+	border-color: var(--color-primary);
+	min-width: 10px;
+	padding: 10px 15px;
+	margin: 0;
+}
+/* Project Menu CSS End 13 Nov 2024 */
