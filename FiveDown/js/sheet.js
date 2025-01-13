@@ -67,14 +67,14 @@ function minimize_table($table) {
 //
 function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
 
-    let $blank = $table.data('blank_row').clone(true, true)
+    let $new = $table.data('blank_row').clone(true, true)
 
-    $blank.find('.desc').text(descr)
-    $blank.find('.name').text(name).data('prev-val', name)
-    $blank.find('.formula').text(formula).data('prev-val', formula)
-    $blank.find('.unit').text(unit).data('prev-val', unit)
+    $new.find('.desc').text(descr)
+    $new.find('.name').text(name).data('prev-val', name)
+    $new.find('.formula').text(formula).data('prev-val', formula)
+    $new.find('.unit').text(unit).data('prev-val', unit)
 
-    let $results = $blank.find('.result')
+    let $results = $new.find('.result')
     if (results.length == 0)
         results.length = $results.length
     if ($results.length !== results.length) 
@@ -87,11 +87,25 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
         $td.data('alt', i)
     })
 
+    // if an $after row provide, put new after it, else put new at end
     if ($after) 
-        $after.after($blank)
+        $after.after($new)
     
     else 
-        $table.find('tbody').append($blank)
+        $table.find('tbody').append($new)
+
+    // if new row is not blank, added result cells, unit cells, and formula to DataManager
+    if (name) {
+
+        let DM = $table.data('DM')
+        DM.add_row(name, $new.find('td.result'), $new.find('td.unit'))
+        if (formula) {
+
+            DM.change_formula(name, $new.find('.formula'))
+        }
+
+        set_contenteditable_cols($new)
+    }
     
 }
 
@@ -480,7 +494,7 @@ function tbody_handlers($table) {
     //
     $table.find('tbody').on("dblclick", ".handle", function(evt) {   // tbody
  
-        remove_draggable_columns($table)
+        remove_draggable_rows($table)
 
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('td.name').text()
@@ -498,12 +512,13 @@ function tbody_handlers($table) {
             while (DM.VALUES[0].has(name)) 
                 name = name+'_';
             add_row_to_sheet($table, $tr, descr, name, formula, res, unit)
-            DM.add_row(name, $tr.find('td.result'), $tr.find('td.unit'))
+            
+            $table.trigger('table:global-recalc')   // TODO use row specific recalc
         }
         else 
             add_row_to_sheet($table, $tr, descr, "", "", [], "")    
 
-        apply_draggable_columns($table)
+        apply_draggable_rows($table)
     });
 
     // click on right-column deletes row
