@@ -86,7 +86,7 @@ class ValScope {
   
     // sets value into $(td) object stored.
     //
-    set (key, value) {
+    set (key, val) {
 
       if (!name_valid(key)) 
         throw new Error(`invalid key ${key}`)
@@ -95,13 +95,29 @@ class ValScope {
 
       let td = this.localScope.get(key)
       let prev = td.data('value')
+      let convert = false, value = false;
+      
+      // if value is converted, set convert flag
+      if (typeof val === 'object' && val?.convert) {
+        value = val.value
+        convert = true
+      }
+      else {
+        value = val
+        convert = false
+      }
+
+      // before evaluating, remove all residual classes
+      td.removeClass('error convert false output').removeAttr('title')
+
+      // save value as data[value] and data[prev-val]
+      td.data('value', value).data('prev-val', prev)
 
       // if value is converted, save value 
-      if (typeof value === 'object' && value?.convert) {
+      if (convert) {
 
-        td.text(`${result_formatter(value.value)}`)
-        td.addClass('convert').removeClass('error').attr('title', value.value)
-        td.data('value', value.value).data('prev-val', prev)
+        td.text(`${result_formatter(value)}`)
+        td.addClass('convert output').attr('title', value)
       }
       // if value is an Error object, apply error style, and use error message
       else if (typeof value == 'object' && value.name === 'Error') {
@@ -110,20 +126,28 @@ class ValScope {
           td.text(`${value.message}`)
         else if ([BadFormula, EvaluationError].indexOf(value.cause) > -1)
           td.html(`<div>${value.message}</div>`)
-        td.addClass('error').removeAttr('title').removeClass('convert')
-        td.data('value', value).data('prev-val', prev)
+        td.addClass('error output')
       }
-      else if (value === undefined || Number.isNaN(value)) {
+      else if (value === undefined) {
+
+        td.addClass('output')
         td.text("")
-        td.removeClass('error output').removeAttr('title').removeClass('convert')
-        td.data('value', value).data('prev-val', prev)
+      } 
+      else if (Number.isNaN(value)) {
+
+        td.addClass('output')
+        td.text(value)
       }
       else {
 
+        td.addClass('output')
         td.text(result_formatter(value))
-        td.removeClass('error').attr('title', value).removeClass('convert')
-        td.data('value', value).data('prev-val', prev)
+        td.attr('title', value)
+
+        if (value === false)
+          td.addClass('false')
       }
+      
       return this
     }
   
