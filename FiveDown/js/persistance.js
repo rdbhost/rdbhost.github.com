@@ -26,7 +26,7 @@ function gather_storable($table) {
 
         let tempDM = new DataManager()
 
-        let description = $tr.find('.desc').text()
+        let description = $tr.find('.description').text()
         let name = $tr.find('.name').text()
         if (name || description) {
 
@@ -132,7 +132,7 @@ function replace_table_from_json($table, data) {
         if (val !== null) {
 
             let [description, name, unit, other] = val
-            $new.find('.desc').text(description).data('prev-val', description)
+            $new.find('.description').text(description).data('prev-val', description)
             $new.find('.name').text(name).data('prev-val', name)
             $new.find('.unit').text(unit).data('prev-val', unit).data('value', unit)
 

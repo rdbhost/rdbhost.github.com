@@ -69,7 +69,7 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
 
     let $new = $table.data('blank_row').clone(true, true)
 
-    $new.find('.desc').text(descr)
+    $new.find('.description').text(descr)
     $new.find('.name').text(name).data('prev-val', name)
     $new.find('.formula').text(formula).data('prev-val', formula)
     $new.find('.unit').text(unit).data('prev-val', unit)
@@ -116,7 +116,7 @@ function row_is_blank($row) {
     if ($row.length === 0) 
         return false 
     
-    let isBlank = (($row.find('.desc').text() == "")
+    let isBlank = (($row.find('.description').text() == "")
                 &&  ($row.find('.name').text() == "")
                 &&  ($row.find('.formula').text() == "")
                 &&  ($row.find('.unit').text() == ""));
@@ -215,9 +215,9 @@ function move_result_column($table, num, before) {
 
     // move `num` column to before `before`
     let $results = $table.find('thead th.result, thead th.alt-add')
-    let $before = $results.get(before)
-    let $num = $results.get(num); $num.remove()
-    $before.before($num)
+    let beforecell = $results.get(before)
+    let source = $results.get(num); source.remove()
+    beforecell.before(source)
 
     // for each row in table, move one result col
     $table.find('tbody > tr').each(function(i, row) {
@@ -227,10 +227,10 @@ function move_result_column($table, num, before) {
         if ($results.length < before) 
             throw new Error(`bad before $(before) in alt drag `) 
 
-        let $before = $results.get(before)
-        let $num = $results.get(num); $num.remove()
+        let beforecell = $results.get(before)
+        let source = $results.get(num); source.remove()
 
-        $before.before($num)
+        beforecell.before(source)
     })
 
     update_alts($table)
@@ -498,7 +498,7 @@ function tbody_handlers($table) {
 
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('td.name').text()
-        let descr = $tr.find('td.desc').text()
+        let descr = $tr.find('td.description').text()
         let formula = $tr.find('td.formula').text()
         let unit = $tr.find('td.unit').text()
 
