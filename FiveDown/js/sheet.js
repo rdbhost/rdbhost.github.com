@@ -518,6 +518,7 @@ function tbody_handlers($table) {
         else 
             add_row_to_sheet($table, $tr, descr, "", "", [], "")    
 
+        update_alts($table)
         apply_draggable_rows($table)
     });
 
