@@ -108,7 +108,7 @@ class ValScope {
       }
 
       // before evaluating, remove all residual classes
-      td.removeClass('error convert false output').removeAttr('title')
+      td.removeClass('error convert fail output').removeAttr('title')
 
       // save value as data[value] and data[prev-val]
       td.data('value', value).data('prev-val', prev)
@@ -145,7 +145,7 @@ class ValScope {
         td.attr('title', value)
 
         if (value === false)
-          td.addClass('false')
+          td.addClass('fail')
       }
       
       return this
