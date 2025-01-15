@@ -649,13 +649,13 @@ function tbody_handlers($table) {
         if ($td.attr('contenteditable') == 'false') 
             return 
 
-        if ($td.data('prev-val') !== undefined) {
+/*        if ($td.data('prev-val') !== undefined) {
 
             $td.data('polished', $td.text())
             $td.text($td.data('prev-val'))
         }
         else
-            $td.data('polished', '')
+            $td.data('polished', '') */
     })
     $table.find('tbody').on('focusout', '.result', function(evt) {
 
@@ -668,11 +668,11 @@ function tbody_handlers($table) {
             return
 
         let input_val = $t.text()
-        if ($t.data('prev-val') === input_val) {
+/*        if ($t.data('prev-val') === input_val) {
 
             $t.text($t.data('polished'))
             return
-        }
+        } */
 
         $t.data('prev-val', input_val)
 
