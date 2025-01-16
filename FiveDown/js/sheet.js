@@ -67,14 +67,14 @@ function minimize_table($table) {
 //
 function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
 
-    let $blank = $table.data('blank_row').clone(true, true)
+    let $new = $table.data('blank_row').clone(true, true)
 
-    $blank.find('.desc').text(descr)
-    $blank.find('.name').text(name).data('prev-val', name)
-    $blank.find('.formula').text(formula).data('prev-val', formula)
-    $blank.find('.unit').text(unit).data('prev-val', unit)
+    $new.find('.description').text(descr)
+    $new.find('.name').text(name).data('prev-val', name)
+    $new.find('.formula').text(formula).data('prev-val', formula)
+    $new.find('.unit').text(unit).data('prev-val', unit)
 
-    let $results = $blank.find('.result')
+    let $results = $new.find('.result')
     if (results.length == 0)
         results.length = $results.length
     if ($results.length !== results.length) 
@@ -87,11 +87,25 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
         $td.data('alt', i)
     })
 
+    // if an $after row provide, put new after it, else put new at end
     if ($after) 
-        $after.after($blank)
+        $after.after($new)
     
     else 
-        $table.find('tbody').append($blank)
+        $table.find('tbody').append($new)
+
+    // if new row is not blank, added result cells, unit cells, and formula to DataManager
+    if (name) {
+
+        let DM = $table.data('DM')
+        DM.add_row(name, $new.find('td.result'), $new.find('td.unit'))
+        if (formula) {
+
+            DM.change_formula(name, $new.find('.formula'))
+        }
+
+        set_contenteditable_cols($new)
+    }
     
 }
 
@@ -102,7 +116,7 @@ function row_is_blank($row) {
     if ($row.length === 0) 
         return false 
     
-    let isBlank = (($row.find('.desc').text() == "")
+    let isBlank = (($row.find('.description').text() == "")
                 &&  ($row.find('.name').text() == "")
                 &&  ($row.find('.formula').text() == "")
                 &&  ($row.find('.unit').text() == ""));
@@ -151,7 +165,6 @@ function ensure_five_blank($table) {
             $sixth = $table.find('tbody > tr').slice(-6,-5);
         }
     }
-
 }
 
 // make all rows draggable to reorder
@@ -202,9 +215,9 @@ function move_result_column($table, num, before) {
 
     // move `num` column to before `before`
     let $results = $table.find('thead th.result, thead th.alt-add')
-    let $before = $results.get(before)
-    let $num = $results.get(num); $num.remove()
-    $before.before($num)
+    let beforecell = $results.get(before)
+    let source = $results.get(num); source.remove()
+    beforecell.before(source)
 
     // for each row in table, move one result col
     $table.find('tbody > tr').each(function(i, row) {
@@ -214,10 +227,10 @@ function move_result_column($table, num, before) {
         if ($results.length < before) 
             throw new Error(`bad before $(before) in alt drag `) 
 
-        let $before = $results.get(before)
-        let $num = $results.get(num); $num.remove()
+        let beforecell = $results.get(before)
+        let source = $results.get(num); source.remove()
 
-        $before.before($num)
+        beforecell.before(source)
     })
 
     update_alts($table)
@@ -309,9 +322,12 @@ function add_alt_column($table) {
 
     // add additional header column, named Alt #
     let $pluscol = $table.find('th.alt-add').first()
-    let $h = $table.find('th.result').last().remove()
+    let $h = $table.find('th.result').last().detach() // remove()
     $pluscol.before($h.clone(true))  // restores starting col set
+    $h.data('custom_name', '')
 
+    $h.data('custom_name', '') // remove custom name from clonable header
+    $h.data('alt', null)
     let $new = $h.clone(true)
     $pluscol.before($new)
 
@@ -478,11 +494,11 @@ function tbody_handlers($table) {
     //
     $table.find('tbody').on("dblclick", ".handle", function(evt) {   // tbody
  
-        remove_draggable_columns($table)
+        remove_draggable_rows($table)
 
         let $tr = $(evt.target).closest('tr')
         let name = $tr.find('td.name').text()
-        let descr = $tr.find('td.desc').text()
+        let descr = $tr.find('td.description').text()
         let formula = $tr.find('td.formula').text()
         let unit = $tr.find('td.unit').text()
 
@@ -496,12 +512,14 @@ function tbody_handlers($table) {
             while (DM.VALUES[0].has(name)) 
                 name = name+'_';
             add_row_to_sheet($table, $tr, descr, name, formula, res, unit)
-            DM.add_row(name, $tr.find('td.result'), $tr.find('td.unit'))
+            
+            $table.trigger('table:global-recalc')   // TODO use row specific recalc
         }
         else 
             add_row_to_sheet($table, $tr, descr, "", "", [], "")    
 
-        apply_draggable_columns($table)
+        update_alts($table)
+        apply_draggable_rows($table)
     });
 
     // click on right-column deletes row
@@ -631,13 +649,13 @@ function tbody_handlers($table) {
         if ($td.attr('contenteditable') == 'false') 
             return 
 
-        if ($td.data('prev-val') !== undefined) {
+/*        if ($td.data('prev-val') !== undefined) {
 
             $td.data('polished', $td.text())
             $td.text($td.data('prev-val'))
         }
         else
-            $td.data('polished', '')
+            $td.data('polished', '') */
     })
     $table.find('tbody').on('focusout', '.result', function(evt) {
 
@@ -650,11 +668,11 @@ function tbody_handlers($table) {
             return
 
         let input_val = $t.text()
-        if ($t.data('prev-val') === input_val) {
+/*        if ($t.data('prev-val') === input_val) {
 
             $t.text($t.data('polished'))
             return
-        }
+        } */
 
         $t.data('prev-val', input_val)
 
@@ -691,7 +709,7 @@ function tbody_handlers($table) {
         if (unit !== ($td.data("prev-val") || '')) {         // is unit diff from stored?
 
             $td.data("prev-val", unit).data('value', unit);  // store new unit in data
-//            let disp = format_unit(unit)
+            let disp = unit // format_unit(unit)
             if (disp?.message) {
 
                 $td.text(unit).data('value', undefined).data('prev-val', unit)

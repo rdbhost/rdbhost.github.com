@@ -114,11 +114,17 @@ function menu_initialize(current) {
         $target.remove()
         remove_sheet_from_storage(target_id)
 
+<<<<<<< HEAD
         // remove draggable/droppable handlers
+=======
+        // -- DVK redundant with $alt.trigger handler
+        // remove draggable/droppable handlers 
+>>>>>>> master
         //remove_draggable_rows($('table'))
         //remove_draggable_columns($('table'))
        
         setTimeout(() => $alt.trigger('click'), 0)
+        setTimeout(() => remove_sheet_from_storage(target_id), 0.1)
 
         console.log(`sheet delete button clicked ${target_id}`)
         return false

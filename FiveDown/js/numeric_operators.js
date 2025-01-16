@@ -19,7 +19,8 @@ function getType(a) {
   if (a+0 === a)
     return 'number'
 
-  throw new Error(`bad input ${a}`)
+  return 'text'
+  // throw new Error(`bad input ${a}`)
 }
 
 function validateTypes(types, okTypes, warn) {
