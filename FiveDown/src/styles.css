@@ -5,6 +5,11 @@
 	width: 92%;
   
   }
+/* Remove styling for the page close button */
+  .outer-box .project-menu .sheet-delete{
+	border: none;
+	background-color: transparent;
+  }
   
   /* Project menu styling */
   .project-menu {
@@ -114,6 +119,19 @@
 	color: rgb(37 99 235 );
 	/* Subtle shadow effect */
   }
+
+  th.result .close-res{
+	border: none;
+	background-color: transparent;
+	font-size: 1.25rem;
+	color: rgb(75 85 99 );
+
+  }
+
+  th.result .close-res::before {
+	content: "✕";
+	font-size: .8rem;
+  }
   
   th.alt-add {
 	
@@ -133,6 +151,11 @@
 
     line-height: 1em;
 	border: none;
+	background-color: transparent;
+  }
+  th.alt-add button::before {
+	content: "+";
+	font-size: 1.5rem;
   }
   
   /* Table body style */
@@ -153,6 +176,12 @@
 	vertical-align: middle;
 	/* Vertically align content */
   }
+
+  /* Setting the description to fixed wit a width of 20rem */
+  td.description{
+	table-layout: fixed;
+	width: 20rem; 
+  }
   
   /* Redesign for left and right columns */
   
@@ -162,14 +191,13 @@
 	background-color: rgb(243 244 246 );
 	text-align: center;
 	font-weight: 700;
-	
 	color: rgb(75 85 99 );
-	/* border-radius: 0.375rem; */
+	padding: 0;
   }
   
   td.handle::before {
 	content: "≡";
-	/* Replaced with icon symbol */
+	font-size: 1.5rem;
   }
   
   td.delete::before {
@@ -178,7 +206,12 @@
 
 /*	color: rgb(75 85 99); */
   }
-  
+
+  /* when dragging a UI element, styling to keep it ontop */
+  .ui-draggable-dragging{
+	z-index: 999;
+  }
+
   /* Non-editable cells */
   
   td.readonly {
