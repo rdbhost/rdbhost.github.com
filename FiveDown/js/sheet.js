@@ -245,7 +245,7 @@ function move_result_column($table, num, before) {
 function apply_draggable_columns($table) {
 
     if (draggable_columns > 0)
-        throw new Error('applying draggable rows repeatedly')
+        throw new Error('applying draggable columns repeatedly')
     draggable_columns += 1
 
     let drag_opts = {
@@ -267,7 +267,7 @@ function apply_draggable_columns($table) {
     }    
 
     // let $t = $('thead th.result')
-    console.log('applying draggable columns')
+    // console.log('applying draggable columns')
     $table.find('thead th.result').draggable(drag_opts).droppable(drop_opts)
     $table.find('thead th.alt-add').droppable(drop_opts)
 }
@@ -277,15 +277,15 @@ function apply_draggable_columns($table) {
 function remove_draggable_columns($table) {
 
     if (draggable_columns < 1)
-        throw new Error('removing draggable rows where none exist')
+        throw new Error('removing draggable columns where none exist')
     draggable_columns -= 1
 
-    console.log('removing draggable columns')
+    // console.log('removing draggable columns')
     $table.find('thead > th.result').draggable('destroy').droppable('destroy')
     $table.find('thead > th.alt-add').droppable('destroy')
 }
 
-// click on header '+' adds alt 
+// click on header 'x' removes alt 
 //
 function remove_alt(evt) {
 
@@ -320,7 +320,7 @@ function remove_alt(evt) {
     update_alts($table);
     apply_draggable_columns($table)
 
-    $table.trigger("table:alt-update");
+    // $table.trigger("table:alt-update");
 }
 
 // addalt_func - a handler for the add-alternate-result-column button
@@ -331,7 +331,7 @@ function add_alt_column($table) {
 
     // add additional header column, named Alt #
     let $pluscol = $table.find('th.alt-add').first()
-    let $h = $table.find('th.result').last().detach() // remove()
+    let $h = $table.find('th.result').last().remove() // .detach()
     $pluscol.before($h.clone(true))  // restores starting col set
     $h.data('custom_name', '')
 
@@ -355,9 +355,7 @@ function add_alt_column($table) {
     let colnum = update_alts($table)-1
     apply_draggable_columns($table)
 
-    // TODO - add populate_values_for_alt
-    // $table.trigger("table:alt-update");
-    return colnum
+    return colnum // colnum for column just added
 }        
 
 // updates header to show Result, Result 1, Result 2 etc
