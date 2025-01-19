@@ -4,7 +4,8 @@ import { get_storable, replace_table_from_json } from './persistance.js';
 //import { format_unit } from './unit-math.js';
 
 const MAX_ALTS = 8
-var draggable_rows = 0
+var draggable_rows = 0,
+    draggable_columns = 0
     
 // set_contenteditable_cols -- function to examine a row, and set 
 //   style and editability of formula, result, and unit cells
@@ -192,7 +193,7 @@ function apply_draggable_rows($table) {
         }
     }    
 
-    console.log('applying draggable rows')
+    // console.log('applying draggable rows')
     let $rows = $table.find('tbody > tr')
     $rows.draggable(drag_opts).droppable(drop_opts)
 }
@@ -205,7 +206,7 @@ function remove_draggable_rows($table) {
         throw new Error('removing draggable rows where none exist')
     draggable_rows -= 1
 
-    console.log('removing draggable rows')
+    // console.log('removing draggable rows')
     $table.find('tbody > tr').draggable('destroy').droppable('destroy')
 }
 
@@ -243,6 +244,10 @@ function move_result_column($table, num, before) {
 //
 function apply_draggable_columns($table) {
 
+    if (draggable_columns > 0)
+        throw new Error('applying draggable rows repeatedly')
+    draggable_columns += 1
+
     let drag_opts = {
         axis: "x",              // only horizontal dragging
         revert: "invalid",      // revert if drag-n-drop not valid
@@ -270,6 +275,10 @@ function apply_draggable_columns($table) {
 // uninstalls handlers for column drag n drop
 //
 function remove_draggable_columns($table) {
+
+    if (draggable_columns < 1)
+        throw new Error('removing draggable rows where none exist')
+    draggable_columns -= 1
 
     console.log('removing draggable columns')
     $table.find('thead > th.result').draggable('destroy').droppable('destroy')
