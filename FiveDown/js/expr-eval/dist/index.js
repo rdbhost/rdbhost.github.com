@@ -1517,11 +1517,11 @@ function hypot() {
   }
   return larg === Infinity ? Infinity : larg * Math.sqrt(sum);
 }
-
+*/
 function condition(cond, yep, nope) {
   return cond ? yep : nope;
 }
-*/
+
 /**
 * Decimal adjustment of a number.
 * From @escopecz.

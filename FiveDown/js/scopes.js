@@ -107,9 +107,6 @@ class ValScope {
         convert = false
       }
 
-      // before evaluating, remove all residual classes
-      //td.removeClass('error convert fail output').removeAttr('title')
-
       // save value as data[value] and data[prev-val]
       td.data('value', value).data('prev-val', prev)
 
@@ -117,7 +114,6 @@ class ValScope {
       if (convert) {
 
         td.text(`${result_formatter(value)}`)
-        //td.addClass('convert output').attr('title', value)
         td.addClass('convert').removeClass('error').attr('title', value)
       }
       // if value is an Error object, apply error style, and use error message
@@ -127,29 +123,31 @@ class ValScope {
           td.text(`${value.message}`)
         else if ([BadFormula, EvaluationError].indexOf(value.cause) > -1)
           td.html(`<div>${value.message}</div>`)
-        // td.addClass('error output')
         td.addClass('error').removeAttr('title').removeClass('convert')
       }
       else if (value === undefined) {
 
-        //td.addClass('output readonly')
         td.removeClass('error output').removeAttr('title').removeClass('convert')
         td.text("")
       } 
       else if (Number.isNaN(value)) {
 
         td.removeClass('error output').removeAttr('title').removeClass('convert')
-        // td.addClass('output readonly')
         td.text(value)
       }
-      else {
+      else if (Number.isFinite(value)) {
 
-        // td.addClass('output readonly')
         td.text(result_formatter(value))
         td.attr('title', value)
         td.removeClass('error').attr('title', value).removeClass('convert')
+      }
+      else {
 
-        if (value === false)
+        if ((""+value).length > 25)
+          value = (""+value).substring(25)
+        td.text(value)
+
+        if (value === false && td.hasClass("output"))
           td.addClass('fail')
       }
       
