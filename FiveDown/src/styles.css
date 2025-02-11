@@ -23,6 +23,8 @@
   }
 
   .project-menu .active span {
+	font-weight: 600;
+	padding-right: 0;
   }
   
   .project-menu .sheet-delete {
@@ -39,15 +41,17 @@
 	color: black;	
 	min-width: 4em;
 	height: 1.5em;
+	padding-right: .875em;
   }
   
 
   #new-sheet {
 	font-size: 0.875rem;
 	border: none;
-	font-weight: 600;
 	min-width: 3em;
+	color: rgb(75 85 99 );
   }
+
 
   /* Overall table style */
   
@@ -79,6 +83,10 @@
 	border-bottom-width: 1px;
 	border-color: rgb(209 213 219);
 	/* Bottom border for the header */
+	/* T head stick to the top as you scroll down  */
+	position: sticky;
+	top: 0;
+	z-index: 1;
   }
   
   th {
