@@ -449,8 +449,9 @@ function load_sheet($table, sheet_name) {
     minimize_table($table)
     replace_table_from_json($table, saved)
  
-    ensure_five_blank($table)
+    // ensure_five_blank($table)
     table_normalize_display($table)
+    update_alts($table)
  
     $table.trigger("table:global-recalc")
 }
@@ -495,9 +496,10 @@ function table_normalize_display($table) {
 
         // for name cell, set data[prev-val]
         let $name_cell = $row.find('.name')
-        let name = $name_cell.data('value')
+        // let name = $name_cell.data('value')
+        let name = $name_cell.text()
         $name_cell.data('prev-val', name)
-        $name_cell.text(name)
+        // $name_cell.text(name)
 
         // for result cell, set alt val in data
         $row.find('.result').first().data('alt', 0)
@@ -506,6 +508,10 @@ function table_normalize_display($table) {
         let formula = $form_cell.data('value') || ''
         $form_cell.data('prev-val', name)
         $form_cell.text(formula_formatter(formula))
+
+        if (name) {
+            DM.add_row(name, $row)
+        }
     })
 
     ensure_five_blank($table)
@@ -620,12 +626,14 @@ function tbody_handlers($table) {
             // if prev-val is defined, send a row:rename signal
             if ($td.data('prev-val') !== "" && $td.data('prev-val') !== undefined) {
 
-                $('table').trigger("row:rename", [$td.data("prev-val"), name]);
+                //$('table').trigger("row:rename", []);
+                DM.rename_row($td.data("prev-val"), name)
             }
             // otherwise, if name defined, send a row:add signal
             else if (name) {
 
-                $('table').trigger("row:add", [name, $tr.find('.result'), $tr.find('.unit')])
+                // $('table').trigger("row:add", [name, $tr.find('.result'), $tr.find('.unit')])
+                DM.add_row(name, $tr)
             }
             $td.data("prev-val", name)      // store new name in data
             $td.text(name)
