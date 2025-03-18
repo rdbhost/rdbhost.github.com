@@ -12,20 +12,12 @@ class ColumnGetter {
         this.map = map
     }
 
-    retrieve(tag, sel) {
+    get(tag) {
 
         let $row = this.map.get(tag)
         if ( !$row )
             return undefined
-        return $row.find(sel)[this.colidx]
-    }
-
-    get(tag) {
-
-        let $t = this.retrieve(tag, 'td.result')
-        if ( !$t )
-            return undefined
-        return $t.data('value')
+        return $($row.find('td.result')[this.colidx])
     }
 
     has(tag) {
@@ -34,7 +26,7 @@ class ColumnGetter {
     }
 }
 
-class FormulaGetter extends ColumnGetter {
+class FormulaGetter {
 
     constructor(map) {
 
@@ -43,7 +35,15 @@ class FormulaGetter extends ColumnGetter {
 
     get(tag) {
 
-        return this.retrieve(tag, 'td.formula')
+        let $row = this.map.get(tag)
+        if ( !$row )
+            return undefined
+        return $row.find('td.formula')
+    }
+
+    has(tag) {
+
+        return this.map.has(tag) 
     }
  
 }
@@ -58,7 +58,7 @@ class DataManager {
     
     add_row(name, $tr) {
 
-        this.ROWS.addItem(name, $tr)
+        this.ROWS.set(name, $tr)
     }
 
     remove_row(name) {
@@ -111,32 +111,37 @@ class DataManager {
 
         let formulas = this.formulas()
 
-        formulas.forEach(function(formula) {
+        this.ROWS.forEach(function($row, key) {
 
-            let exp = _this.math.parse(formula)
-            let res = (exp.name === 'Error' ? exp : _this.math.evaluate(exp, scope))
+            let formula = formulas.get(key).text()
 
- //           let unit = _this.UNITS.getItem(key)
- //           let factor = unit.data('conversion_factor')
+            if (formula) {
 
- /*           if (factor !== undefined) {
-
-                res = res * factor
-                scope.set(key, {value: res, convert: !!factor})
-                $formulaTd.attr('data-conversion', factor.toPrecision(3)).addClass('convert')
-            }
-            else { */
-            
-                write_result_cell(scope.get(key), res)
-                formula.removeAttr('data-conversion').removeAttr('convert')
-
-                if (res?.cause && res.cause.length) {
-                    res.cause.forEach(function(key) {
-                        let badsrc = scope.getItem(key)
-                        badsrc.addClass('error')
-                    })
+                let exp = _this.math.parse(formula)
+                let res = (exp.name === 'Error' ? exp : _this.math.evaluate(exp, scope))
+    
+     //           let unit = _this.UNITS.getItem(key)
+     //           let factor = unit.data('conversion_factor')
+    
+     /*           if (factor !== undefined) {
+    
+                    res = res * factor
+                    scope.set(key, {value: res, convert: !!factor})
+                    $formulaTd.attr('data-conversion', factor.toPrecision(3)).addClass('convert')
                 }
-//            }
+                else { */
+                
+                    write_result_cell(scope.get(key), res)
+                    // formula.removeAttr('data-conversion').removeAttr('convert')
+    
+                    if (res?.cause && res.cause.length) {
+                        res.cause.forEach(function(key) {
+                            let badsrc = scope.getItem(key)
+                            badsrc.addClass('error')
+                        })
+                    }
+    //            }
+                }
         })
 
     }
