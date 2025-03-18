@@ -1,7 +1,7 @@
 
 import { DataManager } from './datamanager.js'
 import { result_formatter } from './math-tools.js'
-import { ValScope } from './scopes.js'
+// import { ValScope } from './scopes.js'
 import { set_contenteditable_cols } from './sheet.js'
 import { samples } from './samples.js'
 
@@ -12,7 +12,7 @@ import { samples } from './samples.js'
 function gather_storable($table) {
 
     let itms = []
-    var scope = new ValScope()
+    var scope = new Map()
 
     let columns = $table.find('thead th.result').get().map(function(v, _i) { 
         return $(v).data('custom_name') || null 

@@ -11,7 +11,7 @@ function ObjectMapWrap(map) {
 
   const handler = {
           get(target, prop, receiver) {
-              return target.get(prop)
+              return target.get(prop).data('value')
           },
 
           set(target, prop, value) {
