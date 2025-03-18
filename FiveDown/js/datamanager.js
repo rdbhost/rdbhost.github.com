@@ -1,7 +1,5 @@
 
 import { MyMath, name_valid, write_result_cell } from './math-tools.js'
-// import { MyUnits } from './unit-math.js'
-// import { ValScope, ObjectMapWrap } from './scopes.js'
 import { FunctionMap /*, UnitFunctionMap */ } from './functions.js'
 
 class ColumnGetter {
@@ -147,73 +145,6 @@ class DataManager {
 
     }
 
-    update_calculated_units_xxx() {
-
-        let _this = this
-
-        this.FORMULAS.forEach(function($formulaTd, key) {
-
-            let formula = $formulaTd.data('value')
- //           console.log('unit formula '+formula)
-
- //           let exp = _this.unit.parse(formula)
- //           let res = _this.unit.evaluate(exp, _this.UNITS)
- //           res = res.getUnits().toString()
-
-//            _this.UNITS.set(key, res)
-//            console.log('unit calculated '+res)
-        })
-    }
-
-    change_formula_xxxx(name, $formulaTd) {
-
-        let _this = this
-        let formula = $formulaTd.data('value')
-
-        if (!name_valid(name)) 
-            throw new Error(`Error - invalid name ${name}`) 
-        
-        if (this.FORMULAS.has(name)) {
-            this.FORMULAS.delete(name);
-        }
-
-        // if formula is blank, clear values
-        if (formula === '') {
-
-            this.VALUES.forEach(function(scope, _i) {
-
-                scope.set(name, "")
-            })
-        } 
-        else {
-
-            // else if formula is invalid, put error message in first result column
-            //   and clear other result columns
-            let exp = _this.math.parse(formula)
-            if (typeof exp === 'object' && exp.name === 'Error') {
-
-                this.VALUES.forEach(function(scope, _i) { 
-                    scope.set(name, "") 
-                })
-                this.VALUES[0].set(name, exp)
-     //           this.UNITS.set(name, "") 
-            } 
-            
-            // else formula valid and non-blank, so save, and update result cols
-            else {
-
-                this.FORMULAS.set(name, $formulaTd);
-                this.VALUES.forEach(function(scope, _i) {
-    
-                    let res = _this.math.evaluate(exp, scope);
-                    scope.set(name, res);
-                })
-    //            let untexp = _this.unit.parse(formula)
-    //            let unit = _this.unit.evaluate(untexp, this.UNITS)
-    //            this.UNITS.set(name, unit) 
-            }
-        }
-    }
 }
 
 export { DataManager }
