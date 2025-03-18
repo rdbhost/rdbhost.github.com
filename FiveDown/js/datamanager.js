@@ -113,7 +113,8 @@ class DataManager {
 
         this.ROWS.forEach(function($row, key) {
 
-            let formula = formulas.get(key).text()
+            let formula = formulas.get(key)
+            formula = formula ? formula.data('value') : undefined
 
             if (formula) {
 
