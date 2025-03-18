@@ -13,7 +13,8 @@ function ObjectMapWrap(map) {
 
   const handler = {
           get(target, prop, receiver) {
-              return target.get(prop).data('value')
+            let $t = target.get(prop)
+            return $t ? $t.data('value') : undefined
           },
 
           set(target, prop, value) {
@@ -267,6 +268,15 @@ class MyMath {
   }
     
 
-  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter, write_result_cell,
+  // sets value into formula cell
+  //
+  function write_formula_cell($td, form) {
+
+    $td.data('value', form).data('prev-val', form)
+    $td.text(formula_formatter(form))
+  }
+
+  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter, 
+           write_result_cell, write_formula_cell, 
            BadFormula, BadInput, EvaluationError }
 

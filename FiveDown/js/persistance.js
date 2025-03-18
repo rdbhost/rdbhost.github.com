@@ -43,8 +43,8 @@ function gather_storable($table) {
                 let results = []
                 $tr.find('.result').each(function(_j, td) {
     
-                    let $td = $(td)
-                    let d = $td.data('value') || $td.text() ? tempDM.math.data_input_evaluater($td.text(), scope) : ""
+                    let val = $(td).data('value')
+                    let d = val ? tempDM.math.data_input_evaluater(val, scope) : ""
                     results.push(d)
                 })
     

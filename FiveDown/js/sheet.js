@@ -1,5 +1,5 @@
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name, formula_formatter, result_formatter, write_result_cell } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter, result_formatter, write_result_cell, write_formula_cell } from './math-tools.js'
 import { get_storable, replace_table_from_json } from './persistance.js';
 //import { format_unit } from './unit-math.js';
 
@@ -449,7 +449,6 @@ function load_sheet($table, sheet_name) {
     minimize_table($table)
     replace_table_from_json($table, saved)
  
-    // ensure_five_blank($table)
     table_normalize_display($table)
     update_alts($table)
  
@@ -496,18 +495,12 @@ function table_normalize_display($table) {
 
         // for name cell, set data[prev-val]
         let $name_cell = $row.find('.name')
-        // let name = $name_cell.data('value')
         let name = $name_cell.text()
         $name_cell.data('prev-val', name)
-        // $name_cell.text(name)
-
-        // for result cell, set alt val in data
-        $row.find('.result').first().data('alt', 0)
 
         let $form_cell = $row.find('.formula')
         let formula = $form_cell.data('value') || ''
-        $form_cell.data('prev-val', name)
-        $form_cell.text(formula_formatter(formula))
+        write_formula_cell($form_cell, formula)
 
         if (name) {
             DM.add_row(name, $row)
@@ -600,6 +593,8 @@ function tbody_handlers($table) {
         let $tr = $td.closest('tr')
         let name = $td.text()
 
+        let DM = $table.data('DM')
+
         if (!name_valid(name)) {
             name = clean_name(name)
             $td.text(name)
@@ -617,7 +612,6 @@ function tbody_handlers($table) {
                 
             } else {
             
-                let DM = $table.data('DM')
                 while (DM.ROWS.has(name)) {
                     name = name+'_';
                 }
@@ -626,13 +620,11 @@ function tbody_handlers($table) {
             // if prev-val is defined, send a row:rename signal
             if ($td.data('prev-val') !== "" && $td.data('prev-val') !== undefined) {
 
-                //$('table').trigger("row:rename", []);
                 DM.rename_row($td.data("prev-val"), name)
             }
             // otherwise, if name defined, send a row:add signal
             else if (name) {
 
-                // $('table').trigger("row:add", [name, $tr.find('.result'), $tr.find('.unit')])
                 DM.add_row(name, $tr)
             }
             $td.data("prev-val", name)      // store new name in data
@@ -664,15 +656,11 @@ function tbody_handlers($table) {
 
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
 
-            $td.data("prev-val", formula).data('value', formula);  // store new formula in data
-
-            let name = $tr.find('td.name').text();
-            $table.trigger("row:formula-change", [name, $td]);       
+            write_formula_cell($td, formula)
+            $table.trigger('table:global-recalc')  
         } 
 
         set_contenteditable_cols($tr)
-        //if ($td.attr('contenteditable') == 'false') 
-        //    return 
 
     })
 
