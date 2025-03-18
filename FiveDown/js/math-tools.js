@@ -1,7 +1,33 @@
 
 import { Parser, Expression } from "./expr-eval/dist/index.js"
 import { unaryOps, binaryOps, ternaryOps, functions } from './numeric_operators.js' 
-import { ObjectMapWrap, ValScope } from './scopes.js'
+
+
+// ObjectMapWrap - wraps a Map object (including ValScope and UnitScope objects)
+//  to make members of the Map object accessible as simple object attributes
+//  work with ValScope and UnitScope objects
+//
+//  use like: do_something_with_object(ObjectMapWrap(new ValScope(...)))
+//
+function ObjectMapWrap(map) {
+
+  const handler = {
+          get(target, prop, receiver) {
+              return target.get(prop).data('value')
+          },
+
+          set(target, prop, value) {
+              throw new Error('evaluater shouldnt be setting values in ValScope')
+          },
+
+          has(target, prop) {
+              return target.has(p)
+          }
+  }
+
+  return new Proxy(map, handler)
+}
+
 
 // Signal values for identifying types of errors
 //
