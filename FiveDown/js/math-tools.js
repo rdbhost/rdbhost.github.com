@@ -258,7 +258,7 @@ class MyMath {
 
       if ((""+value).length > 25)
         value = (""+value).substring(25)
-      $td.text(value)
+      $td.text(result_formatter(value))
 
       if (value === false && $td.hasClass("output"))
         $td.addClass('fail')
