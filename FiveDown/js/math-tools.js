@@ -226,7 +226,7 @@ class MyMath {
     // if value is converted, save value 
     if (convert) {
 
-      $td.text(`${result_formatter(value)}`)
+      $td.text(result_formatter(value))
       $td.addClass('convert').removeClass('error').attr('title', value)
     }
     // if value is an Error object, apply error style, and use error message
@@ -260,6 +260,7 @@ class MyMath {
         value = (""+value).substring(25)
       $td.text(result_formatter(value))
 
+      $td.removeClass('error').attr('title', value).removeClass('convert')
       if (value === false && $td.hasClass("output"))
         $td.addClass('fail')
     }
