@@ -630,7 +630,8 @@ function tbody_handlers($table) {
             $td.data("prev-val", name)      // store new name in data
             $td.text(name)
 
-            $('table').trigger('row:pad-end')
+            $table.trigger('row:pad-end')
+            $table.trigger('table:global-recalc')  
         } 
     });
 
