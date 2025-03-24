@@ -191,9 +191,13 @@ class MyMath {
 
       return ""
     } 
-    else {
+    else if (isFinite(d)) {
 
       return Number(d).toPrecision(5);
+    } 
+    else {
+
+      return d.substring(0,25)
     }
   }
 
