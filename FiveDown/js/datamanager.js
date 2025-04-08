@@ -113,6 +113,7 @@ class DataManager {
 
             let formula = formulas.get(key)
             formula = formula ? formula.data('value') : undefined
+            formula = formula ? formula.replace(/\s/g, "") : undefined
 
             if (formula) {
 
