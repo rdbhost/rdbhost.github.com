@@ -264,8 +264,8 @@ class MyMath {
     }
     else {
 
-      if ((""+value).length > 25)
-        value = (""+value).substring(25)
+      //if ((""+value).length > 25)
+      //  value = (""+value).substring(25)
       $td.text(result_formatter(value))
 
       $td.removeClass('error').attr('title', value).removeClass('convert')
