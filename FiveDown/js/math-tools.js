@@ -178,7 +178,7 @@ class MyMath {
       let r = []
       for (let i=0; i<d.length; i++) {
 
-        r.push(Number(d[i]).toPrecision(2))
+        r.push(Number(d[i]).toPrecision(3))
       }
 
       return '[' + r.join(',') + ']'
