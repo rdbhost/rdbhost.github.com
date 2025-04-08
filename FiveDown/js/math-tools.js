@@ -195,9 +195,13 @@ class MyMath {
 
       return Number(d).toPrecision(5);
     } 
-    else {
+    else if (d?.length > 25) {
 
       return d.substring(0,25)
+    }
+    else {
+
+      return d
     }
   }
 
