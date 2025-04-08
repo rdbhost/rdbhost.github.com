@@ -13,7 +13,7 @@ function getType(a) {
     if (t.length === a.length)
       return 'vector'
 
-    throw new Error(`bad data type [${typeof a}]`)
+    throw new Error(`bad vector [${a}]`)
   }
 
   if (isFinite(a))
