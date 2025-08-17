@@ -1,0 +1,27 @@
+
+Provide a few Javascript modules.
+
+The first will parse a text formula into an AST.
+The second will evaluate the AST with a dictionary of values.
+
+subordinate modules will contain
+
+
+Both will handle data types:
+  1) numbers, in fixed and floating point
+  2) booleans
+  3) vectors of numbers (2-tuples or 3-tuples)
+ 
+
+
+They will handle arithmetic operators, including +1*/ % , and the ternary operator
+
+They will handle vector math operations, including dot and cross products, and scaler multiplication.
+
+Use a @ b to represent dot product, and a * b to represent cross product of vectors.
+
+Recognize functions listed in numeric_ops.js in the objects 'unaryOps' and 'binaryOps'.
+
+
+
+
