@@ -4,7 +4,7 @@
 // For testing, we'll assume unaryOps, binaryOps, ternaryOps, functions are global or we can access them.
 
 import { unaryOps, binaryOps, ternaryOps, functions, parseUnit,toUnitString, isDimensionless, 
-          unitsEqual, multiplyUnits, divideUnits, powerUnits } from '../../parser/dimensioned_operators.js'
+          unitsEqual, multiplyUnits, divideUnits, powerUnits } from '../../js/parser/dimensioned_operators.js'
 
 // In a real module, you'd use import, but since it's script tags, we'll assume they are exported to window.
 

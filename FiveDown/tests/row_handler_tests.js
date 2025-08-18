@@ -5,7 +5,7 @@
 // The HTML would have <div id="qunit"></div> and <div id="qunit-fixture"></div>.
 
 // Import the class (adjust path as needed)
-import { TableRowHandler } from '../table_row_handler.js';
+import { TableRowHandler } from '../js/table_row_handler.js';
 
 QUnit.module('TableRowHandler');
 

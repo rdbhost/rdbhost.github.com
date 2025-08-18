@@ -1,0 +1,41 @@
+
+Provide a few Javascript modules.
+
+The first will parse a text formula into an AST.
+The second will evaluate the AST with a dictionary of values.
+
+subordinate modules will contain
+
+
+Both will handle data types:
+  1) numbers, in fixed and floating point
+  2) booleans
+  3) vectors of numbers (2-tuples or 3-tuples), expressed in square brackets, like [1,3.4,2e5]
+  4) text, in limited scope  
+
+
+They will handle arithmetic operators, including +1*/ % , and the ternary operator a ? b : c
+
+They will handle vector math operations, including dot and cross products, and scaler multiplication.
+
+Use a @ b to represent dot product, and a * b to represent cross product of vectors.
+
+So, the symbol * is defined for scalars and vectors:
+  scalar * scalar => multiplication
+  scalar * vector => scalar multiplication (elementwise multiplication)
+  vector * scalar => scalar multiplication
+  vector * vector => vector cross product
+
+The symbol / is partially defined for scalars and vectors:
+  scalar / scalar => division
+  vector / scalar => scalar multiplication by inverse ( vector * 1/scalar )
+  scalar / vector => not defined
+  vector / vector => not defined
+
+Recognize functions listed in numeric_ops.js in the objects 'unaryOps' and 'binaryOps' and 'functions'.
+
+Text values can be compared and used in ternary ops
+
+
+
+

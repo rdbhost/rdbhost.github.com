@@ -1,0 +1,104 @@
+<html>
+<head>
+    <link rel="stylesheet" href="src/normalize.css">
+    <link rel="stylesheet" href="src/styles.css">
+
+
+</head>
+<body>
+    <div class="outer-box">
+        <div class="project-menu">
+            <span id="sheet_00" class="sheet-selecter active">
+                <span>Sheet 00</span>
+                <button class="sheet-delete">x</button></span>
+            <span id="new-sheet">[new sheet]</span>
+        </div>
+        <table id="main-sheet">
+            <thead>
+                <th class="handle"></th>
+                <th class="description">Description</th>
+                <th class="name">Name</th>
+                <th class="formula">Formula</th>
+                <th class="result" draggable="true">
+                    <span>Result</span><button class="close-res"></button>
+                </th>
+                <th class="add-result"><button></button></th>
+                <th class="unit">Unit</th>
+                <th class="delete"></th>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true"></td>
+                    <td class="name" contenteditable="true"></td>
+                    <td class="formula" tabindex="0"></td>
+                    <td class="result" tabindex="0"></td>
+                    <td class="add-result"></td>
+                    <td class="unit"></td>
+                    <td class="delete"></td>
+                </tr>    
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true">height</td>
+                    <td class="name" contenteditable="true">h</td>
+                    <td class="formula" tabindex="-1"></td>
+                    <td class="result" tabindex="0" contenteditable="true">3.0</td>
+                    <td class="add-result"></td>
+                    <td class="unit">cm</td>
+                    <td class="delete"></td>
+                </tr>    
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true">radius</td>
+                    <td class="name" contenteditable="true">rad</td>
+                    <td class="formula" tabindex="-1"></td>
+                    <td class="result" tabindex="0" contenteditable="true">2.5</td>
+                    <td class="add-result"></td>
+                    <td class="unit">cm</td>
+                    <td class="delete"></td>
+                </tr>    
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true">volume of cylinder</td>
+                    <td class="name" contenteditable="true">vol</td>
+                    <td class="formula" tabindex="0" contenteditable="true">h*3.14*rad*rad</td>
+                    <td class="result" tabindex="-1"></td>
+                    <td class="add-result"></td>
+                    <td class="unit">cm</td>
+                    <td class="delete"></td>
+                </tr>    
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true"></td>
+                    <td class="name" contenteditable="true"></td>
+                    <td class="formula" tabindex="0"></td>
+                    <td class="result" tabindex="0"></td>
+                    <td class="add-result"></td>
+                    <td class="unit"></td>
+                    <td class="delete"></td>
+                </tr>    
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true">x unit</td>
+                    <td class="name" contenteditable="true">x</td>
+                    <td class="formula" tabindex="-1"></td>
+                    <td class="result" tabindex="0" contenteditable="true">[1,0,0]</td>
+                    <td class="add-result"></td>
+                    <td class="unit">cm</td>
+                    <td class="delete"></td>
+                </tr>    
+                <tr>
+                    <td class="handle"></td>
+                    <td class="description" contenteditable="true">y unit</td>
+                    <td class="name" contenteditable="true">y</td>
+                    <td class="formula" tabindex="-1"></td>
+                    <td class="result" tabindex="0" contenteditable="true">[0,1,0]</td>
+                    <td class="add-result"></td>
+                    <td class="unit">cm</td>
+                    <td class="delete"></td>
+                </tr>    
+            </tbody>
+        </table>
+    </div>
+</body>    
+</html>

@@ -3,8 +3,8 @@
 // Assume this is run in a browser environment where QUnit is loaded via script.
 
 // Import the classes (adjust path as needed, assuming row_collection.js is in the parent directory and exports both classes)
-import { TableRowHandler} from '../table_row_handler.js';
-import { RowCollection } from '../row_collection.js';
+import { TableRowHandler} from '../js/table_row_handler.js';
+import { RowCollection } from '../js/row_collection.js';
 
 QUnit.module('RowCollection');
 

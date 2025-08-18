@@ -12,8 +12,8 @@ export const functions = {
 };
 */
 
-import { parseFormula } from '../../parser/formula_parser_a.js';
-import { evaluate } from '../../parser/formula_evaluator_a.js';
+import { parseFormula } from '../../js/parser/formula_parser_a.js';
+import { evaluate } from '../../js/parser/formula_evaluator_a.js';
 
 QUnit.module('Formula Evaluator');
 

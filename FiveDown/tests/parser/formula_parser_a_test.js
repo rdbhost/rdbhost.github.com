@@ -2,7 +2,7 @@
 // QUnit test suite for formula_parser_a.js
 
 // import QUnit from 'qunit';
-import { parseFormula } from '../../parser/formula_parser_a.js';  // Adjust path based on directory structure: tests/parser to parser/
+import { parseFormula } from '../../js/parser/formula_parser_a.js';  // Adjust path based on directory structure: tests/parser to parser/
 
 QUnit.module('Formula Parser Tests');
 
