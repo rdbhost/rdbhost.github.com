@@ -1,0 +1,20 @@
+
+call the class Data
+
+Create a data type (a class) that stores a value and a unit.
+
+It should have:
+  constructor(value, unit | '')
+  val(optional value)  # getter/setter
+  unit(optional value)  # getter/setter
+  type() 
+  asString()
+  asBaseUnit() # converts to base unit (SI unit equiv to given unit)
+
+values can be numbers in fixed or floating point, booleans, vectors (2 or 3 element) as arrays, 
+or text strings
+
+asBaseUnit() returns a new Data() instance with the same quantity converted to a base unit.  
+in to m, h to s, mi to m, for example.
+
+  
