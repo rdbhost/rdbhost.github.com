@@ -1,0 +1,67 @@
+
+refer to pubsub.js and index.html
+
+Create handlers for each column.  Use delegation, so that handlers are active on every row, even when new rows have been 
+  dynamically added.
+
+
+handle - drag handlers already handled in table-drag.js
+
+description - nothing 
+
+formula 
+
+  on-enter handler
+    checks for value in data-value attribute on td cell
+    if so, substitutes that value into td text, losing existing td text
+
+  on-exit handler
+    copies td text data, (even if blank) to data-value attribute on td cell
+    replaces td text with a formatted version of data
+
+    formatting replaces '@' with a unicode dot (&dot;) and replaces * with 'x' symbol.
+
+    if formula text changed from data-value, then trigger a recalc by sending a 'go' message on topic 'recalculation' in pubsub
+
+    if formula column has text, then all result columns should have added class="readonly output" and contenteditable=false
+
+
+results
+
+  on-enter handler
+    checks for value in data-value attribute on td cell
+    if found, substitutes that value into td text, losing existing td text
+
+  on-exit handler
+    copies td text data, (even if blank) to data-value attribute on td cell
+    replaces td text with a formatted version of data, formatted similarly to table_row_handler
+
+    if result text changed from data-value, then
+      1) trigger a recalc by sending 'go' message on topic 'recalc' in pubsub
+      2) ensure formula td is blank and contenteditable=false
+      3) ensure all result fields are contenteditable=true, adding class="input"
+
+
+add-result
+
+  on column header, <th> put a click handler on the one button.
+  the click handler adds a column to the table, to the right of the existing result cells, and to the left of the add-result
+    column.  it has same classes as existing result columns.
+  the text in the new th will have the form 'Result n' where n is the index of the new result column.  
+  the first result column header will have the text Result 0 as soon as a second result column is added.
+
+
+unit
+
+  on-enter handler
+    nothing for now
+
+
+delete
+
+  on the button in this td, add a click handler that deletes the row html and the row_collection entry for the row.
+  the row deletion is done through a RowCollection object on the table, table.row_collection
+  trigger a recalc by sending 'go' message on topic 'recalculation' in pubsub.
+
+
+

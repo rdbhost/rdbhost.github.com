@@ -1,0 +1,23 @@
+
+Create a PubSub class in the file js/pubsub.js
+
+It will implement a Publish Subscribe feature using text topics
+
+
+methods 
+  
+    constructor()
+
+    subscribe(topic_name, function)
+
+        register the function within PubSub on the topic_name
+
+
+    publish(topic_name, message)
+
+       when a message (a data object) is recieved from publish, each registered function is called with that message.
+
+       provide a sequence break (setTimeout, maybe) so that the publish() call returns before the message is broadcast.
+
+
+Also, on DOMLoad, create one instance and attach it to table#main-sheet as data['pubsub']
