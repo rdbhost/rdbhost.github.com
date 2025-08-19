@@ -138,9 +138,9 @@ class TableRowHandler {
     } else if (Array.isArray(v)) {
       return `[${v.map(x => {
         if (typeof x !== 'number') return x.toString();
-        if (x === 0) return '0.000'
-        if (Math.abs(x) < 0.01) return x.toExponential(3);
-        else return x.toFixed(3);
+        if (x === 0) return '0.00'
+        if (Math.abs(x) < 0.01) return x.toExponential(2);
+        else return x.toFixed(2);
       }).join(', ')}]`;
     } else return String(v);
   }

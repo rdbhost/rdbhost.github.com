@@ -254,7 +254,7 @@ QUnit.module('TableRowHandler', function() {
     
     const vec = [1.23456, 0.001235, 42, 0];
     handler.result(0, new Data(vec, ''));
-    assert.strictEqual(handler.resultTDs[0].textContent, '[1.235, 1.235e-3, 42.000, 0.000]');
+    assert.strictEqual(handler.resultTDs[0].textContent, '[1.23, 1.23e-3, 42.00, 0.00]');
     assert.strictEqual(handler.resultTDs[0].getAttribute('data-value'), '[1.23456, 0.001235, 42, 0]');
     assert.deepEqual(handler.result(0).val(), vec);
   });

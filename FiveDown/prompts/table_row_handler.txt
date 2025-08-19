@@ -38,6 +38,7 @@ Each <td> will have a class with the above value "handle", "description" etc
       On setting result:
         in addition to setting td text, add a data attribute 'data-value' to the td containing the same value.  The data attribute can be the full value, the text
         should be formatted to 3 decimal places, or floating point if < 0.01
+        vectors should be formatted to 2 decimal places
 
       new_value can also be an Error object, and the Error.message should be displayed in the td, and the data-value cleared.
       only if the value is an Error, the 'error' class should be set on the td.
