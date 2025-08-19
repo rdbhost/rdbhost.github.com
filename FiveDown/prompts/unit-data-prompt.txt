@@ -10,6 +10,7 @@ It should have:
   type() 
   asString()
   asBaseUnit() # converts to base unit (SI unit equiv to given unit)
+  asGivenUnit(unit)
 
 values can be numbers in fixed or floating point, booleans, vectors (2 or 3 element) as arrays, 
 or text strings
@@ -17,4 +18,13 @@ or text strings
 asBaseUnit() returns a new Data() instance with the same quantity converted to a base unit.  
 in to m, h to s, mi to m, for example.
 
-  
+  include as many units as possible, including:
+
+  length, area, volume in imperial and metric
+  mass
+  force and power
+  velocity and acceleration
+  electricity resistance and capacitance
+  radians and degrees (radians are base unit)
+  time
+

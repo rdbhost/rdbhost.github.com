@@ -1,5 +1,5 @@
 // dim_data.js
-
+import unit from './lib/UnitMath.js';
 
 class Data {
   constructor(value, unit = '') {
@@ -39,8 +39,6 @@ class Data {
     const v = this._value;
     if (Array.isArray(v)) {
       strValue = `[${v.join(', ')}]`;
-    } else if (typeof v === 'boolean') {
-      strValue = v ? 'true' : 'false';
     } else {
       strValue = String(v);
     }
@@ -48,48 +46,49 @@ class Data {
   }
 
   asBaseUnit() {
-    if (!this._unit) return new Data(this._value, '');
-
-    const conversions = {
-      // Length
-      'in': { base: 'm', factor: 0.0254 },
-      'ft': { base: 'm', factor: 0.3048 },
-      'yd': { base: 'm', factor: 0.9144 },
-      'mi': { base: 'm', factor: 1609.34 },
-      'cm': { base: 'm', factor: 0.01 },
-      'mm': { base: 'm', factor: 0.001 },
-      'km': { base: 'm', factor: 1000 },
-
-      // Time
-      'ms': { base: 's', factor: 0.001 },
-      'min': { base: 's', factor: 60 },
-      'h': { base: 's', factor: 3600 },
-      'd': { base: 's', factor: 86400 },
-
-      // Mass
-      'g': { base: 'kg', factor: 0.001 },
-      'mg': { base: 'kg', factor: 0.000001 },
-      'lb': { base: 'kg', factor: 0.453592 },
-      'oz': { base: 'kg', factor: 0.0283495 },
-
-      // Add more units and their conversions to SI base units as needed
-    };
-
-    const conv = conversions[this._unit];
-    if (!conv) return new Data(this._value, this._unit); // No conversion, return as is
-
-    let newValue = this._value;
     const type = this.type();
-    if (type === 'float' || type === 'integer') {
-      newValue *= conv.factor;
-    } else if (type === 'vector') {
-      newValue = newValue.map(x => x * conv.factor);
-    } else {
-      // Booleans and strings don't convert
+    if (type === 'boolean' || type === 'string' || !this._unit) {
       return new Data(this._value, this._unit);
     }
+    if (type === 'float' || type === 'integer') {
+      const u = unit(`${this._value} ${this._unit}`);
+      const baseU = u.toBaseUnits();
+      let baseUnitStr = baseU.toString().replace(/^[+-]?[\d.eE+-]+ /, ''); // Extract unit part
+      baseUnitStr = baseUnitStr.replace(/\s*\/\s*/g, '/');
+      return new Data(baseU.value, baseUnitStr);
+    }
+    if (type === 'vector') {
+      const componentU = unit(`1 ${this._unit}`);
+      const baseComponentU = componentU.toBaseUnits();
+      const factor = baseComponentU.value;
+      let baseUnitStr = baseComponentU.toString().replace(/^[+-]?[\d.eE+-]+ /, '');
+      baseUnitStr = baseUnitStr.replace(/\s*\/\s*/g, '/');
+      const newValue = this._value.map(x => x * factor);
+      return new Data(newValue, baseUnitStr);
+    }
+    throw new Error('Unsupported type for asBaseUnit');
+  }
 
-    return new Data(newValue, conv.base);
+  asGivenUnit(targetUnit) {
+    const type = this.type();
+    if (type === 'boolean' || type === 'string') {
+      return new Data(this._value, targetUnit);
+    }
+    if (type === 'float' || type === 'integer') {
+      const u = unit(`${this._value} ${this._unit}`);
+      const valueless = unit(targetUnit);
+      const convertedU = u.to(valueless);
+      return new Data(convertedU.value, targetUnit);
+    }
+    if (type === 'vector') {
+      const componentU = unit(`1 ${this._unit}`);
+      const valueless = unit(targetUnit);
+      const convertedComponentU = componentU.to(valueless);
+      const factor = convertedComponentU.value;
+      const newValue = this._value.map(x => x * factor);
+      return new Data(newValue, targetUnit);
+    }
+    throw new Error('Unsupported type for asGivenUnit');
   }
 }
 
