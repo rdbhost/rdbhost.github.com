@@ -3,7 +3,7 @@
 // Assume this is run in a browser environment where QUnit is loaded via script.
 
 // Import the classes (adjust path as needed, assuming row_collection.js is in the parent directory and exports the classes)
-import { TableRowHandler } from '../js/table_row_handler.js';
+import { TableRow } from '../js/table_row_handler.js';
 import { RowCollection, ColumnObjectWrapper } from '../js/row_collection.js';
 
 QUnit.module('ColumnObjectWrapper');
@@ -49,7 +49,7 @@ const extraResultsHTML = `
 `;
 
 QUnit.test('constructor with valid RowCollection and columnIndex', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
+  const row1 = new TableRow(sampleRowHTML1);
   const collection = new RowCollection([row1]);
   const wrapper = new ColumnObjectWrapper(collection, 0);
   assert.ok(wrapper instanceof ColumnObjectWrapper, 'Instance created (proxied)');
@@ -66,8 +66,8 @@ QUnit.test('constructor throws if invalid columnIndex', assert => {
 });
 
 QUnit.test('get result by row name', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
-  const row2 = new TableRowHandler(sampleRowHTML2);
+  const row1 = new TableRow(sampleRowHTML1);
+  const row2 = new TableRow(sampleRowHTML2);
   const collection = new RowCollection([row1, row2]);
   const wrapper = new ColumnObjectWrapper(collection, 0);
   assert.strictEqual(wrapper.name1, 'result1', 'Gets result for name1');
@@ -81,7 +81,7 @@ QUnit.test('get throws if row not found', assert => {
 });
 
 QUnit.test('set result by row name', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
+  const row1 = new TableRow(sampleRowHTML1);
   const collection = new RowCollection([row1]);
   const wrapper = new ColumnObjectWrapper(collection, 0);
   wrapper.name1 = 'new result';
@@ -109,7 +109,7 @@ QUnit.test('get built-in properties', assert => {
 });
 
 QUnit.test('works with different columnIndex', assert => {
-  const row = new TableRowHandler(extraResultsHTML);
+  const row = new TableRow(extraResultsHTML);
   const collection = new RowCollection([row]);
   const wrapper = new ColumnObjectWrapper(collection, 1);
   assert.strictEqual(wrapper.name3, 'result3b', 'Gets result for column 1');
@@ -118,7 +118,7 @@ QUnit.test('works with different columnIndex', assert => {
 });
 
 QUnit.test('result access respects row\'s max column', assert => {
-  const row = new TableRowHandler(extraResultsHTML);
+  const row = new TableRow(extraResultsHTML);
   const collection = new RowCollection([row]);
   const wrapper = new ColumnObjectWrapper(collection, 2);
   assert.throws(() => wrapper.name3, new Error('Invalid result column: Maximum is 1.'), 'Throws from underlying row.result');

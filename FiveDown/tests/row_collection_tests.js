@@ -3,7 +3,7 @@
 // Assume this is run in a browser environment where QUnit is loaded via script.
 
 // Import the classes (adjust path as needed, assuming row_collection.js is in the parent directory and exports both classes)
-import { TableRowHandler} from '../js/table_row_handler.js';
+import { TableRow} from '../js/table_row_handler.js';
 import { RowCollection } from '../js/row_collection.js';
 
 QUnit.module('RowCollection');
@@ -67,8 +67,8 @@ QUnit.test('constructor with empty array', assert => {
 });
 
 QUnit.test('constructor with valid array', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
-  const row2 = new TableRowHandler(sampleRowHTML2);
+  const row1 = new TableRow(sampleRowHTML1);
+  const row2 = new TableRow(sampleRowHTML2);
   const collection = new RowCollection([row1, row2]);
   assert.strictEqual(collection.rowMap.size, 2, 'Two rows added');
   assert.strictEqual(collection.getRow('name1').name(), 'name1', 'Row1 by name');
@@ -76,48 +76,48 @@ QUnit.test('constructor with valid array', assert => {
 });
 
 QUnit.test('constructor throws if not array', assert => {
-  assert.throws(() => new RowCollection('invalid'), new Error('Constructor requires an array of TableRowHandler instances.'), 'Throws error');
+  assert.throws(() => new RowCollection('invalid'), new Error('Constructor requires an array of TableRow instances.'), 'Throws error');
 });
 
-QUnit.test('constructor throws if items not TableRowHandler', assert => {
-  assert.throws(() => new RowCollection([{}]), new Error('addRow requires a TableRowHandler instance.'), 'Throws error');
+QUnit.test('constructor throws if items not TableRow', assert => {
+  assert.throws(() => new RowCollection([{}]), new Error('addRow requires a TableRow instance.'), 'Throws error');
 });
 
 QUnit.test('constructor throws on duplicate names', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
-  const duplicateRow = new TableRowHandler(duplicateNameHTML);
+  const row1 = new TableRow(sampleRowHTML1);
+  const duplicateRow = new TableRow(duplicateNameHTML);
   assert.throws(() => new RowCollection([row1, duplicateRow]), new Error('Row with name "name1" already exists. Names must be unique.'), 'Throws error');
 });
 
 QUnit.test('addRow adds valid row', assert => {
   const collection = new RowCollection();
-  const row = new TableRowHandler(sampleRowHTML1);
+  const row = new TableRow(sampleRowHTML1);
   collection.addRow(row);
   assert.strictEqual(collection.rowMap.size, 1, 'Row added');
   assert.strictEqual(collection.getRow('name1').name(), 'name1', 'Row by name');
 });
 
-QUnit.test('addRow throws if not TableRowHandler', assert => {
+QUnit.test('addRow throws if not TableRow', assert => {
   const collection = new RowCollection();
-  assert.throws(() => collection.addRow({}), new Error('addRow requires a TableRowHandler instance.'), 'Throws error');
+  assert.throws(() => collection.addRow({}), new Error('addRow requires a TableRow instance.'), 'Throws error');
 });
 
 //QUnit.test('addRow throws if blank name', assert => {
 //  const collection = new RowCollection();
-//  const blankRow = new TableRowHandler(blankNameHTML);
+//  const blankRow = new TableRow(blankNameHTML);
 //  assert.throws(() => collection.addRow(blankRow), new Error('Cannot add row with blank or undefined name.'), 'Throws error');
 //});
 
 QUnit.test('addRow throws on duplicate name', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
-  const duplicateRow = new TableRowHandler(duplicateNameHTML);
+  const row1 = new TableRow(sampleRowHTML1);
+  const duplicateRow = new TableRow(duplicateNameHTML);
   const collection = new RowCollection([row1]);
   assert.throws(() => collection.addRow(duplicateRow), new Error('Row with name "name1" already exists. Names must be unique.'), 'Throws error');
 });
 
 QUnit.test('removeRow removes existing row', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
-  const row2 = new TableRowHandler(sampleRowHTML2);
+  const row1 = new TableRow(sampleRowHTML1);
+  const row2 = new TableRow(sampleRowHTML2);
   const collection = new RowCollection([row1, row2]);
   collection.removeRow(row1);
   assert.strictEqual(collection.rowMap.size, 1, 'One row removed');
@@ -125,16 +125,16 @@ QUnit.test('removeRow removes existing row', assert => {
   assert.strictEqual(collection.getRow('name2').name(), 'name2', 'Row2 remains');
 });
 
-QUnit.test('removeRow throws if not TableRowHandler', assert => {
+QUnit.test('removeRow throws if not TableRow', assert => {
   const collection = new RowCollection();
-  assert.throws(() => collection.removeRow({}), new Error('removeRow requires a TableRowHandler instance.'), 'Throws error');
+  assert.throws(() => collection.removeRow({}), new Error('removeRow requires a TableRow instance.'), 'Throws error');
 });
 
 QUnit.test('removeRow throws if row not found', assert => {
-  const row1 = new TableRowHandler(sampleRowHTML1);
-  const row2 = new TableRowHandler(sampleRowHTML2);
+  const row1 = new TableRow(sampleRowHTML1);
+  const row2 = new TableRow(sampleRowHTML2);
   const collection = new RowCollection([row1]);
-  assert.throws(() => collection.removeRow(row2), new Error('TableRowHandler not found in the collection.'), 'Throws error');
+  assert.throws(() => collection.removeRow(row2), new Error('TableRow not found in the collection.'), 'Throws error');
 });
 
 QUnit.test('getRow throws if not found', assert => {
@@ -143,7 +143,7 @@ QUnit.test('getRow throws if not found', assert => {
 });
 
 QUnit.test('getRow handles trimmed names', assert => {
-  const row = new TableRowHandler(sampleRowHTML1);
+  const row = new TableRow(sampleRowHTML1);
   const collection = new RowCollection([row]);
   assert.strictEqual(collection.getRow(' name1 ').name(), 'name1', 'Gets with trimmed name');
 });

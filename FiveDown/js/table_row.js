@@ -1,7 +1,7 @@
-// TableRowHandler.js
+// TableRow.js
 import { Data } from './dim_data.js'; // Assuming the Data class is available from the provided file
 
-class TableRowHandler {
+class TableRow {
   constructor(html) {
     this.tr = this.parseHtmlToTr(html);
     this.validate();
@@ -146,4 +146,4 @@ class TableRowHandler {
   }
 }
 
-export { TableRowHandler };
+export { TableRow };

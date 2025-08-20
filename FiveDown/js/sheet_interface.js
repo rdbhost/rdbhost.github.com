@@ -1,8 +1,8 @@
 // js/sheet_interface.js
-// Handles event delegation for the table columns, integrating with TableRowHandler and RowCollection
+// Handles event delegation for the table columns, integrating with TableRow and RowCollection
 // Uses table.pubsub for publishing events
 
-import { TableRowHandler } from './table_row_handler.js';
+import { TableRow } from './table_row_handler.js';
 import { RowCollection } from './row_collection.js';
 import { Data } from './dim_data.js';
 
@@ -63,7 +63,7 @@ function setupTableInterface(table) {
       newNameTd.dataset.value = newName;
 
       // Create new handler for clone
-      const newRowHandler = new TableRowHandler(clone.outerHTML);
+      const newRowHandler = new TableRow(clone.outerHTML);
       // Replace clone with parsed tr
       clone.parentNode.replaceChild(newRowHandler.tr, clone);
       table.row_collection.addRow(newRowHandler);

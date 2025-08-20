@@ -1,0 +1,17 @@
+
+create a module row_collection.js, with a class row_collection
+
+
+methods:
+
+    constructor(rows)
+
+    add_row(name, row)
+
+        adds given
+
+    get_row(name)
+
+    remove_row(name)
+
+    audit()

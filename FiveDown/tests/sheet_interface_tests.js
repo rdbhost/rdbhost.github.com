@@ -2,7 +2,7 @@
 // QUnit tests for sheet_interface.js
 // Assumes QUnit is loaded, and the necessary modules are available.
 
-import { TableRowHandler } from '../js/table_row_handler.js';
+import { TableRow } from '../js/table_row_handler.js';
 import { RowCollection } from '../js/row_collection.js';
 import { PubSub } from '../js/pubsub.js';
 import { Data } from '../js/dim_data.js';
@@ -31,7 +31,7 @@ function createMockTable() {
   });
   thead.appendChild(headerRow);
 
-  // Create a sample row HTML string for TableRowHandler
+  // Create a sample row HTML string for TableRow
   const rowHtml = `
     <tr>
       <td class="handle"></td>
@@ -44,7 +44,7 @@ function createMockTable() {
       <td class="delete"><button>X</button></td>
     </tr>
   `;
-  const handler = new TableRowHandler(rowHtml);
+  const handler = new TableRow(rowHtml);
   const row = handler.tr;
   tbody.appendChild(row);
 

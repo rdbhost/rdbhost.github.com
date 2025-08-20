@@ -1,30 +1,30 @@
 
 // Module exporting ES classes for RowCollection and ColumnObjectWrapper
-// Assuming TableRowHandler is defined elsewhere; import if needed
-import { TableRowHandler } from './table_row_handler.js';
+// Assuming TableRow is defined elsewhere; import if needed
+import { TableRow } from './table_row_handler.js';
 
 export class RowCollection {
   /**
-   * Constructor taking a list of TableRowHandler instances.
+   * Constructor taking a list of TableRow instances.
    * Tracks rows by their unique names in a Map.
-   * @param {TableRowHandler[]} tableRowHandlers - An array of TableRowHandler objects.
+   * @param {TableRow[]} tableRowHandlers - An array of TableRow objects.
    */
   constructor(tableRowHandlers = []) {
     if (!Array.isArray(tableRowHandlers)) {
-      throw new Error('Constructor requires an array of TableRowHandler instances.');
+      throw new Error('Constructor requires an array of TableRow instances.');
     }
     this.rowMap = new Map();
     tableRowHandlers.forEach(row => this.addRow(row));
   }
 
   /**
-   * Adds a TableRowHandler to the collection.
+   * Adds a TableRow to the collection.
    * Ensures names are unique.
-   * @param {TableRowHandler} row - The TableRowHandler to add.
+   * @param {TableRow} row - The TableRow to add.
    */
   addRow(row) {
-    if (!(row instanceof TableRowHandler)) {
-      throw new Error('addRow requires a TableRowHandler instance.');
+    if (!(row instanceof TableRow)) {
+      throw new Error('addRow requires a TableRow instance.');
     }
     const name = row.name().trim();
     if (!name) {
@@ -37,24 +37,24 @@ export class RowCollection {
   }
 
   /**
-   * Removes a TableRowHandler from the collection.
-   * @param {TableRowHandler} row - The TableRowHandler to remove.
+   * Removes a TableRow from the collection.
+   * @param {TableRow} row - The TableRow to remove.
    */
   removeRow(row) {
-    if (!(row instanceof TableRowHandler)) {
-      throw new Error('removeRow requires a TableRowHandler instance.');
+    if (!(row instanceof TableRow)) {
+      throw new Error('removeRow requires a TableRow instance.');
     }
     const name = row.name().trim();
     if (!this.rowMap.has(name)) {
-      throw new Error('TableRowHandler not found in the collection.');
+      throw new Error('TableRow not found in the collection.');
     }
     this.rowMap.delete(name);
   }
 
   /**
-   * Gets a TableRowHandler by name.
+   * Gets a TableRow by name.
    * @param {string} name - The name of the row to retrieve.
-   * @returns {TableRowHandler} The TableRowHandler instance.
+   * @returns {TableRow} The TableRow instance.
    */
   getRow(name) {
     const trimmedName = name.trim();
