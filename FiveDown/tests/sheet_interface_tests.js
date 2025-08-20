@@ -2,7 +2,7 @@
 // QUnit tests for sheet_interface.js
 // Assumes QUnit is loaded, and the necessary modules are available.
 
-import { TableRow } from '../js/table_row_handler.js';
+import { TableRow } from '../js/table_row.js';
 import { RowCollection } from '../js/row_collection.js';
 import { PubSub } from '../js/pubsub.js';
 import { Data } from '../js/dim_data.js';

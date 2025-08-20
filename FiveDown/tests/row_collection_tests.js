@@ -3,7 +3,7 @@
 // Assume this is run in a browser environment where QUnit is loaded via script.
 
 // Import the classes (adjust path as needed, assuming row_collection.js is in the parent directory and exports both classes)
-import { TableRow} from '../js/table_row_handler.js';
+import { TableRow} from '../js/table_row.js';
 import { RowCollection } from '../js/row_collection.js';
 
 QUnit.module('RowCollection');
@@ -63,14 +63,14 @@ const blankNameHTML = `
 QUnit.test('constructor with empty array', assert => {
   const collection = new RowCollection();
   assert.ok(collection instanceof RowCollection, 'Instance created');
-  assert.strictEqual(collection.rowMap.size, 0, 'Empty map');
+  assert.strictEqual(collection.collection.size, 0, 'Empty map');
 });
 
 QUnit.test('constructor with valid array', assert => {
   const row1 = new TableRow(sampleRowHTML1);
   const row2 = new TableRow(sampleRowHTML2);
   const collection = new RowCollection([row1, row2]);
-  assert.strictEqual(collection.rowMap.size, 2, 'Two rows added');
+  assert.strictEqual(collection.collection.size, 2, 'Two rows added');
   assert.strictEqual(collection.getRow('name1').name(), 'name1', 'Row1 by name');
   assert.strictEqual(collection.getRow('name2').name(), 'name2', 'Row2 by name');
 });
@@ -93,7 +93,7 @@ QUnit.test('addRow adds valid row', assert => {
   const collection = new RowCollection();
   const row = new TableRow(sampleRowHTML1);
   collection.addRow(row);
-  assert.strictEqual(collection.rowMap.size, 1, 'Row added');
+  assert.strictEqual(collection.collection.size, 1, 'Row added');
   assert.strictEqual(collection.getRow('name1').name(), 'name1', 'Row by name');
 });
 
@@ -120,7 +120,7 @@ QUnit.test('removeRow removes existing row', assert => {
   const row2 = new TableRow(sampleRowHTML2);
   const collection = new RowCollection([row1, row2]);
   collection.removeRow(row1);
-  assert.strictEqual(collection.rowMap.size, 1, 'One row removed');
+  assert.strictEqual(collection.collection.size, 1, 'One row removed');
   assert.throws(() => collection.getRow('name1'), new Error('Row with name "name1" not found.'), 'Row1 removed');
   assert.strictEqual(collection.getRow('name2').name(), 'name2', 'Row2 remains');
 });

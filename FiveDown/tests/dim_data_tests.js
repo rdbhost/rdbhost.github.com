@@ -1,95 +1,144 @@
+// tests/dim_data_tests.js
+
 import { Data } from '../js/dim_data.js';
 
-QUnit.module('Data Class');
+QUnit.module('Data Class Tests', function() {
 
-QUnit.test('constructor sets value and unit', function(assert) {
-  const data = new Data(42, 'm');
-  assert.equal(data.val(), 42, 'Value set correctly');
-  assert.equal(data.unit(), 'm', 'Unit set correctly');
+  QUnit.test('Constructor and getters/setters', function(assert) {
+    let d = new Data(42, 'm');
+    assert.equal(d.val(), 42, 'Initial value');
+    assert.equal(d.unit(), 'm', 'Initial unit');
 
-  const noUnit = new Data('test');
-  assert.equal(noUnit.unit(), '', 'Default unit empty');
-});
+    d.val(100);
+    assert.equal(d.val(), 100, 'Set value');
 
-QUnit.test('val getter/setter', function(assert) {
-  const data = new Data(10);
-  assert.equal(data.val(), 10, 'Getter returns value');
-  data.val(20);
-  assert.equal(data.val(), 20, 'Setter updates value');
-});
+    d.unit('km');
+    assert.equal(d.unit(), 'km', 'Set unit');
 
-QUnit.test('unit getter/setter', function(assert) {
-  const data = new Data(10, 's');
-  assert.equal(data.unit(), 's', 'Getter returns unit');
-  data.unit('m');
-  assert.equal(data.unit(), 'm', 'Setter updates unit');
-});
+    d = new Data(true);
+    assert.equal(d.val(), true, 'Boolean value');
+    assert.equal(d.unit(), '', 'Default unit');
+  });
 
-QUnit.test('type method', function(assert) {
-  assert.equal(new Data(true).type(), 'boolean', 'Boolean type');
-  assert.equal(new Data('hello').type(), 'string', 'String type');
-  assert.equal(new Data(42).type(), 'integer', 'Integer type');
-  assert.equal(new Data(3.14).type(), 'float', 'Float type');
-  assert.equal(new Data([1, 2]).type(), 'vector', '2-element vector type');
-  assert.equal(new Data([1, 2, 3]).type(), 'vector', '3-element vector type');
-  assert.equal(new Data([1, 2, 3, 4]).type(), 'unknown', '4-element unknown');
-  assert.equal(new Data({}).type(), 'unknown', 'Object unknown');
-});
+  QUnit.test('type() method', function(assert) {
+    assert.equal(new Data(3.14).type(), 'number', 'Number type');
+    assert.equal(new Data(true).type(), 'boolean', 'Boolean type');
+    assert.equal(new Data('hello').type(), 'string', 'String type');
+    assert.equal(new Data([1, 2]).type(), 'vector', '2D Vector type');
+    assert.equal(new Data([1, 2, 3]).type(), 'vector', '3D Vector type');
+    assert.equal(new Data([1]).type(), 'unknown', 'Invalid vector (1 element)');
+    assert.equal(new Data([1, 'a']).type(), 'unknown', 'Invalid vector (mixed types)');
+    assert.equal(new Data({}).type(), 'unknown', 'Object type');
+  });
 
-QUnit.test('asString method', function(assert) {
-  assert.equal(new Data(42, 'm').asString(), '42 m', 'Number with unit');
-  assert.equal(new Data(42).asString(), '42', 'Number without unit');
-  assert.equal(new Data(true).asString(), 'true', 'Boolean');
-  assert.equal(new Data('test', 'unit').asString(), 'test unit', 'String with unit');
-  assert.equal(new Data([1, 2, 3], 'm').asString(), '[1, 2, 3] m', 'Vector with unit');
-});
+  QUnit.test('asString() method', function(assert) {
+    assert.equal(new Data(42, 'm').asString(), '42 m', 'Number with unit');
+    assert.equal(new Data(42).asString(), '42', 'Number without unit');
+    assert.equal(new Data(true, 'bool').asString(), 'true bool', 'Boolean with unit');
+    assert.equal(new Data(false).asString(), 'false', 'Boolean without unit');
+    assert.equal(new Data('hello', 'text').asString(), 'hello text', 'String with unit');
+    assert.equal(new Data([1, 2, 3], 'm').asString(), '1,2,3 m', 'Vector with unit');
+    assert.equal(new Data([1, 2]).asString(), '1,2', 'Vector without unit');
+  });
 
-QUnit.test('asBaseUnit', function(assert) {
-  const inch = new Data(12, 'in');
-  const base = inch.asBaseUnit();
-  assert.ok(Math.abs(base.val() - 0.3048) < 0.0001, '12 in to m ≈ 0.3048');
-  assert.equal(base.unit(), 'm', 'Base unit m');
+  QUnit.test('asBaseUnit() for numbers', function(assert) {
+    let d = new Data(1, 'km');
+    let base = d.asBaseUnit();
+    assert.equal(base.unit(), 'm', 'Base unit');
+    assert.equal(base.val(), 1000, 'Converted value');
 
-  const hour = new Data(1, 'h');
-  const baseTime = hour.asBaseUnit();
-  assert.equal(baseTime.val(), 3600, '1 h to 3600 s');
-  assert.equal(baseTime.unit(), 's', 'Base unit s');
+    d = new Data(3600, 'h');
+    base = d.asBaseUnit();
+    assert.equal(base.unit(), 's', 'Time base unit');
+    assert.equal(base.val(), 3600 * 3600, 'Time converted value');
 
-  const vec = new Data([1, 2], 'mi');
-  const baseVec = vec.asBaseUnit();
-  assert.ok(Math.abs(baseVec.val()[0] - 1609.34) < 0.01, '1 mi to m ≈ 1609.34');
-  assert.ok(Math.abs(baseVec.val()[1] - 3218.68) < 0.01, '2 mi to m ≈ 3218.68');
-  assert.equal(baseVec.unit(), 'm', 'Base unit m');
+    d = new Data(90, 'deg');
+    base = d.asBaseUnit();
+    assert.equal(base.unit(), 'rad', 'Angle base unit');
+    assert.ok(Math.abs(base.val() - Math.PI / 2) < 1e-10, 'Angle converted value');
 
-  const bool = new Data(true);
-  assert.deepEqual(bool.asBaseUnit(), bool, 'Boolean unchanged');
+    d = new Data(42, 'unknown');
+    base = d.asBaseUnit();
+    assert.equal(base.val(), 42, 'Unknown unit value unchanged');
+    assert.equal(base.unit(), 'unknown', 'Unknown unit unchanged');
 
-  const str = new Data('test');
-  assert.deepEqual(str.asBaseUnit(), str, 'String unchanged');
-});
+    d = new Data(100, 'ohm');
+    base = d.asBaseUnit();
+    assert.equal(base.unit(), 'ohm', 'Resistance base unit');
+    assert.equal(base.val(), 100, 'Resistance value unchanged');
 
-QUnit.test('asGivenUnit', function(assert) {
-  const meter = new Data(1, 'm');
-  const cm = meter.asGivenUnit('cm');
-  assert.equal(cm.val(), 100, '1 m to 100 cm');
-  assert.equal(cm.unit(), 'cm', 'Unit cm');
+    d = new Data(1, 'kohm');
+    base = d.asBaseUnit();
+    assert.equal(base.val(), 1000, 'kohm to ohm');
+  });
 
-  const sec = new Data(3600, 's');
-  const hour = sec.asGivenUnit('h');
-  assert.equal(hour.val(), 1, '3600 s to 1 h');
-  assert.equal(hour.unit(), 'h', 'Unit h');
+  QUnit.test('asBaseUnit() for vectors', function(assert) {
+    let d = new Data([1, 2], 'km');
+    let base = d.asBaseUnit();
+    assert.deepEqual(base.val(), [1000, 2000], 'Vector converted values');
+    assert.equal(base.unit(), 'm', 'Vector base unit');
 
-  const vecM = new Data([1, 2], 'm');
-  const vecCm = vecM.asGivenUnit('cm');
-  assert.deepEqual(vecCm.val(), [100, 200], 'Vector m to cm');
-  assert.equal(vecCm.unit(), 'cm', 'Unit cm');
+    d = new Data([90, 180, 270], 'deg');
+    base = d.asBaseUnit();
+    const expected = [Math.PI / 2, Math.PI, 3 * Math.PI / 2];
+    base.val().forEach((val, i) => {
+      assert.ok(Math.abs(val - expected[i]) < 1e-10, `Vector angle ${i + 1}`);
+    });
+    assert.equal(base.unit(), 'rad', 'Vector angle base');
+  });
 
-  assert.throws(() => meter.asGivenUnit('s'), /Error/, 'Throws on incompatible units');
-});
+  QUnit.test('asBaseUnit() for non-numerics', function(assert) {
+    let d = new Data(true, 'm');
+    let base = d.asBaseUnit();
+    assert.equal(base.val(), true, 'Boolean unchanged');
+    assert.equal(base.unit(), 'm', 'Unit unchanged');
 
-QUnit.test('asBaseUnit with compound units', function(assert) {
-  const speed = new Data(10, 'km/h');
-  const baseSpeed = speed.asBaseUnit();
-  assert.ok(Math.abs(baseSpeed.val() - 2.77778) < 0.0001, '10 km/h to ≈2.77778 m/s');
-  assert.equal(baseSpeed.unit(), 'm/s', 'Base unit m/s');
+    d = new Data('hello', 's');
+    base = d.asBaseUnit();
+    assert.equal(base.val(), 'hello', 'String unchanged');
+    assert.equal(base.unit(), 's', 'Unit unchanged');
+  });
+
+  QUnit.test('asGivenUnit() for numbers', function(assert) {
+    let d = new Data(1000, 'm');
+    let [newData, factor] = d.asGivenUnit('km');
+    assert.equal(newData.unit(), 'km', 'Target unit');
+    assert.equal(newData.val(), 1, 'Converted value');
+    assert.equal(factor, 0.001, 'Conversion factor');
+    assert.equal(d.val() * factor, newData.val(), 'Value * factor == new value');
+
+    d = new Data(1, 'h');
+    [newData, factor] = d.asGivenUnit('s');
+    assert.equal(newData.val(), 3600, 'Time converted');
+    assert.equal(factor, 3600, 'Time factor');
+
+    d = new Data(1, 'kohm');
+    [newData, factor] = d.asGivenUnit('ohm');
+    assert.equal(newData.val(), 1000, 'Resistance converted');
+    assert.equal(factor, 1000, 'Resistance factor');
+  });
+
+  QUnit.test('asGivenUnit() for vectors', function(assert) {
+    let d = new Data([1000, 2000], 'm');
+    let [newData, factor] = d.asGivenUnit('km');
+    assert.deepEqual(newData.val(), [1, 2], 'Vector converted');
+    assert.equal(factor, 0.001, 'Vector factor');
+    assert.deepEqual(d.val().map(v => v * factor), newData.val(), 'Vector values * factor');
+
+    d = new Data([1, 2, 3], 'min');
+    [newData, factor] = d.asGivenUnit('s');
+    assert.deepEqual(newData.val(), [60, 120, 180], 'Time vector converted');
+    assert.equal(factor, 60, 'Time vector factor');
+  });
+
+  QUnit.test('asGivenUnit() errors', function(assert) {
+    let d = new Data(1, 'm');
+    assert.throws(() => d.asGivenUnit('s'), Error, 'Incompatible units');
+    assert.throws(() => d.asGivenUnit('unknown'), Error, 'Unknown target unit');
+    assert.throws(() => new Data(1).asGivenUnit('m'), Error, 'No original unit');
+    assert.throws(() => d.asGivenUnit(''), Error, 'No target unit');
+    assert.throws(() => new Data(true, 'm').asGivenUnit('km'), Error, 'Non-numeric conversion');
+    assert.throws(() => new Data('text', 'm').asGivenUnit('km'), Error, 'String conversion');
+  });
+
 });

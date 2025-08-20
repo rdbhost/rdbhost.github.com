@@ -1,7 +1,6 @@
 
-call the class Data
-
-Create a data type (a class) that stores a value and a unit.
+Create a data type (a class), called Data, that stores a value and a unit.
+Name the file js/dim_data.js
 
 It should have:
   constructor(value, unit | '')
@@ -21,10 +20,19 @@ in to m, h to s, mi to m, for example.
   include as many units as possible, including:
 
   length, area, volume in imperial and metric
-  mass
-  force and power
+  mass, in imperial and metric
+  force and power, in imperial and metric
   velocity and acceleration
   electricity resistance and capacitance
   radians and degrees (radians are base unit)
   time
+
+use latin alphabet only for unit names
+
+
+asGivenUnit() returns a 2-tuple of (Data(), conversion_factor) with the same quantity converted to given unit. 
+
+  [ new_val, con_fac ] = orig.asGivenUnit()
+  assert orig.val() * con_fac == new_val.val()
+  assert orig.unit() !== new_val.unit()
 

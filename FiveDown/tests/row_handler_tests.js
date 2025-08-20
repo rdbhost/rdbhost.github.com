@@ -1,5 +1,5 @@
 
-import { TableRow } from '../js/table_row_handler.js';
+import { TableRow } from '../js/table_row.js';
 import { Data } from '../js/dim_data.js'; // Adjust path if necessary
 
 // tests/row_handler_tests.js
