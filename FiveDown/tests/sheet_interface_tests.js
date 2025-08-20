@@ -1,340 +1,234 @@
-// tests/test_sheet_interface.js
+// tests/sheet_interface_tests.js
+// QUnit tests for sheet_interface.js
+// Assumes QUnit is loaded, and the necessary modules are available.
 
-QUnit.module('Sheet Interface', function(hooks) {
-  let table;
-  let pubsub;
-  let rowCollection;
+import { TableRowHandler } from '../js/table_row_handler.js';
+import { RowCollection } from '../js/row_collection.js';
+import { PubSub } from '../js/pubsub.js';
+import { Data } from '../js/dim_data.js';
+import { setupTableInterface, enforceRowRules } from '../js/sheet_interface.js';
 
-  hooks.beforeEach(function() {
-    // Create mock pubsub
-    pubsub = {
-      publish: function() {}
-    };
+// Mock DOM setup
+function createMockTable() {
+  const table = document.createElement('table');
+  table.id = 'main-sheet';
+  const thead = document.createElement('thead');
+  const tbody = document.createElement('tbody');
+  table.appendChild(thead);
+  table.appendChild(tbody);
 
-    // Mock rowCollection
-    rowCollection = new Map();
-
-    // Create table structure based on index.html snippet
-    table = document.createElement('table');
-    table.id = 'main-sheet';
-    table.pubsub = pubsub;
-    table.row_collection = rowCollection;
-
-    // Header row
-    const headerTr = document.createElement('tr');
-    ['handle', 'description', 'name', 'formula', 'result', 'add-result', 'unit', 'delete'].forEach(cls => {
-      const th = document.createElement('th');
-      th.classList.add(cls);
-      if (cls === 'add-result') {
-        const btn = document.createElement('button');
-        btn.textContent = '+';
-        th.appendChild(btn);
-      } else if (cls === 'result') {
-        th.textContent = 'Result';
-      }
-      headerTr.appendChild(th);
-    });
-    table.appendChild(headerTr);
-
-    // Data row
-    const dataTr = document.createElement('tr');
-    const tds = {};
-    ['handle', 'description', 'name', 'formula', 'result', 'add-result', 'unit', 'delete'].forEach(cls => {
-      const td = document.createElement('td');
-      td.classList.add(cls);
-      td.contentEditable = true;
-      if (cls === 'delete') {
-        const btn = document.createElement('button');
-        btn.textContent = 'x';
-        td.appendChild(btn);
-      }
-      dataTr.appendChild(td);
-      tds[cls] = td;
-    });
-    table.appendChild(dataTr);
-
-    // Attach to body for events
-    document.body.appendChild(table);
-
-    // Manually attach event listeners as in sheet-interface.js
-    table.addEventListener('focusin', focusinHandler);
-    table.addEventListener('focusout', focusoutHandler);
-    table.addEventListener('click', clickHandler);
-  });
-
-  hooks.afterEach(function() {
-    document.body.removeChild(table);
-    table = null;
-  });
-
-  // Define handlers as in the script
-  function focusinHandler(e) {
-    const td = e.target;
-    if (td.tagName !== 'TD') return;
-
-    if (td.classList.contains('formula') || td.classList.contains('result')) {
-      if (td.hasAttribute('data-value')) {
-        td.textContent = td.getAttribute('data-value');
-      }
+  // Create header row
+  const headerRow = document.createElement('tr');
+  ['handle', 'description', 'name', 'formula', 'result', 'add-result', 'unit', 'delete'].forEach(colClass => {
+    const th = document.createElement('th');
+    th.classList.add(colClass);
+    if (colClass === 'add-result') {
+      th.innerHTML = '<button>+</button>';
+    } else if (colClass === 'result') {
+      th.textContent = 'Result';
     }
-  }
-
-  function focusoutHandler(e) {
-    const td = e.target;
-    if (td.tagName !== 'TD') return;
-
-    if (td.classList.contains('formula')) {
-      const newRaw = td.textContent.trim();
-      const oldRaw = td.getAttribute('data-value') || '';
-      td.setAttribute('data-value', newRaw);
-      const formatted = newRaw.replace(/@/g, '⋅').replace(/\*/g, '×');
-      td.textContent = formatted;
-      if (newRaw !== oldRaw) {
-        pubsub.publish('recalculation', 'go');
-      }
-      if (newRaw !== '') {
-        const tr = td.closest('tr');
-        const resultTds = tr.querySelectorAll('td.result');
-        for (let rtd of resultTds) {
-          rtd.classList.add('readonly', 'output');
-          rtd.contentEditable = false;
-        }
-      }
-    } else if (td.classList.contains('result')) {
-      const newRaw = td.textContent.trim();
-      const oldRaw = td.getAttribute('data-value') || '';
-      td.setAttribute('data-value', newRaw);
-      const value = parseValue(newRaw);
-      const formatted = formattedString(value);
-      td.textContent = formatted;
-      if (newRaw !== oldRaw) {
-        pubsub.publish('recalc', 'go');
-        const tr = td.closest('tr');
-        const formulaTd = tr.querySelector('td.formula');
-        formulaTd.textContent = '';
-        formulaTd.contentEditable = false;
-        const resultTds = tr.querySelectorAll('td.result');
-        for (let rtd of resultTds) {
-          rtd.contentEditable = true;
-          rtd.classList.add('input');
-          rtd.classList.remove('readonly', 'output');
-        }
-      }
-    }
-  }
-
-  function clickHandler(e) {
-    const target = e.target;
-
-    if (target.tagName === 'BUTTON' && target.closest('th.add-result')) {
-      const headerTr = table.querySelector('tr:first-child');
-      const addResultTh = headerTr.querySelector('th.add-result');
-      const position = Array.from(headerTr.children).indexOf(addResultTh);
-
-      const currentResults = headerTr.querySelectorAll('th.result').length;
-
-      const allTrs = table.querySelectorAll('tr');
-      for (let tr of allTrs) {
-        const isHeader = tr === headerTr;
-        const newCell = document.createElement(isHeader ? 'th' : 'td');
-        newCell.classList.add('result');
-        if (isHeader) {
-          newCell.textContent = `Result ${currentResults}`;
-        } else {
-          newCell.contentEditable = true;
-        }
-        tr.insertBefore(newCell, tr.children[position]);
-      }
-
-      if (currentResults === 1) {
-        const firstResultTh = headerTr.querySelector('th.result');
-        if (firstResultTh) {
-          firstResultTh.textContent = 'Result 0';
-        }
-      }
-      return;
-    }
-
-    if (target.tagName === 'BUTTON' && target.closest('td.delete')) {
-      const tr = target.closest('tr');
-      const nameTd = tr.querySelector('td.name');
-      const name = nameTd ? nameTd.textContent.trim() : '';
-      tr.remove();
-      if (table.row_collection && name) {
-        table.row_collection.delete(name);
-      }
-      pubsub.publish('recalculation', 'go');
-    }
-  }
-
-  // Formatting functions
-  function formattedString(v) {
-    if (typeof v === 'number') {
-      if (Math.abs(v) < 0.01) return v.toExponential(3);
-      else return v.toFixed(3);
-    } else if (Array.isArray(v)) {
-      return `[${v.map(x => {
-        if (typeof x !== 'number') return x.toString();
-        if (Math.abs(x) < 0.01) return x.toExponential(3);
-        else return x.toFixed(3);
-      }).join(', ')}]`;
-    } else return String(v);
-  }
-
-  function parseValue(str) {
-    if (str.startsWith('[') && str.endsWith(']'))
-      return str.slice(1, -1).split(',').map(x => parseFloat(x.trim()));
-    else if (str === 'true') return true;
-    else if (str === 'false') return false;
-    else if (!isNaN(parseFloat(str))) {
-      const num = parseFloat(str);
-      return Number.isInteger(num) ? Math.floor(num) : num;
-    } else return str;
-  }
-
-  QUnit.test('formula focusin replaces with data-value', function(assert) {
-    const formulaTd = table.querySelector('td.formula');
-    formulaTd.setAttribute('data-value', 'a@b');
-    formulaTd.textContent = 'a⋅b';
-
-    formulaTd.focus();
-
-    assert.strictEqual(formulaTd.textContent, 'a@b');
+    headerRow.appendChild(th);
   });
+  thead.appendChild(headerRow);
 
-  QUnit.test('formula focusout formats and publishes if changed', function(assert) {
-    const formulaTd = table.querySelector('td.formula');
-    let publishTopic, publishMsg;
-    pubsub.publish = (topic, msg) => {
-      publishTopic = topic;
-      publishMsg = msg;
+  // Create a sample row HTML string for TableRowHandler
+  const rowHtml = `
+    <tr>
+      <td class="handle"></td>
+      <td class="description"></td>
+      <td class="name" data-value="testName">testName</td>
+      <td class="formula"></td>
+      <td class="result"></td>
+      <td class="add-result"></td>
+      <td class="unit"></td>
+      <td class="delete"><button>X</button></td>
+    </tr>
+  `;
+  const handler = new TableRowHandler(rowHtml);
+  const row = handler.tr;
+  tbody.appendChild(row);
+
+  // Attach pubsub and row_collection
+  table.pubsub = new PubSub();
+  table.row_collection = new RowCollection([handler]);
+
+  document.body.appendChild(table);
+
+  return { table, thead, tbody, row, rowHtml };
+}
+
+QUnit.module('sheet_interface.js tests', {
+  beforeEach: function() {
+    this.mock = createMockTable();
+    this.table = this.mock.table;
+    this.tbody = this.mock.tbody;
+    this.thead = this.mock.thead;
+    this.row = this.mock.row;
+    this.rowHtml = this.mock.rowHtml;
+    this.pubsubCalls = [];
+    this.pubsubSpy = (message) => {
+      this.pubsubCalls.push(message);
     };
+    this.table.pubsub.subscribe('recalculation', this.pubsubSpy);
 
-    formulaTd.textContent = 'a@b*c';
-    formulaTd.focus();
-    formulaTd.blur();
+    // Explicitly call setupTableInterface
+    setupTableInterface(this.table);
+  },
+  afterEach: function() {
+    document.body.removeChild(this.table);
+  }
+});
 
-    assert.strictEqual(formulaTd.getAttribute('data-value'), 'a@b*c');
-    assert.strictEqual(formulaTd.textContent, 'a⋅b×c');
-    assert.strictEqual(publishTopic, 'recalculation');
-    assert.strictEqual(publishMsg, 'go');
+QUnit.test('Row duplication on double-click', function (assert) {
+  const originalRowCount = this.tbody.rows.length;
+  const dblClickEvent = new MouseEvent('dblclick', { bubbles: true });
+  this.row.dispatchEvent(dblClickEvent);
 
-    // Set results readonly
-    const resultTd = table.querySelector('td.result');
-    assert.true(resultTd.classList.contains('readonly'));
-    assert.true(resultTd.classList.contains('output'));
-    assert.strictEqual(resultTd.contentEditable, 'false');
-  });
+  assert.equal(this.tbody.rows.length, originalRowCount + 1, 'Row is duplicated');
+  const newRow = this.tbody.rows[1];
+  const newNameTd = newRow.querySelector('td.name');
+  assert.ok(newNameTd.textContent.startsWith('_testName'), 'New name is prefixed to avoid duplicate');
+  assert.ok(this.table.row_collection.rowMap.has(newNameTd.textContent), 'New row added to collection');
+});
 
-  QUnit.test('result focusin replaces with data-value', function(assert) {
-    const resultTd = table.querySelector('td.result');
-    resultTd.setAttribute('data-value', '1.23456');
-    resultTd.textContent = '1.235';
+QUnit.test('Name change on blur', function (assert) {
+  const nameTd = this.row.querySelector('td.name');
+  nameTd.contentEditable = true;
+  nameTd.textContent = 'newName';
+  const blurEvent = new FocusEvent('blur', { bubbles: true });
+  nameTd.dispatchEvent(blurEvent);
 
-    resultTd.focus();
+  assert.equal(nameTd.dataset.value, 'newName', 'Data-value updated');
+  assert.ok(this.table.row_collection.rowMap.has('newName'), 'Collection updated with new name');
+  assert.notOk(this.table.row_collection.rowMap.has('testName'), 'Old name removed from collection');
+});
 
-    assert.strictEqual(resultTd.textContent, '1.23456');
-  });
+QUnit.test('Formula edit: focus and blur', async function (assert) {
+  const formulaTd = this.row.querySelector('td.formula');
+  formulaTd.dataset.value = 'a @ b';
+  formulaTd.textContent = 'a ⋅ b'; // Pre-formatted
+  formulaTd.contentEditable = true;
 
-  QUnit.test('result focusout formats and publishes if changed', function(assert) {
-    const resultTd = table.querySelector('td.result');
-    let publishTopic, publishMsg;
-    pubsub.publish = (topic, msg) => {
-      publishTopic = topic;
-      publishMsg = msg;
-    };
+  const focusEvent = new FocusEvent('focus', { bubbles: true });
+  formulaTd.dispatchEvent(focusEvent);
+  assert.equal(formulaTd.textContent, 'a @ b', 'Raw value on focus');
 
-    resultTd.textContent = '3.14159';
-    resultTd.focus();
-    resultTd.blur();
+  formulaTd.textContent = 'a * c';
+  const blurEvent = new FocusEvent('blur', { bubbles: true });
+  formulaTd.dispatchEvent(blurEvent);
 
-    assert.strictEqual(resultTd.getAttribute('data-value'), '3.14159');
-    assert.strictEqual(resultTd.textContent, '3.142');
-    assert.strictEqual(publishTopic, 'recalc');
-    assert.strictEqual(publishMsg, 'go');
+  await new Promise(resolve => setTimeout(resolve, 10)); // Wait for async publish
 
-    // Clear formula
-    const formulaTd = table.querySelector('td.formula');
-    assert.strictEqual(formulaTd.textContent, '');
-    assert.strictEqual(formulaTd.contentEditable, 'false');
+  assert.equal(formulaTd.dataset.value, 'a * c', 'Data-value updated');
+  assert.equal(formulaTd.textContent, 'a × c', 'Formatted on blur');
+  assert.strictEqual(this.pubsubCalls.length, 1, 'Recalculation triggered once');
+  assert.strictEqual(this.pubsubCalls[0], 'go', 'Triggered with "go"');
 
-    // Set results input
-    assert.true(resultTd.classList.contains('input'));
-    assert.strictEqual(resultTd.contentEditable, 'true');
-    assert.false(resultTd.classList.contains('readonly'));
-    assert.false(resultTd.classList.contains('output'));
-  });
+  // Check rules
+  const resultTd = this.row.querySelector('td.result');
+  assert.equal(resultTd.contentEditable, 'false', 'Results non-editable');
+  assert.ok(resultTd.classList.contains('readonly'), 'Readonly class added');
+  assert.ok(resultTd.classList.contains('output'), 'Output class added');
+});
 
-  QUnit.test('add-result click adds column and labels headers', function(assert) {
-    const addButton = table.querySelector('th.add-result button');
+QUnit.test('Result edit: focus and blur', async function (assert) {
+  const resultTd = this.row.querySelector('td.result');
+  resultTd.contentEditable = true;
+  resultTd.dataset.value = '1.234';
 
-    // Initial: 1 result
-    assert.strictEqual(table.querySelectorAll('th.result').length, 1);
-    assert.strictEqual(table.querySelector('th.result').textContent, 'Result');
+  const focusEvent = new FocusEvent('focus', { bubbles: true });
+  resultTd.dispatchEvent(focusEvent);
+  assert.equal(resultTd.textContent, '1.234', 'Raw value on focus');
 
-    addButton.click();
+  resultTd.textContent = '5.678';
+  const blurEvent = new FocusEvent('blur', { bubbles: true });
+  resultTd.dispatchEvent(blurEvent);
 
-    // Now 2 results
-    const resultThs = table.querySelectorAll('th.result');
-    assert.strictEqual(resultThs.length, 2);
-    assert.strictEqual(resultThs[0].textContent, 'Result 0');
-    assert.strictEqual(resultThs[1].textContent, 'Result 1');
+  await new Promise(resolve => setTimeout(resolve, 10)); // Wait for async publish
 
-    // Add another
-    addButton.click();
-    const newResultThs = table.querySelectorAll('th.result');
-    assert.strictEqual(newResultThs.length, 3);
-    assert.strictEqual(newResultThs[0].textContent, 'Result 0');
-    assert.strictEqual(newResultThs[1].textContent, 'Result 1');
-    assert.strictEqual(newResultThs[2].textContent, 'Result 2');
+  assert.equal(resultTd.textContent, '5.678', 'Formatted on blur'); // Adjust based on actual formatting
+  assert.equal(resultTd.dataset.value, '5.678', 'Data-value updated');
+  assert.strictEqual(this.pubsubCalls.length, 1, 'Recalculation triggered once');
+  assert.strictEqual(this.pubsubCalls[0], 'go', 'Triggered with "go"');
 
-    // Check data rows have new td.result contenteditable
-    const dataTr = table.querySelector('tr:nth-child(2)');
-    const newTd = dataTr.querySelectorAll('td.result')[2];
-    assert.strictEqual(newTd.contentEditable, 'true');
-  });
+  const formulaTd = this.row.querySelector('td.formula');
+  assert.equal(formulaTd.textContent, '', 'Formula cleared');
+  assert.equal(formulaTd.contentEditable, 'false', 'Formula non-editable');
 
-  QUnit.test('delete click removes row and publishes', function(assert) {
-    const deleteButton = table.querySelector('td.delete button');
-    const nameTd = table.querySelector('td.name');
-    nameTd.textContent = 'testName';
-    rowCollection.set('testName', {});
+  assert.equal(resultTd.contentEditable, 'true', 'Results editable');
+  assert.ok(resultTd.classList.contains('input'), 'Input class added');
+});
 
-    let publishTopic, publishMsg;
-    pubsub.publish = (topic, msg) => {
-      publishTopic = topic;
-      publishMsg = msg;
-    };
+QUnit.test('Add result column on button click', function (assert) {
+  const addButton = this.thead.querySelector('th.add-result button');
+  const clickEvent = new MouseEvent('click', { bubbles: true });
+  addButton.dispatchEvent(clickEvent);
 
-    deleteButton.click();
+  const headers = this.thead.querySelectorAll('th');
+  assert.equal(headers[4].textContent, 'Result 0', 'First result renamed to Result 0');
+  assert.equal(headers[5].textContent, 'Result 1', 'New result column added');
 
-    assert.strictEqual(table.querySelectorAll('tr').length, 1); // Only header left
-    assert.false(rowCollection.has('testName'));
-    assert.strictEqual(publishTopic, 'recalculation');
-    assert.strictEqual(publishMsg, 'go');
-  });
+  const newResultTd = this.row.querySelectorAll('td.result')[1];
+  assert.ok(newResultTd, 'New td added to row');
+  assert.equal(newResultTd.contentEditable, 'true', 'New td editable if formula blank');
+});
 
-  QUnit.test('dynamically added row has handlers', function(assert) {
-    // Add new row dynamically
-    const newTr = document.createElement('tr');
-    const newFormulaTd = document.createElement('td');
-    newFormulaTd.classList.add('formula');
-    newFormulaTd.contentEditable = true;
-    newTr.appendChild(newFormulaTd); // Simplified
-    const newResultTd = document.createElement('td');
-    newResultTd.classList.add('result');
-    newResultTd.contentEditable = true;
-    newTr.appendChild(newResultTd);
-    table.appendChild(newTr);
+QUnit.test('Delete row on button click', async function (assert) {
+  const deleteButton = this.row.querySelector('td.delete button');
+  const clickEvent = new MouseEvent('click', { bubbles: true });
+  deleteButton.dispatchEvent(clickEvent);
 
-    // Test formula on new row
-    newFormulaTd.textContent = 'a@b';
-    newFormulaTd.focus();
-    newFormulaTd.blur();
+  await new Promise(resolve => setTimeout(resolve, 10)); // Wait for async publish
 
-    assert.strictEqual(newFormulaTd.textContent, 'a⋅b');
-    assert.strictEqual(newFormulaTd.getAttribute('data-value'), 'a@b');
-    assert.true(newResultTd.classList.contains('readonly'));
-    assert.strictEqual(newResultTd.contentEditable, 'false');
-  });
+  assert.equal(this.tbody.rows.length, 0, 'Row removed from DOM');
+  assert.notOk(this.table.row_collection.rowMap.has('testName'), 'Row removed from collection');
+  assert.strictEqual(this.pubsubCalls.length, 1, 'Recalculation triggered once');
+  assert.strictEqual(this.pubsubCalls[0], 'go', 'Triggered with "go"');
+});
+
+QUnit.test('Result header edit on double-click', function (assert) {
+  const resultTh = this.thead.querySelector('th.result');
+  const dblClickEvent = new MouseEvent('dblclick', { bubbles: true });
+  resultTh.dispatchEvent(dblClickEvent);
+
+  assert.equal(resultTh.contentEditable, 'true', 'Header becomes editable');
+
+  // Simulate edit and focusout
+  resultTh.textContent = 'New Result';
+  const focusoutEvent = new FocusEvent('focusout', { bubbles: true });
+  resultTh.dispatchEvent(focusoutEvent);
+
+  assert.equal(resultTh.contentEditable, 'false', 'Editable removed on focusout');
+  assert.equal(resultTh.textContent, 'New Result', 'Text updated');
+});
+
+QUnit.test('enforceRowRules with formula', function (assert) {
+  const row = this.row;
+  const formulaTd = row.querySelector('td.formula');
+  formulaTd.dataset.value = 'a * b';
+  formulaTd.textContent = 'a × b';
+
+  enforceRowRules(row);
+
+  const resultTd = row.querySelector('td.result');
+  assert.equal(resultTd.contentEditable, 'false', 'Results non-editable when formula present');
+  assert.ok(resultTd.classList.contains('readonly'), 'Readonly class added');
+  assert.ok(resultTd.classList.contains('output'), 'Output class added');
+  assert.equal(formulaTd.contentEditable, 'true', 'Formula remains editable');
+});
+
+QUnit.test('enforceRowRules without formula', function (assert) {
+  const row = this.row;
+  const formulaTd = row.querySelector('td.formula');
+  formulaTd.dataset.value = '';
+  formulaTd.textContent = '';
+
+  enforceRowRules(row);
+
+  const resultTd = row.querySelector('td.result');
+  assert.equal(resultTd.contentEditable, 'true', 'Results editable when formula blank');
+  assert.ok(resultTd.classList.contains('input'), 'Input class added');
+  assert.notOk(resultTd.classList.contains('readonly'), 'Readonly class removed');
+  assert.notOk(resultTd.classList.contains('output'), 'Output class removed');
+  assert.equal(formulaTd.contentEditable, 'false', 'Formula non-editable');
 });

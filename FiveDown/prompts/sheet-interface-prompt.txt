@@ -1,13 +1,37 @@
 
+This module to be called js/sheet-interface.js
+
 refer to pubsub.js and index.html
 
 Create handlers for each column.  Use delegation, so that handlers are active on every row, even when new rows have been 
-  dynamically added.
+  dynamically added.  Generally, prefer delegation to thead or tbody rather than table.
+
+general rules that should be applied after each relevant change are
+  1) if formula is not blank, results columns must be noneditable
+  2) if any result column is editable, formula must be blank and not editable
 
 
-handle - drag handlers already handled in table-drag.js
+handle 
+
+  drag handlers already handled in table-drag.js
+
+  double-click handler
+   duplicate the tr, placing the copy immediately after the original
+
+   add the second row to table.row_collection, using name value as the key.  If there is key duplicate, modify name 
+     by prefixing '_' as many times as needed.
+
 
 description - nothing 
+
+name
+
+  on-exit handler
+    compare content to data-value attribute
+      if changed, remove old value from row_collection, and add row with new name
+      new name cannot be blank, unless old value was blank also
+      store new name in data-value
+
 
 formula 
 
@@ -28,6 +52,10 @@ formula
 
 results
 
+  doubleclick handler on column header 'th'
+    makes header editable with contenteditable=true
+    installs a one-shot focusout handler that removes contenteditable
+
   on-enter handler
     checks for value in data-value attribute on td cell
     if found, substitutes that value into td text, losing existing td text
@@ -37,7 +65,7 @@ results
     replaces td text with a formatted version of data, formatted similarly to table_row_handler
 
     if result text changed from data-value, then
-      1) trigger a recalc by sending 'go' message on topic 'recalc' in pubsub
+      1) trigger a recalc by sending 'go' message on topic 'recalculation' in pubsub
       2) ensure formula td is blank and contenteditable=false
       3) ensure all result fields are contenteditable=true, adding class="input"
 

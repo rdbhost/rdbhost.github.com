@@ -1,145 +1,283 @@
-// js/sheet-interface.js
+// js/sheet_interface.js
+// Handles event delegation for the table columns, integrating with TableRowHandler and RowCollection
+// Uses table.pubsub for publishing events
 
-document.addEventListener('DOMContentLoaded', () => {
-  const table = document.querySelector('table#main-sheet');
-  if (!table) return;
-  const pubsub = table.pubsub;
+import { TableRowHandler } from './table_row_handler.js';
+import { RowCollection } from './row_collection.js';
+import { Data } from './dim_data.js';
 
-  // Formatting functions similar to TableRowHandler
-  function formattedString(v) {
-    if (typeof v === 'number') {
-      if (Math.abs(v) < 0.01) return v.toExponential(3);
-      else return v.toFixed(3);
-    } else if (Array.isArray(v)) {
-      return `[${v.map(x => {
-        if (typeof x !== 'number') return x.toString();
-        if (Math.abs(x) < 0.01) return x.toExponential(3);
-        else return x.toFixed(3);
-      }).join(', ')}]`;
-    } else return String(v);
+// Function to enforce rules for a row
+function enforceRowRules(row) {
+  const formulaTd = row.querySelector('td.formula');
+  const formulaValue = (formulaTd.dataset.value || '').trim();
+  const resultTds = row.querySelectorAll('td.result');
+
+  if (formulaValue !== '') {
+    // Rule 1: results non-editable
+    resultTds.forEach(td => {
+      td.contentEditable = false;
+      td.classList.add('readonly', 'output');
+      td.classList.remove('input');
+    });
+    formulaTd.contentEditable = true;
+  } else {
+    // Rule 2: formula blank and non-editable, results editable
+    resultTds.forEach(td => {
+      td.contentEditable = true;
+      td.classList.add('input');
+      td.classList.remove('readonly', 'output');
+    });
+    formulaTd.contentEditable = false;
   }
+}
 
-  function parseValue(str) {
-    if (str.startsWith('[') && str.endsWith(']'))
-      return str.slice(1, -1).split(',').map(x => parseFloat(x.trim()));
-    else if (str === 'true') return true;
-    else if (str === 'false') return false;
-    else if (!isNaN(parseFloat(str))) {
-      const num = parseFloat(str);
-      return Number.isInteger(num) ? Math.floor(num) : num;
-    } else return str;
-  }
+// Function to set up all event handlers for the table
+function setupTableInterface(table) {
+  const tbody = table.querySelector('tbody');
+  const thead = table.querySelector('thead');
 
-  // Delegation for focusin (enter)
-  table.addEventListener('focusin', (e) => {
-    const td = e.target;
-    if (td.tagName !== 'TD') return;
+  // Assuming table.row_collection is initialized as new RowCollection([...]) elsewhere
+  // Assuming table.pubsub is set by pubsub.js
 
-    if (td.classList.contains('formula') || td.classList.contains('result')) {
-      if (td.hasAttribute('data-value')) {
-        td.textContent = td.getAttribute('data-value');
+  // Double-click on row: duplicate
+  tbody.addEventListener('dblclick', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr) {
+      const clone = tr.cloneNode(true);
+      tr.after(clone);
+
+      // Get old name
+      const oldNameTd = tr.querySelector('td.name');
+      const oldName = (oldNameTd.dataset.value || oldNameTd.textContent.trim());
+
+      // Set new name with prefixes if needed
+      let newName = oldName;
+      let prefix = '_';
+      while (table.row_collection.rowMap.has(newName)) {
+        newName = prefix + oldName;
+        prefix += '_';
       }
-    }
-    // For unit, nothing
-    if (td.classList.contains('unit')) {
-      // No action
+
+      const newNameTd = clone.querySelector('td.name');
+      newNameTd.textContent = newName;
+      newNameTd.dataset.value = newName;
+
+      // Create new handler for clone
+      const newRowHandler = new TableRowHandler(clone.outerHTML);
+      // Replace clone with parsed tr
+      clone.parentNode.replaceChild(newRowHandler.tr, clone);
+      table.row_collection.addRow(newRowHandler);
     }
   });
 
-  // Delegation for focusout (exit)
-  table.addEventListener('focusout', (e) => {
-    const td = e.target;
-    if (td.tagName !== 'TD') return;
-
-    if (td.classList.contains('formula')) {
-      const newRaw = td.textContent.trim();
-      const oldRaw = td.getAttribute('data-value') || '';
-      td.setAttribute('data-value', newRaw);
-      const formatted = newRaw.replace(/@/g, '⋅').replace(/\*/g, '×');
-      td.textContent = formatted;
-      if (newRaw !== oldRaw) {
-        pubsub.publish('recalculation', 'go');
-      }
-      if (newRaw !== '') {
-        const tr = td.closest('tr');
-        const resultTds = tr.querySelectorAll('td.result');
-        for (let rtd of resultTds) {
-          rtd.classList.add('readonly', 'output');
-          rtd.contentEditable = false;
-        }
-      }
-    } else if (td.classList.contains('result')) {
-      const newRaw = td.textContent.trim();
-      const oldRaw = td.getAttribute('data-value') || '';
-      td.setAttribute('data-value', newRaw);
-      const value = parseValue(newRaw);
-      const formatted = formattedString(value);
-      td.textContent = formatted;
-      if (newRaw !== oldRaw) {
-        pubsub.publish('recalc', 'go');
-        const tr = td.closest('tr');
-        const formulaTd = tr.querySelector('td.formula');
-        formulaTd.textContent = '';
-        formulaTd.contentEditable = false;
-        const resultTds = tr.querySelectorAll('td.result');
-        for (let rtd of resultTds) {
-          rtd.contentEditable = true;
-          rtd.classList.add('input');
-          rtd.classList.remove('readonly', 'output');
-        }
-      }
+  // Double-click on result column header
+  thead.addEventListener('dblclick', (e) => {
+    const th = e.target.closest('th.result');
+    if (th) {
+      th.contentEditable = true;
+      th.focus();
+      const onFocusout = () => {
+        th.contentEditable = false;
+        th.removeEventListener('focusout', onFocusout);
+      };
+      th.addEventListener('focusout', onFocusout);
     }
   });
 
-  // Delegation for click
-  table.addEventListener('click', (e) => {
-    const target = e.target;
+  // Name column on-exit (blur)
+  tbody.addEventListener('blur', (e) => {
+    if (!e.target.matches('td.name')) return;
 
-    // Add-result button in header
-    if (target.tagName === 'BUTTON' && target.closest('th.add-result')) {
-      const headerTr = table.querySelector('tr:first-child');
-      const addResultTh = headerTr.querySelector('th.add-result');
-      const position = Array.from(headerTr.children).indexOf(addResultTh);
+    const td = e.target;
+    const row = td.closest('tr');
+    const oldValue = td.dataset.value || '';
+    const newContent = td.textContent.trim();
 
-      // Find current number of result columns
-      const currentResults = headerTr.querySelectorAll('th.result').length;
+    if (newContent === oldValue) return;
 
-      // Add to all rows
-      const allTrs = table.querySelectorAll('tr');
-      for (let tr of allTrs) {
-        const isHeader = tr === headerTr;
-        const newCell = document.createElement(isHeader ? 'th' : 'td');
-        newCell.classList.add('result');
-        if (isHeader) {
-          newCell.textContent = `Result ${currentResults}`;
-        } else {
-          newCell.contentEditable = true;
-          // Handlers are delegated, so no need to add here
-        }
-        tr.insertBefore(newCell, tr.children[position]);
-      }
-
-      // If this is the second result column, update the first one
-      if (currentResults === 1) {
-        const firstResultTh = headerTr.querySelector('th.result');
-        if (firstResultTh) {
-          firstResultTh.textContent = 'Result 0';
-        }
-      }
-
+    if (newContent === '' && oldValue !== '') {
+      // Revert if new blank but old not
+      td.textContent = oldValue;
       return;
     }
 
-    // Delete button
-    if (target.tagName === 'BUTTON' && target.closest('td.delete')) {
-      const tr = target.closest('tr');
-      const nameTd = tr.querySelector('td.name');
-      const name = nameTd ? nameTd.textContent.trim() : '';
-      tr.remove();
-      if (table.row_collection && name) {
-        table.row_collection.delete(name);
+    // Temporarily revert textContent to oldValue for consistent name during removal
+    td.textContent = oldValue;
+
+    // Get handler with old name
+    const oldRowHandler = table.row_collection.getRow(oldValue);
+
+    // Remove from collection using old name
+    table.row_collection.removeRow(oldRowHandler);
+
+    // Update textContent and data-value
+    td.textContent = newContent;
+    td.dataset.value = newContent;
+
+    // Add back with new name
+    table.row_collection.addRow(oldRowHandler);
+  }, true);
+
+  // Formula column handlers
+  tbody.addEventListener('focus', (e) => {
+    if (!e.target.matches('td.formula')) return;
+
+    const td = e.target;
+    if (td.dataset.value !== undefined) {
+      td.textContent = td.dataset.value;
+    }
+  }, true);
+
+  tbody.addEventListener('blur', (e) => {
+    if (!e.target.matches('td.formula')) return;
+
+    const td = e.target;
+    const row = td.closest('tr');
+    const newContent = td.textContent;
+    const oldValue = td.dataset.value || '';
+
+    td.dataset.value = newContent;
+
+    // Format display
+    const formatted = newContent.replace(/@/g, '⋅').replace(/\*/g, '×');
+    td.textContent = formatted;
+
+    if (newContent.trim() !== oldValue.trim()) {
+      table.pubsub.publish('recalculation', 'go');
+    }
+
+    enforceRowRules(row);
+  }, true);
+
+  // Results columns handlers
+  tbody.addEventListener('focus', (e) => {
+    if (!e.target.matches('td.result')) return;
+
+    const td = e.target;
+    if (td.dataset.value !== undefined) {
+      td.textContent = td.dataset.value;
+    }
+  }, true);
+
+  tbody.addEventListener('blur', (e) => {
+    if (!e.target.matches('td.result')) return;
+
+    const td = e.target;
+    const row = td.closest('tr');
+    const newContent = td.textContent.trim();
+    const oldValue = td.dataset.value || '';
+
+    if (newContent === oldValue) return;
+
+    // Get handler
+    const nameTd = row.querySelector('td.name');
+    const name = (nameTd.dataset.value || nameTd.textContent.trim());
+    const rowHandler = table.row_collection.getRow(name);
+
+    // Find result index
+    const resultTds = row.querySelectorAll('td.result');
+    const resultIndex = Array.from(resultTds).indexOf(td);
+
+    // Parse new value
+    const value = rowHandler.parseValue(newContent);
+    const unit = rowHandler.unit();
+    const data = new Data(value, unit);
+
+    // Set result
+    try {
+      rowHandler.result(resultIndex, data);
+      // rowHandler.result sets td.textContent to formatted and td.dataset.value to string value
+    } catch (error) {
+      rowHandler.result(resultIndex, error);
+    }
+
+    table.pubsub.publish('recalculation', 'go');
+
+    // Ensure formula blank and non-editable
+    const formulaTd = row.querySelector('td.formula');
+    formulaTd.textContent = '';
+    formulaTd.dataset.value = '';
+    formulaTd.contentEditable = false;
+
+    // Enforce rules (results editable)
+    enforceRowRules(row);
+  }, true);
+
+  // Add-result column header button click
+  thead.addEventListener('click', (e) => {
+    const button = e.target.closest('th.add-result button');
+    if (!button) return;
+
+    // Find position
+    const ths = Array.from(thead.rows[0].cells);
+    const addThIndex = ths.findIndex(th => th.classList.contains('add-result'));
+    const resultThs = ths.filter(th => th.classList.contains('result'));
+    const newIndex = resultThs.length;
+
+    // Update first result header if adding second
+    if (newIndex === 1) {
+      const firstResultTh = resultThs[0];
+      firstResultTh.textContent = 'Result 0';
+    }
+
+    // Create new th
+    const newTh = document.createElement('th');
+    newTh.classList.add('result');
+    newTh.textContent = `Result ${newIndex}`;
+    thead.rows[0].insertBefore(newTh, ths[addThIndex]);
+
+    // Add new td to each row
+    tbody.querySelectorAll('tr').forEach(tr => {
+      const newTd = document.createElement('td');
+      newTd.classList.add('result');
+      newTd.dataset.value = '';
+      newTd.textContent = '';
+
+      // Insert before add-result td
+      const addTd = tr.querySelector('td.add-result');
+      tr.insertBefore(newTd, addTd);
+
+      // Set editable based on mode
+      const formulaTd = tr.querySelector('td.formula');
+      const formulaValue = (formulaTd.dataset.value || '').trim();
+      if (formulaValue !== '') {
+        newTd.contentEditable = false;
+        newTd.classList.add('readonly', 'output');
+      } else {
+        newTd.contentEditable = true;
+        newTd.classList.add('input');
       }
-      pubsub.publish('recalculation', 'go');
+    });
+
+    // Update all handlers to recognize new resultTDs
+    for (let rowHandler of table.row_collection.rowMap.values()) {
+      rowHandler.initTDs();
     }
   });
+
+  // Delete row button click
+  tbody.addEventListener('click', (e) => {
+    const button = e.target.closest('td.delete button');
+    if (!button) return;
+
+    const tr = button.closest('tr');
+    const nameTd = tr.querySelector('td.name');
+    const name = (nameTd.dataset.value || nameTd.textContent.trim());
+    const rowHandler = table.row_collection.getRow(name);
+
+    table.row_collection.removeRow(rowHandler);
+    tr.remove();
+
+    table.pubsub.publish('recalculation', 'go');
+  });
+}
+
+// Attach setup to DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.getElementById('main-sheet');
+  if (table) {
+    setupTableInterface(table);
+  }
 });
+
+export { enforceRowRules, setupTableInterface };
