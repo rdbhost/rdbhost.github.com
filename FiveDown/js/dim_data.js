@@ -1,5 +1,10 @@
 // js/dim_data.js
 
+/**
+ * Unit categories and conversion factors to base units.
+ * @constant
+ * @type {Object}
+ */
 const units = {
   length: {
     base: 'm',
@@ -137,7 +142,18 @@ const units = {
   // Add more categories and units as needed
 };
 
+/**
+ * Represents a value with an associated unit, supporting various types and unit conversions.
+ * Values can be numbers, booleans, strings, or 2/3-element numeric vectors.
+ * Supports conversion to base units and specified units.
+ * @class
+ */
 class Data {
+  /**
+   * Mapping of units to their categories and conversion factors.
+   * @static
+   * @type {Object}
+   */
   static unitInfo = {};
 
   static {
@@ -153,11 +169,22 @@ class Data {
     }
   }
 
+  /**
+   * Creates a new Data instance.
+   * @constructor
+   * @param {*} value - The value to store (number, boolean, string, or array for vector).
+   * @param {string} [unit=''] - The unit associated with the value.
+   */
   constructor(value, unit = '') {
     this._value = value;
     this._unit = unit;
   }
 
+  /**
+   * Getter/setter for the stored value.
+   * @param {*} [v] - If provided, sets the new value.
+   * @returns {*} The current value.
+   */
   val(v) {
     if (v !== undefined) {
       this._value = v;
@@ -165,6 +192,11 @@ class Data {
     return this._value;
   }
 
+  /**
+   * Getter/setter for the unit.
+   * @param {string} [u] - If provided, sets the new unit.
+   * @returns {string} The current unit.
+   */
   unit(u) {
     if (u !== undefined) {
       this._unit = u;
@@ -172,6 +204,10 @@ class Data {
     return this._unit;
   }
 
+  /**
+   * Determines the type of the stored value.
+   * @returns {string} One of: 'number', 'boolean', 'string', 'vector', 'unknown'.
+   */
   type() {
     const val = this._value;
     if (typeof val === 'number') return 'number';
@@ -181,6 +217,10 @@ class Data {
     return 'unknown';
   }
 
+  /**
+   * Converts the data to a string representation, including the unit if present.
+   * @returns {string} The string form of the value and unit.
+   */
   asString() {
     let v = this._value;
     if (Array.isArray(v)) {
@@ -191,6 +231,11 @@ class Data {
     return `${v} ${this._unit}`.trim();
   }
 
+  /**
+   * Converts the value to its base unit (SI equivalent).
+   * Returns a new Data instance. Only applies to numbers and vectors; others unchanged.
+   * @returns {Data} A new Data instance in the base unit.
+   */
   asBaseUnit() {
     if (!this._unit) {
       return new Data(this._value, this._unit);
@@ -213,6 +258,14 @@ class Data {
     return new Data(newValue, baseUnit);
   }
 
+  /**
+   * Converts the value to a given unit.
+   * Returns a tuple [new Data instance, conversion factor].
+   * Only supports numbers and vectors.
+   * @param {string} targetUnit - The target unit for conversion.
+   * @returns {Array<Data, number>} [new Data in target unit, conversion factor].
+   * @throws {Error} If units are incompatible, unspecified, or type not supported.
+   */
   asGivenUnit(targetUnit) {
     if (!this._unit || !targetUnit) {
       throw new Error('Units must be specified for conversion');
