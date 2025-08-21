@@ -144,11 +144,11 @@ class TableRow {
       if (!dataValStr) {
         return null;
       }
-      let value;
+      let value = dataValStr;
       try {
         value = JSON.parse(dataValStr);
       } catch (e) {
-        return null;
+        // If parse fails, treat as plain string
       }
       const data = new Data(value, this.unit());
       if (data.type() === 'unknown') {
