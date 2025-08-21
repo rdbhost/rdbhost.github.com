@@ -1,4 +1,4 @@
-// tests/sheet-interface_tests.js
+// tests/sheet_interface_tests.js
 
 import { enforceRowRules, ensureBlankFive, isBlankRow, setupTableInterface } from '../js/sheet_interface.js';
 import { RowCollection } from '../js/row_collection.js';
