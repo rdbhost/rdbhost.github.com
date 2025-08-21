@@ -1,4 +1,4 @@
-// js/sheet-interface.js
+// js/sheet_interface.js
 
 import { RowCollection } from './row_collection.js';
 import { TableRow } from './table_row.js';
@@ -192,7 +192,7 @@ function setupTableInterface(table) {
 
   // Delete handler
   tbody.addEventListener('click', (e) => {
-    if (e.target.matches('.delete button')) {
+    if (e.target.matches('td.delete')) {
       const tr = e.target.closest('tr');
       const name = tr.querySelector('td.name').dataset.value?.trim() || '';
       if (name) {
