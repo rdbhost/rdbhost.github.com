@@ -1,6 +1,6 @@
 // js/table_row.js
 
-import { Data } from './dim_data.js';
+import { Data, formatResult } from './dim_data.js';
 
 /**
  * Represents a table row with specific columns and validation.
@@ -133,14 +133,14 @@ class TableRow {
    * @throws {Error} If invalid index, type, or conversion issues.
    */
   result(idx, new_value) {
-    const resultTds = this.row.querySelectorAll('td.result');
+    const resultTds = this.row.querySelectorAll('td.result')
     if (idx < 0 || idx >= resultTds.length) {
       throw new Error('Invalid result index');
     }
     const td = resultTds[idx];
     if (new_value === undefined) {
       // Getter
-      const dataValStr = td.getAttribute('data-value');
+      const dataValStr = td.getAttribute('data-value')
       if (!dataValStr) {
         return null;
       }
@@ -150,7 +150,7 @@ class TableRow {
       } catch (e) {
         // If parse fails, treat as plain string
       }
-      const data = new Data(value, this.unit());
+      const data = new Data(value, this.unit())
       if (data.type() === 'unknown') {
         return null;
       }
@@ -188,20 +188,9 @@ class TableRow {
       }
       // Set display text and data-value
       const val = toSet.val();
-      let text = '';
-      if (typ === 'number') {
-        if (Math.abs(val) < 0.01 && val !== 0) {
-          text = val.toExponential(3);
-        } else {
-          text = val.toFixed(3);
-        }
-      } else if (typ === 'vector') {
-        text = val.map(x => x.toFixed(2)).join(',');
-      } else if (typ === 'boolean') {
-        text = val ? 'true' : 'false';
-      } else if (typ === 'string') {
-        text = val;
-      }
+
+      text = formatResult(val, typ)
+
       td.textContent = text;
       td.setAttribute('data-value', JSON.stringify(val));
       return prior;

@@ -1,5 +1,5 @@
 // numeric_ops.js
-import { Data } from './dim_data.js';
+import { Data, formatFormula, formatResult } from './dim_data.js';
 
 function parseUnit(unit) {
   const map = new Map();
@@ -22,13 +22,13 @@ function parseUnit(unit) {
 
 function unitToString(dims) {
   if (dims.size === 0) return '';
-  const pos = [];
-  const neg = [];
+  const pos = []
+  const neg = []
   for (let [dim, exp] of [...dims.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
     if (exp > 0) {
-      pos.push(exp === 1 ? dim : `${dim}^${exp}`);
+      pos.push(exp === 1 ? dim : `${dim}^${exp}`)
     } else if (exp < 0) {
-      neg.push(exp === -1 ? dim : `${dim}^${-exp}`);
+      neg.push(exp === -1 ? dim : `${dim}^${-exp}`)
     }
   }
   let str = pos.join('*');
@@ -40,18 +40,18 @@ function unitToString(dims) {
 }
 
 function getUnitInfo(unit) {
-  const baseMap = parseUnit(unit);
-  let factor = 1;
-  const dims = new Map();
+  const baseMap = parseUnit(unit)
+  let factor = 1
+  const dims = new Map()
   for (let [base, exp] of baseMap) {
-    const conv = new Data(1, base).asBaseUnit();
-    const baseFactor = conv.val();
-    const trueBase = conv.unit();
-    factor *= Math.pow(baseFactor, exp);
-    dims.set(trueBase, (dims.get(trueBase) || 0) + exp);
+    const conv = new Data(1, base).asBaseUnit()
+    const baseFactor = conv.val()
+    const trueBase = conv.unit()
+    factor *= Math.pow(baseFactor, exp)
+    dims.set(trueBase, (dims.get(trueBase) || 0) + exp)
   }
-  const normalized = unitToString(dims);
-  return {dims, factor, normalized};
+  const normalized = unitToString(dims)
+  return {dims, factor, normalized}
 }
 
 function multiplyVal(val, factor) {

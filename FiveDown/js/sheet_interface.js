@@ -2,6 +2,7 @@
 
 import { RowCollection } from './row_collection.js';
 import { TableRow } from './table_row.js';
+import { formatFormula, formatResult, Data } from './dim_data.js'
 
 /**
  * Checks if a table row is blank based on its cell contents.
@@ -164,21 +165,23 @@ function setupTableInterface(table) {
           table.row_collection.addRow(finalName, new TableRow(tr));
         }
       }
+      ensureBlankFive(table)
     } else if (td.matches('td.formula')) {
       const newFormula = td.textContent;
       const oldFormula = td.dataset.value || '';
       td.dataset.value = newFormula;
-      const formatted = newFormula.replace(/@/g, '⋅').replace(/\*/g, '×');
+      const formatted = formatFormula(newFormula)
       td.textContent = formatted;
       if (newFormula !== oldFormula) {
         table.pubsub.publish('recalculation', 'go');
       }
       enforceRowRules(tr);
     } else if (td.matches('td.result')) {
-      const newVal = td.textContent;
+      const DT = new Data(td.textContent)
+      const newVal = DT.val();
       const oldVal = td.dataset.value || '';
       td.dataset.value = newVal;
-      const formatted = newVal.replace(/@/g, '⋅').replace(/\*/g, '×');
+      const formatted = formatResult(newVal, DT.type());
       td.textContent = formatted;
       if (newVal !== oldVal) {
         table.pubsub.publish('recalculation', 'go');
@@ -235,7 +238,7 @@ function setupTableInterface(table) {
 
   // Header rename handler
   thead.addEventListener('dblclick', (e) => {
-    if (e.target.matches('th.result')) {
+    if (e.target.matches('span')) {
       const th = e.target;
       th.contentEditable = true;
       const onFocusout = () => {

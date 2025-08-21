@@ -143,6 +143,39 @@ const units = {
 };
 
 /**
+ * 
+ * @param {string} formula - the formula to format
+ * @returns {string}
+ */
+function formatFormula(formula) {
+      return formula.replace(/@/g, '⋅').replace(/\*/g, '×');
+}
+
+/**
+ * 
+ * @param {string} val - the value to format (number, boolean, text, vector)
+ * @param {string} typ - the type of value (number, boolean, string, vector, unknown)
+ * @returns {string}
+ */
+function formatResult(val, typ) {
+  let text = '';
+  if (typ === 'number') {
+    if (Math.abs(val) < 0.01 && val !== 0) {
+      text = val.toExponential(3);
+    } else {
+      text = val.toFixed(3);
+    }
+  } else if (typ === 'vector') {
+    text = val.map(x => x.toFixed(2)).join(',');
+  } else if (typ === 'boolean') {
+    text = val ? 'true' : 'false';
+  } else if (typ === 'string') {
+    text = val;
+  }
+  return text;
+}
+
+/**
  * Represents a value with an associated unit, supporting various types and unit conversions.
  * Values can be numbers, booleans, strings, or 2/3-element numeric vectors.
  * Supports conversion to base units and specified units.
@@ -290,4 +323,4 @@ class Data {
   }
 }
 
-export { Data };
+export { Data, formatFormula, formatResult };
