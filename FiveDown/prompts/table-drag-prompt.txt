@@ -18,9 +18,8 @@ On DOMLoad, perform the following:
 
 1) find a blank row and save it as an attribute on table, called 'blank_row'
      a blank row is one where the cell text is "" for the columns 'description', 'name', 'formula', 'unit' and all 'result' columns.
-2) setup the drag handlers described above
-3) delete all rows
-4) run ensure_blank_five
+2) delete all rows
+3) run ensure_blank_five
 
 The function ensure_blank_five will look at the last rows in the table, and ensure that exactly the last five rows are blank. Remove 
 extra blank lines, and insert blanks as necessary.  The blanks can be copied from the 'blank_row' attribute.

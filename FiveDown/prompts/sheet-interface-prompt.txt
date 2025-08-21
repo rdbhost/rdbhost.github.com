@@ -1,5 +1,5 @@
 
-This module to be called js/sheet-interface.js
+This module to be called js/sheet_interface.js
 
 refer to pubsub.js and index.html
 
@@ -13,10 +13,12 @@ general rules that should be applied after each relevant change are
 
 handle 
 
-  drag handlers already handled in table-drag.js
+  rows are draggable, with td.handle being the drag handle.  Use delegation, so drag functionality applies to rows
+    added dynamically.
 
   double-click handler
    duplicate the tr, placing the copy immediately after the original
+   handler is on the handle cell only
 
    add the second row to table.row_collection, using name value as the key.  If there is key duplicate, modify name 
      by prefixing '_' as many times as needed.
@@ -28,7 +30,7 @@ name
 
   on-exit handler
     compare content to data-value attribute
-      if changed, remove old value from row_collection, and add row with new name
+      if changed, and old value not blank, remove old value from row_collection, and add row with new name
       new name cannot be blank, unless old value was blank also
       store new name in data-value
 
@@ -51,6 +53,10 @@ formula
 
 
 results
+
+  there can be multiple results columns.  they are draggable, where the <th> cell is the drag handle.  they can only
+    be dragged between the formula and add-result columns, so they stay grouped together.  Assume that when result
+    columns are added, they have the draggable attribute and the 'result' class.
 
   doubleclick handler on column header 'th'
     makes header editable with contenteditable=true
@@ -92,4 +98,17 @@ delete
   trigger a recalc by sending 'go' message on topic 'recalculation' in pubsub.
 
 
+table.row_collection will be created as empty.  all the interfaces will be created in a function 'setupTableInterface(table)'
+that is called from an onDOMLoad handler.  enforceRowRules and setuTableInterface will be exported.
 
+On DOMLoad, perform the following:
+
+1) find a blank row and save it as an attribute on table, called 'blank_row'
+     a blank row is one where the cell text is "" for the columns 'description', 'name', 'formula', 'unit' and all 'result' columns.
+2) delete all rows
+3) run ensure_blank_five
+
+The function ensure_blank_five will look at the last rows in the table, and ensure that exactly the last five rows are blank. Remove 
+extra blank lines, and insert blanks as necessary.  The blanks can be copied from the 'blank_row' attribute.
+
+Assume that a blank row is available, and throw exceptions if not, or if blank row data attribute is not available.

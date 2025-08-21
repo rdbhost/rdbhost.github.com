@@ -1,283 +1,335 @@
-// js/sheet_interface.js
-// Handles event delegation for the table columns, integrating with TableRow and RowCollection
-// Uses table.pubsub for publishing events
+// js/sheet-interface.js
 
-import { TableRow } from './table_row_handler.js';
 import { RowCollection } from './row_collection.js';
-import { Data } from './dim_data.js';
+import { TableRow } from './table_row.js';
 
-// Function to enforce rules for a row
-function enforceRowRules(row) {
-  const formulaTd = row.querySelector('td.formula');
-  const formulaValue = (formulaTd.dataset.value || '').trim();
-  const resultTds = row.querySelectorAll('td.result');
+/**
+ * Checks if a table row is blank based on its cell contents.
+ * @param {HTMLTableRowElement} tr - The table row to check.
+ * @returns {boolean} True if the row is blank, false otherwise.
+ */
+function isBlankRow(tr) {
+  const desc = tr.querySelector('td.description')?.textContent.trim() === '';
+  const name = tr.querySelector('td.name')?.textContent.trim() === '';
+  const formula = tr.querySelector('td.formula')?.textContent.trim() === '';
+  const unit = tr.querySelector('td.unit')?.textContent.trim() === '';
+  const results = Array.from(tr.querySelectorAll('td.result')).every(td => td.textContent.trim() === '');
+  return desc && name && formula && unit && results;
+}
 
-  if (formulaValue !== '') {
-    // Rule 1: results non-editable
-    resultTds.forEach(td => {
-      td.contentEditable = false;
-      td.classList.add('readonly', 'output');
-      td.classList.remove('input');
-    });
-    formulaTd.contentEditable = true;
-  } else {
-    // Rule 2: formula blank and non-editable, results editable
-    resultTds.forEach(td => {
-      td.contentEditable = true;
-      td.classList.add('input');
-      td.classList.remove('readonly', 'output');
-    });
-    formulaTd.contentEditable = false;
+/**
+ * Ensures that exactly the last five rows in the table are blank.
+ * Removes extra blank rows or adds new ones as needed.
+ * @param {HTMLTableElement} table - The table element.
+ * @throws {Error} If no blank row template is available.
+ */
+function ensureBlankFive(table) {
+  const tbody = table.querySelector('tbody');
+  const allTrs = Array.from(tbody.querySelectorAll('tr'));
+  let trailing = 0;
+  for (let i = allTrs.length - 1; i >= 0; i--) {
+    if (isBlankRow(allTrs[i])) {
+      trailing++;
+    } else {
+      break;
+    }
+  }
+  if (trailing > 5) {
+    for (let i = 0; i < trailing - 5; i++) {
+      tbody.lastChild.remove();
+    }
+  } else if (trailing < 5) {
+    for (let i = 0; i < 5 - trailing; i++) {
+      const newBlank = table.blank_row.cloneNode(true);
+      tbody.appendChild(newBlank);
+      enforceRowRules(newBlank);
+    }
   }
 }
 
-// Function to set up all event handlers for the table
-function setupTableInterface(table) {
-  const tbody = table.querySelector('tbody');
+/**
+ * Enforces editing rules on a table row based on formula presence.
+ * @param {HTMLTableRowElement} tr - The table row to enforce rules on.
+ */
+function enforceRowRules(tr) {
+  const formulaTd = tr.querySelector('td.formula');
+  const isFormula = formulaTd.dataset.value?.trim() !== '';
+  formulaTd.contentEditable = isFormula;
+  const resultTds = tr.querySelectorAll('td.result');
+  for (const resTd of resultTds) {
+    resTd.contentEditable = !isFormula;
+    if (isFormula) {
+      resTd.classList.add('readonly', 'output');
+      resTd.classList.remove('input');
+    } else {
+      resTd.classList.remove('readonly', 'output');
+      resTd.classList.add('input');
+    }
+  }
+}
+
+/**
+ * Adds a new result column to the table.
+ * @param {HTMLTableElement} table - The table element.
+ */
+function addNewResultColumn(table) {
   const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  const addTh = thead.querySelector('th.add-result');
+  const headerRow = addTh.parentNode;
+  const resultThs = thead.querySelectorAll('th.result');
+  const numResults = resultThs.length;
+  if (numResults === 1) {
+    resultThs[0].textContent = 'Result 0';
+  }
+  const newTh = document.createElement('th');
+  newTh.classList.add('result');
+  newTh.draggable = true;
+  newTh.textContent = `Result ${numResults}`;
+  headerRow.insertBefore(newTh, addTh);
+  for (const tr of tbody.querySelectorAll('tr')) {
+    const newTd = document.createElement('td');
+    newTd.classList.add('result');
+    newTd.dataset.value = '';
+    newTd.textContent = '';
+    tr.insertBefore(newTd, tr.querySelector('td.add-result'));
+    enforceRowRules(tr);
+  }
+  table.pubsub.publish('recalculation', 'go');
+}
 
-  // Assuming table.row_collection is initialized as new RowCollection([...]) elsewhere
-  // Assuming table.pubsub is set by pubsub.js
+/**
+ * Sets up event handlers and initial state for the table interface.
+ * @param {HTMLTableElement} table - The table element to set up.
+ * @throws {Error} If no blank row is found in the initial table.
+ */
+function setupTableInterface(table) {
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
 
-  // Double-click on row: duplicate
-  tbody.addEventListener('dblclick', (e) => {
-    const tr = e.target.closest('tr');
-    if (tr) {
-      const clone = tr.cloneNode(true);
-      tr.after(clone);
+  // Find blank row
+  const initialTrs = tbody.querySelectorAll('tr');
+  let blankTr = null;
+  for (const tr of initialTrs) {
+    if (isBlankRow(tr)) {
+      blankTr = tr.cloneNode(true);
+      break;
+    }
+  }
+  if (!blankTr) {
+    throw new Error('No blank row found');
+  }
+  table.blank_row = blankTr;
 
-      // Get old name
-      const oldNameTd = tr.querySelector('td.name');
-      const oldName = (oldNameTd.dataset.value || oldNameTd.textContent.trim());
+  // Delete all rows
+  tbody.innerHTML = '';
 
-      // Set new name with prefixes if needed
-      let newName = oldName;
-      let prefix = '_';
-      while (table.row_collection.rowMap.has(newName)) {
-        newName = prefix + oldName;
-        prefix += '_';
+  // Ensure five blanks
+  ensureBlankFive(table);
+
+  // Focusin handlers
+  tbody.addEventListener('focusin', (e) => {
+    const td = e.target;
+    if (td.matches('td.formula') || td.matches('td.result')) {
+      const dataVal = td.dataset.value || '';
+      if (dataVal) {
+        td.textContent = dataVal;
       }
-
-      const newNameTd = clone.querySelector('td.name');
-      newNameTd.textContent = newName;
-      newNameTd.dataset.value = newName;
-
-      // Create new handler for clone
-      const newRowHandler = new TableRow(clone.outerHTML);
-      // Replace clone with parsed tr
-      clone.parentNode.replaceChild(newRowHandler.tr, clone);
-      table.row_collection.addRow(newRowHandler);
     }
   });
 
-  // Double-click on result column header
+  // Focusout handlers
+  tbody.addEventListener('focusout', (e) => {
+    const td = e.target;
+    const tr = td.closest('tr');
+    if (td.matches('td.name')) {
+      const newName = td.textContent.trim();
+      const oldName = td.dataset.value?.trim() || '';
+      if (newName !== oldName) {
+        if (newName === '' && oldName !== '') {
+          td.textContent = oldName;
+          return;
+        }
+        td.dataset.value = newName;
+        if (oldName !== '') {
+          table.row_collection.removeRow(oldName);
+        }
+        if (newName !== '') {
+          let finalName = newName;
+          while (table.row_collection.getRow(finalName)) {
+            finalName = '_' + finalName;
+          }
+          td.dataset.value = finalName;
+          td.textContent = finalName;
+          table.row_collection.addRow(finalName, new TableRow(tr));
+        }
+      }
+    } else if (td.matches('td.formula')) {
+      const newFormula = td.textContent;
+      const oldFormula = td.dataset.value || '';
+      td.dataset.value = newFormula;
+      const formatted = newFormula.replace(/@/g, '⋅').replace(/\*/g, '×');
+      td.textContent = formatted;
+      if (newFormula !== oldFormula) {
+        table.pubsub.publish('recalculation', 'go');
+      }
+      enforceRowRules(tr);
+    } else if (td.matches('td.result')) {
+      const newVal = td.textContent;
+      const oldVal = td.dataset.value || '';
+      td.dataset.value = newVal;
+      const formatted = newVal.replace(/@/g, '⋅').replace(/\*/g, '×');
+      td.textContent = formatted;
+      if (newVal !== oldVal) {
+        table.pubsub.publish('recalculation', 'go');
+        const formulaTd = tr.querySelector('td.formula');
+        formulaTd.dataset.value = '';
+        formulaTd.textContent = '';
+        enforceRowRules(tr);
+      }
+    }
+  });
+
+  // Delete handler
+  tbody.addEventListener('click', (e) => {
+    if (e.target.matches('.delete button')) {
+      const tr = e.target.closest('tr');
+      const name = tr.querySelector('td.name').dataset.value?.trim() || '';
+      if (name) {
+        table.row_collection.removeRow(name);
+      }
+      tr.remove();
+      table.pubsub.publish('recalculation', 'go');
+      ensureBlankFive(table);
+    }
+  });
+
+  // Duplicate handler
+  tbody.addEventListener('dblclick', (e) => {
+    if (e.target.matches('td.handle')) {
+      const tr = e.target.closest('tr');
+      const newTr = tr.cloneNode(true);
+      tr.after(newTr);
+      const nameTd = newTr.querySelector('td.name');
+      let name = nameTd.dataset.value?.trim() || '';
+      if (name) {
+        let newName = name;
+        while (table.row_collection.getRow(newName)) {
+          newName = '_' + newName;
+        }
+        nameTd.dataset.value = newName;
+        nameTd.textContent = newName;
+        table.row_collection.addRow(newName, new TableRow(newTr));
+      }
+      enforceRowRules(newTr);
+      ensureBlankFive(table);
+    }
+  });
+
+  // Add result column handler
+  thead.addEventListener('click', (e) => {
+    if (e.target.matches('th.add-result button')) {
+      addNewResultColumn(table);
+    }
+  });
+
+  // Header rename handler
   thead.addEventListener('dblclick', (e) => {
-    const th = e.target.closest('th.result');
-    if (th) {
+    if (e.target.matches('th.result')) {
+      const th = e.target;
       th.contentEditable = true;
-      th.focus();
       const onFocusout = () => {
         th.contentEditable = false;
-        th.removeEventListener('focusout', onFocusout);
       };
-      th.addEventListener('focusout', onFocusout);
+      th.addEventListener('focusout', onFocusout, { once: true });
     }
   });
 
-  // Name column on-exit (blur)
-  tbody.addEventListener('blur', (e) => {
-    if (!e.target.matches('td.name')) return;
-
-    const td = e.target;
-    const row = td.closest('tr');
-    const oldValue = td.dataset.value || '';
-    const newContent = td.textContent.trim();
-
-    if (newContent === oldValue) return;
-
-    if (newContent === '' && oldValue !== '') {
-      // Revert if new blank but old not
-      td.textContent = oldValue;
-      return;
+  // Row drag handlers
+  let draggingRow = null;
+  tbody.addEventListener('dragstart', (e) => {
+    if (e.target.matches('td.handle')) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      draggingRow = e.target.closest('tr');
+      draggingRow.classList.add('dragging');
     }
-
-    // Temporarily revert textContent to oldValue for consistent name during removal
-    td.textContent = oldValue;
-
-    // Get handler with old name
-    const oldRowHandler = table.row_collection.getRow(oldValue);
-
-    // Remove from collection using old name
-    table.row_collection.removeRow(oldRowHandler);
-
-    // Update textContent and data-value
-    td.textContent = newContent;
-    td.dataset.value = newContent;
-
-    // Add back with new name
-    table.row_collection.addRow(oldRowHandler);
-  }, true);
-
-  // Formula column handlers
-  tbody.addEventListener('focus', (e) => {
-    if (!e.target.matches('td.formula')) return;
-
-    const td = e.target;
-    if (td.dataset.value !== undefined) {
-      td.textContent = td.dataset.value;
+  });
+  tbody.addEventListener('dragover', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr && tr !== draggingRow) {
+      e.preventDefault();
     }
-  }, true);
-
-  tbody.addEventListener('blur', (e) => {
-    if (!e.target.matches('td.formula')) return;
-
-    const td = e.target;
-    const row = td.closest('tr');
-    const newContent = td.textContent;
-    const oldValue = td.dataset.value || '';
-
-    td.dataset.value = newContent;
-
-    // Format display
-    const formatted = newContent.replace(/@/g, '⋅').replace(/\*/g, '×');
-    td.textContent = formatted;
-
-    if (newContent.trim() !== oldValue.trim()) {
-      table.pubsub.publish('recalculation', 'go');
-    }
-
-    enforceRowRules(row);
-  }, true);
-
-  // Results columns handlers
-  tbody.addEventListener('focus', (e) => {
-    if (!e.target.matches('td.result')) return;
-
-    const td = e.target;
-    if (td.dataset.value !== undefined) {
-      td.textContent = td.dataset.value;
-    }
-  }, true);
-
-  tbody.addEventListener('blur', (e) => {
-    if (!e.target.matches('td.result')) return;
-
-    const td = e.target;
-    const row = td.closest('tr');
-    const newContent = td.textContent.trim();
-    const oldValue = td.dataset.value || '';
-
-    if (newContent === oldValue) return;
-
-    // Get handler
-    const nameTd = row.querySelector('td.name');
-    const name = (nameTd.dataset.value || nameTd.textContent.trim());
-    const rowHandler = table.row_collection.getRow(name);
-
-    // Find result index
-    const resultTds = row.querySelectorAll('td.result');
-    const resultIndex = Array.from(resultTds).indexOf(td);
-
-    // Parse new value
-    const value = rowHandler.parseValue(newContent);
-    const unit = rowHandler.unit();
-    const data = new Data(value, unit);
-
-    // Set result
-    try {
-      rowHandler.result(resultIndex, data);
-      // rowHandler.result sets td.textContent to formatted and td.dataset.value to string value
-    } catch (error) {
-      rowHandler.result(resultIndex, error);
-    }
-
-    table.pubsub.publish('recalculation', 'go');
-
-    // Ensure formula blank and non-editable
-    const formulaTd = row.querySelector('td.formula');
-    formulaTd.textContent = '';
-    formulaTd.dataset.value = '';
-    formulaTd.contentEditable = false;
-
-    // Enforce rules (results editable)
-    enforceRowRules(row);
-  }, true);
-
-  // Add-result column header button click
-  thead.addEventListener('click', (e) => {
-    const button = e.target.closest('th.add-result button');
-    if (!button) return;
-
-    // Find position
-    const ths = Array.from(thead.rows[0].cells);
-    const addThIndex = ths.findIndex(th => th.classList.contains('add-result'));
-    const resultThs = ths.filter(th => th.classList.contains('result'));
-    const newIndex = resultThs.length;
-
-    // Update first result header if adding second
-    if (newIndex === 1) {
-      const firstResultTh = resultThs[0];
-      firstResultTh.textContent = 'Result 0';
-    }
-
-    // Create new th
-    const newTh = document.createElement('th');
-    newTh.classList.add('result');
-    newTh.textContent = `Result ${newIndex}`;
-    thead.rows[0].insertBefore(newTh, ths[addThIndex]);
-
-    // Add new td to each row
-    tbody.querySelectorAll('tr').forEach(tr => {
-      const newTd = document.createElement('td');
-      newTd.classList.add('result');
-      newTd.dataset.value = '';
-      newTd.textContent = '';
-
-      // Insert before add-result td
-      const addTd = tr.querySelector('td.add-result');
-      tr.insertBefore(newTd, addTd);
-
-      // Set editable based on mode
-      const formulaTd = tr.querySelector('td.formula');
-      const formulaValue = (formulaTd.dataset.value || '').trim();
-      if (formulaValue !== '') {
-        newTd.contentEditable = false;
-        newTd.classList.add('readonly', 'output');
+  });
+  tbody.addEventListener('drop', (e) => {
+    const tr = e.target.closest('tr');
+    if (tr && tr !== draggingRow) {
+      e.preventDefault();
+      const rect = tr.getBoundingClientRect();
+      const mid = rect.top + rect.height / 2;
+      if (e.clientY < mid) {
+        tr.before(draggingRow);
       } else {
-        newTd.contentEditable = true;
-        newTd.classList.add('input');
+        tr.after(draggingRow);
       }
-    });
-
-    // Update all handlers to recognize new resultTDs
-    for (let rowHandler of table.row_collection.rowMap.values()) {
-      rowHandler.initTDs();
+      draggingRow.classList.remove('dragging');
+      ensureBlankFive(table);
+    }
+  });
+  tbody.addEventListener('dragend', (e) => {
+    if (e.target.matches('td.handle') && draggingRow) {
+      draggingRow.classList.remove('dragging');
+      draggingRow = null;
     }
   });
 
-  // Delete row button click
-  tbody.addEventListener('click', (e) => {
-    const button = e.target.closest('td.delete button');
-    if (!button) return;
-
-    const tr = button.closest('tr');
-    const nameTd = tr.querySelector('td.name');
-    const name = (nameTd.dataset.value || nameTd.textContent.trim());
-    const rowHandler = table.row_collection.getRow(name);
-
-    table.row_collection.removeRow(rowHandler);
-    tr.remove();
-
-    table.pubsub.publish('recalculation', 'go');
+  // Column drag handlers
+  let dragColIdx = -1;
+  thead.addEventListener('dragstart', (e) => {
+    if (e.target.matches('th.result')) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+      dragColIdx = e.target.cellIndex;
+      e.target.classList.add('dragging');
+    }
+  });
+  thead.addEventListener('dragover', (e) => {
+    if (e.target.matches('th.result')) {
+      e.preventDefault();
+    }
+  });
+  thead.addEventListener('drop', (e) => {
+    if (e.target.matches('th.result')) {
+      e.preventDefault();
+      const dropTh = e.target;
+      const rect = dropTh.getBoundingClientRect();
+      const mid = rect.left + rect.width / 2;
+      let toIdx = (e.clientX < mid) ? dropTh.cellIndex : dropTh.cellIndex + 1;
+      if (toIdx === dragColIdx || toIdx === dragColIdx + 1) {
+        return;
+      }
+      const allRows = [thead.querySelector('tr'), ...tbody.querySelectorAll('tr')];
+      for (const row of allRows) {
+        const cell = row.children[dragColIdx];
+        row.insertBefore(cell, row.children[toIdx]);
+      }
+      dropTh.classList.remove('dragging');
+      dragColIdx = -1;
+    }
+  });
+  thead.addEventListener('dragend', (e) => {
+    if (e.target.matches('th.result')) {
+      e.target.classList.remove('dragging');
+      dragColIdx = -1;
+    }
   });
 }
 
-// Attach setup to DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-  const table = document.getElementById('main-sheet');
+  const table = document.querySelector('table#main-sheet');
   if (table) {
     setupTableInterface(table);
   }
 });
 
-export { enforceRowRules, setupTableInterface };
+export { enforceRowRules, setupTableInterface, ensureBlankFive, isBlankRow };

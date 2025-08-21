@@ -1,234 +1,383 @@
-// tests/sheet_interface_tests.js
-// QUnit tests for sheet_interface.js
-// Assumes QUnit is loaded, and the necessary modules are available.
+// tests/sheet-interface_tests.js
 
-import { TableRow } from '../js/table_row.js';
+import { enforceRowRules, ensureBlankFive, isBlankRow, setupTableInterface } from '../js/sheet_interface.js';
 import { RowCollection } from '../js/row_collection.js';
+import { TableRow } from '../js/table_row.js';
 import { PubSub } from '../js/pubsub.js';
-import { Data } from '../js/dim_data.js';
-import { setupTableInterface, enforceRowRules } from '../js/sheet_interface.js';
 
-// Mock DOM setup
-function createMockTable() {
-  const table = document.createElement('table');
-  table.id = 'main-sheet';
-  const thead = document.createElement('thead');
-  const tbody = document.createElement('tbody');
-  table.appendChild(thead);
-  table.appendChild(tbody);
+QUnit.module('Sheet Interface Tests', function(hooks) {
 
-  // Create header row
-  const headerRow = document.createElement('tr');
-  ['handle', 'description', 'name', 'formula', 'result', 'add-result', 'unit', 'delete'].forEach(colClass => {
-    const th = document.createElement('th');
-    th.classList.add(colClass);
-    if (colClass === 'add-result') {
-      th.innerHTML = '<button>+</button>';
-    } else if (colClass === 'result') {
-      th.textContent = 'Result';
-    }
-    headerRow.appendChild(th);
-  });
-  thead.appendChild(headerRow);
-
-  // Create a sample row HTML string for TableRow
-  const rowHtml = `
-    <tr>
-      <td class="handle"></td>
-      <td class="description"></td>
-      <td class="name" data-value="testName">testName</td>
-      <td class="formula"></td>
-      <td class="result"></td>
-      <td class="add-result"></td>
-      <td class="unit"></td>
-      <td class="delete"><button>X</button></td>
-    </tr>
-  `;
-  const handler = new TableRow(rowHtml);
-  const row = handler.tr;
-  tbody.appendChild(row);
-
-  // Attach pubsub and row_collection
-  table.pubsub = new PubSub();
-  table.row_collection = new RowCollection([handler]);
-
-  document.body.appendChild(table);
-
-  return { table, thead, tbody, row, rowHtml };
-}
-
-QUnit.module('sheet_interface.js tests', {
-  beforeEach: function() {
-    this.mock = createMockTable();
-    this.table = this.mock.table;
-    this.tbody = this.mock.tbody;
-    this.thead = this.mock.thead;
-    this.row = this.mock.row;
-    this.rowHtml = this.mock.rowHtml;
-    this.pubsubCalls = [];
-    this.pubsubSpy = (message) => {
-      this.pubsubCalls.push(message);
-    };
-    this.table.pubsub.subscribe('recalculation', this.pubsubSpy);
-
-    // Explicitly call setupTableInterface
-    setupTableInterface(this.table);
-  },
-  afterEach: function() {
-    document.body.removeChild(this.table);
+  function createMockTable() {
+    const table = document.createElement('table');
+    table.id = 'main-sheet';
+    const thead = document.createElement('thead');
+    const headerRow = document.createElement('tr');
+    ['handle', 'description', 'name', 'formula', 'result', 'add-result', 'unit', 'delete'].forEach(col => {
+      const th = document.createElement('th');
+      th.classList.add(col);
+      if (col === 'add-result') {
+        const button = document.createElement('button');
+        th.appendChild(button);
+      }
+      if (col === 'result') {
+        th.textContent = 'Result';
+        th.draggable = true;
+      }
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    const tbody = document.createElement('tbody');
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    table.row_collection = new RowCollection();
+    table.pubsub = new PubSub();
+    return table;
   }
-});
 
-QUnit.test('Row duplication on double-click', function (assert) {
-  const originalRowCount = this.tbody.rows.length;
-  const dblClickEvent = new MouseEvent('dblclick', { bubbles: true });
-  this.row.dispatchEvent(dblClickEvent);
+  function addMockRow(tbody, isBlank = true, formulaValue = '', resultValue = '', nameValue = '') {
+    const tr = document.createElement('tr');
+    ['handle', 'description', 'name', 'formula', 'result', 'add-result', 'unit', 'delete'].forEach(col => {
+      const td = document.createElement('td');
+      td.classList.add(col);
+      if (col === 'formula') {
+        td.dataset.value = formulaValue;
+        td.textContent = isBlank ? '' : formulaValue;
+      } else if (col === 'result') {
+        td.dataset.value = resultValue;
+        td.textContent = isBlank ? '' : resultValue;
+      } else if (col === 'name') {
+        td.dataset.value = nameValue;
+        td.textContent = isBlank ? '' : nameValue;
+      } else if (col === 'delete') {
+        const button = document.createElement('button');
+        td.appendChild(button);
+      } else {
+        td.textContent = isBlank ? '' : 'non-blank';
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+    return tr;
+  }
 
-  assert.equal(this.tbody.rows.length, originalRowCount + 1, 'Row is duplicated');
-  const newRow = this.tbody.rows[1];
-  const newNameTd = newRow.querySelector('td.name');
-  assert.ok(newNameTd.textContent.startsWith('_testName'), 'New name is prefixed to avoid duplicate');
-  assert.ok(this.table.row_collection.rowMap.has(newNameTd.textContent), 'New row added to collection');
-});
+  QUnit.test('isBlankRow identifies blank row correctly', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    const blankTr = addMockRow(tbody, true);
+    assert.true(isBlankRow(blankTr), 'Blank row detected');
 
-QUnit.test('Name change on blur', function (assert) {
-  const nameTd = this.row.querySelector('td.name');
-  nameTd.contentEditable = true;
-  nameTd.textContent = 'newName';
-  const blurEvent = new FocusEvent('blur', { bubbles: true });
-  nameTd.dispatchEvent(blurEvent);
+    const nonBlankTr = addMockRow(tbody, false);
+    assert.false(isBlankRow(nonBlankTr), 'Non-blank row detected');
+  });
 
-  assert.equal(nameTd.dataset.value, 'newName', 'Data-value updated');
-  assert.ok(this.table.row_collection.rowMap.has('newName'), 'Collection updated with new name');
-  assert.notOk(this.table.row_collection.rowMap.has('testName'), 'Old name removed from collection');
-});
+  QUnit.test('ensureBlankFive adds missing blank rows', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    table.blank_row = addMockRow(tbody, true).cloneNode(true);
+    tbody.innerHTML = ''; // Clear
 
-QUnit.test('Formula edit: focus and blur', async function (assert) {
-  const formulaTd = this.row.querySelector('td.formula');
-  formulaTd.dataset.value = 'a @ b';
-  formulaTd.textContent = 'a ⋅ b'; // Pre-formatted
-  formulaTd.contentEditable = true;
+    // Add 2 non-blank and 2 blank
+    addMockRow(tbody, false);
+    addMockRow(tbody, false);
+    addMockRow(tbody, true);
+    addMockRow(tbody, true);
 
-  const focusEvent = new FocusEvent('focus', { bubbles: true });
-  formulaTd.dispatchEvent(focusEvent);
-  assert.equal(formulaTd.textContent, 'a @ b', 'Raw value on focus');
+    ensureBlankFive(table);
+    const rows = tbody.querySelectorAll('tr');
+    assert.strictEqual(rows.length, 7, 'Added 3 blanks to make 5 trailing');
+    assert.false(isBlankRow(rows[0]), 'First non-blank');
+    assert.false(isBlankRow(rows[1]), 'Second non-blank');
+    assert.true(isBlankRow(rows[2]), 'Trailing blank 1');
+    assert.true(isBlankRow(rows[3]), 'Trailing blank 2');
+    assert.true(isBlankRow(rows[4]), 'Added blank 3');
+    assert.true(isBlankRow(rows[5]), 'Added blank 4');
+    assert.true(isBlankRow(rows[6]), 'Added blank 5');
+  });
 
-  formulaTd.textContent = 'a * c';
-  const blurEvent = new FocusEvent('blur', { bubbles: true });
-  formulaTd.dispatchEvent(blurEvent);
+  QUnit.test('ensureBlankFive removes extra blank rows', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    table.blank_row = addMockRow(tbody, true).cloneNode(true);
+    tbody.innerHTML = ''; // Clear
 
-  await new Promise(resolve => setTimeout(resolve, 10)); // Wait for async publish
+    // Add 1 non-blank and 7 blanks
+    addMockRow(tbody, false);
+    for (let i = 0; i < 7; i++) {
+      addMockRow(tbody, true);
+    }
 
-  assert.equal(formulaTd.dataset.value, 'a * c', 'Data-value updated');
-  assert.equal(formulaTd.textContent, 'a × c', 'Formatted on blur');
-  assert.strictEqual(this.pubsubCalls.length, 1, 'Recalculation triggered once');
-  assert.strictEqual(this.pubsubCalls[0], 'go', 'Triggered with "go"');
+    ensureBlankFive(table);
+    const rows = tbody.querySelectorAll('tr');
+    assert.strictEqual(rows.length, 6, 'Removed 2 extras to leave 5 trailing');
+    assert.false(isBlankRow(rows[0]), 'Non-blank');
+    for (let i = 1; i < 6; i++) {
+      assert.true(isBlankRow(rows[i]), `Trailing blank ${i}`);
+    }
+  });
 
-  // Check rules
-  const resultTd = this.row.querySelector('td.result');
-  assert.equal(resultTd.contentEditable, 'false', 'Results non-editable');
-  assert.ok(resultTd.classList.contains('readonly'), 'Readonly class added');
-  assert.ok(resultTd.classList.contains('output'), 'Output class added');
-});
+  QUnit.test('enforceRowRules sets properties correctly with formula', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    const tr = addMockRow(tbody, true, 'some_formula');
 
-QUnit.test('Result edit: focus and blur', async function (assert) {
-  const resultTd = this.row.querySelector('td.result');
-  resultTd.contentEditable = true;
-  resultTd.dataset.value = '1.234';
+    enforceRowRules(tr);
 
-  const focusEvent = new FocusEvent('focus', { bubbles: true });
-  resultTd.dispatchEvent(focusEvent);
-  assert.equal(resultTd.textContent, '1.234', 'Raw value on focus');
+    const formulaTd = tr.querySelector('td.formula');
+    assert.strictEqual(formulaTd.contentEditable, 'true', 'Formula editable');
+    
+    const resultTd = tr.querySelector('td.result');
+    assert.strictEqual(resultTd.contentEditable, 'false', 'Result not editable');
+    assert.true(resultTd.classList.contains('readonly'), 'Has readonly');
+    assert.true(resultTd.classList.contains('output'), 'Has output');
+    assert.false(resultTd.classList.contains('input'), 'No input');
+  });
 
-  resultTd.textContent = '5.678';
-  const blurEvent = new FocusEvent('blur', { bubbles: true });
-  resultTd.dispatchEvent(blurEvent);
+  QUnit.test('enforceRowRules sets properties correctly without formula', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    const tr = addMockRow(tbody, true, '');
 
-  await new Promise(resolve => setTimeout(resolve, 10)); // Wait for async publish
+    enforceRowRules(tr);
 
-  assert.equal(resultTd.textContent, '5.678', 'Formatted on blur'); // Adjust based on actual formatting
-  assert.equal(resultTd.dataset.value, '5.678', 'Data-value updated');
-  assert.strictEqual(this.pubsubCalls.length, 1, 'Recalculation triggered once');
-  assert.strictEqual(this.pubsubCalls[0], 'go', 'Triggered with "go"');
+    const formulaTd = tr.querySelector('td.formula');
+    assert.strictEqual(formulaTd.contentEditable, 'false', 'Formula not editable');
+    
+    const resultTd = tr.querySelector('td.result');
+    assert.strictEqual(resultTd.contentEditable, 'true', 'Result editable');
+    assert.false(resultTd.classList.contains('readonly'), 'No readonly');
+    assert.false(resultTd.classList.contains('output'), 'No output');
+    assert.true(resultTd.classList.contains('input'), 'Has input');
+  });
 
-  const formulaTd = this.row.querySelector('td.formula');
-  assert.equal(formulaTd.textContent, '', 'Formula cleared');
-  assert.equal(formulaTd.contentEditable, 'false', 'Formula non-editable');
+  QUnit.test('setupTableInterface initializes correctly', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    // Populate with some rows including a blank
+    addMockRow(tbody, false);
+    addMockRow(tbody, true);
 
-  assert.equal(resultTd.contentEditable, 'true', 'Results editable');
-  assert.ok(resultTd.classList.contains('input'), 'Input class added');
-});
+    setupTableInterface(table);
 
-QUnit.test('Add result column on button click', function (assert) {
-  const addButton = this.thead.querySelector('th.add-result button');
-  const clickEvent = new MouseEvent('click', { bubbles: true });
-  addButton.dispatchEvent(clickEvent);
+    const rows = tbody.querySelectorAll('tr');
+    assert.strictEqual(rows.length, 5, 'Ensures 5 blank rows');
+    for (let i = 0; i < 5; i++) {
+      assert.true(isBlankRow(rows[i]), `Row ${i+1} is blank`);
+    }
+    assert.ok(table.blank_row, 'Blank row template set');
+  });
 
-  const headers = this.thead.querySelectorAll('th');
-  assert.equal(headers[4].textContent, 'Result 0', 'First result renamed to Result 0');
-  assert.equal(headers[5].textContent, 'Result 1', 'New result column added');
+  QUnit.test('focusin on formula replaces text with data-value', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    const tr = table.querySelector('tbody tr');
+    const formulaTd = tr.querySelector('td.formula');
+    formulaTd.dataset.value = 'raw_formula';
+    formulaTd.textContent = 'formatted';
 
-  const newResultTd = this.row.querySelectorAll('td.result')[1];
-  assert.ok(newResultTd, 'New td added to row');
-  assert.equal(newResultTd.contentEditable, 'true', 'New td editable if formula blank');
-});
+    formulaTd.dispatchEvent(new Event('focusin', { bubbles: true }));
 
-QUnit.test('Delete row on button click', async function (assert) {
-  const deleteButton = this.row.querySelector('td.delete button');
-  const clickEvent = new MouseEvent('click', { bubbles: true });
-  deleteButton.dispatchEvent(clickEvent);
+    assert.strictEqual(formulaTd.textContent, 'raw_formula', 'Replaces with data-value');
+  });
 
-  await new Promise(resolve => setTimeout(resolve, 10)); // Wait for async publish
+  QUnit.test('focusout on name updates collection and handles duplicates', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    const tr = table.querySelector('tbody tr');
+    const nameTd = tr.querySelector('td.name');
+    nameTd.contentEditable = true;
+    nameTd.dataset.value = 'oldName';
+    nameTd.textContent = 'newName';
+    table.row_collection.addRow('oldName', new TableRow(tr));
 
-  assert.equal(this.tbody.rows.length, 0, 'Row removed from DOM');
-  assert.notOk(this.table.row_collection.rowMap.has('testName'), 'Row removed from collection');
-  assert.strictEqual(this.pubsubCalls.length, 1, 'Recalculation triggered once');
-  assert.strictEqual(this.pubsubCalls[0], 'go', 'Triggered with "go"');
-});
+    nameTd.dispatchEvent(new Event('focusout', { bubbles: true }));
 
-QUnit.test('Result header edit on double-click', function (assert) {
-  const resultTh = this.thead.querySelector('th.result');
-  const dblClickEvent = new MouseEvent('dblclick', { bubbles: true });
-  resultTh.dispatchEvent(dblClickEvent);
+    assert.strictEqual(nameTd.dataset.value, 'newName', 'Updates dataset');
+    assert.strictEqual(nameTd.textContent, 'newName', 'Updates text');
+    assert.strictEqual(table.row_collection.getRow('oldName'), undefined, 'Removes old');
+    assert.ok(table.row_collection.getRow('newName'), 'Adds new');
 
-  assert.equal(resultTh.contentEditable, 'true', 'Header becomes editable');
+    // Add a second row to create a duplicate scenario
+    const tr2 = addMockRow(tbody, true);
+    const nameTd2 = tr2.querySelector('td.name');
+    nameTd2.contentEditable = true;
+    nameTd2.dataset.value = 'dupName';
+    nameTd2.textContent = 'dupName';
+    table.row_collection.addRow('dupName', new TableRow(tr2));
 
-  // Simulate edit and focusout
-  resultTh.textContent = 'New Result';
-  const focusoutEvent = new FocusEvent('focusout', { bubbles: true });
-  resultTh.dispatchEvent(focusoutEvent);
+    // Now change the first row to the duplicate name
+    nameTd.textContent = 'dupName';
+    nameTd.dispatchEvent(new Event('focusout', { bubbles: true }));
+    assert.strictEqual(nameTd.dataset.value, '_dupName', 'Prefixes _ for duplicate');
+  });
 
-  assert.equal(resultTh.contentEditable, 'false', 'Editable removed on focusout');
-  assert.equal(resultTh.textContent, 'New Result', 'Text updated');
-});
+  QUnit.test('focusout on name reverts if blank from non-blank', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    const tr = table.querySelector('tbody tr');
+    const nameTd = tr.querySelector('td.name');
+    nameTd.contentEditable = true;
+    nameTd.dataset.value = 'oldName';
+    nameTd.textContent = '';
 
-QUnit.test('enforceRowRules with formula', function (assert) {
-  const row = this.row;
-  const formulaTd = row.querySelector('td.formula');
-  formulaTd.dataset.value = 'a * b';
-  formulaTd.textContent = 'a × b';
+    nameTd.dispatchEvent(new Event('focusout', { bubbles: true }));
 
-  enforceRowRules(row);
+    assert.strictEqual(nameTd.textContent, 'oldName', 'Reverts to old name');
+  });
 
-  const resultTd = row.querySelector('td.result');
-  assert.equal(resultTd.contentEditable, 'false', 'Results non-editable when formula present');
-  assert.ok(resultTd.classList.contains('readonly'), 'Readonly class added');
-  assert.ok(resultTd.classList.contains('output'), 'Output class added');
-  assert.equal(formulaTd.contentEditable, 'true', 'Formula remains editable');
-});
+  QUnit.test('focusout on formula updates and formats', async function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    const tr = table.querySelector('tbody tr');
+    const formulaTd = tr.querySelector('td.formula');
+    formulaTd.contentEditable = true;
+    formulaTd.dataset.value = 'old@*';
+    formulaTd.textContent = 'new@*';
+    let published = false;
+    table.pubsub.subscribe('recalculation', (msg) => { if (msg === 'go') published = true; });
 
-QUnit.test('enforceRowRules without formula', function (assert) {
-  const row = this.row;
-  const formulaTd = row.querySelector('td.formula');
-  formulaTd.dataset.value = '';
-  formulaTd.textContent = '';
+    formulaTd.dispatchEvent(new Event('focusout', { bubbles: true }));
 
-  enforceRowRules(row);
+    await new Promise(resolve => setTimeout(resolve, 0));
 
-  const resultTd = row.querySelector('td.result');
-  assert.equal(resultTd.contentEditable, 'true', 'Results editable when formula blank');
-  assert.ok(resultTd.classList.contains('input'), 'Input class added');
-  assert.notOk(resultTd.classList.contains('readonly'), 'Readonly class removed');
-  assert.notOk(resultTd.classList.contains('output'), 'Output class removed');
-  assert.equal(formulaTd.contentEditable, 'false', 'Formula non-editable');
+    assert.strictEqual(formulaTd.dataset.value, 'new@*', 'Updates dataset');
+    assert.strictEqual(formulaTd.textContent, 'new⋅×', 'Formats text');
+    assert.true(published, 'Publishes recalc if changed');
+  });
+
+  QUnit.test('focusout on result updates, formats, clears formula', async function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    const tr = table.querySelector('tbody tr');
+    const resultTd = tr.querySelector('td.result');
+    resultTd.contentEditable = true;
+    resultTd.dataset.value = 'old@*';
+    resultTd.textContent = 'new@*';
+    const formulaTd = tr.querySelector('td.formula');
+    formulaTd.dataset.value = 'some_formula';
+    let published = false;
+    table.pubsub.subscribe('recalculation', (msg) => { if (msg === 'go') published = true; });
+
+    resultTd.dispatchEvent(new Event('focusout', { bubbles: true }));
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.strictEqual(resultTd.dataset.value, 'new@*', 'Updates dataset');
+    assert.strictEqual(resultTd.textContent, 'new⋅×', 'Formats text');
+    assert.true(published, 'Publishes recalc if changed');
+    assert.strictEqual(formulaTd.dataset.value, '', 'Clears formula dataset');
+    assert.strictEqual(formulaTd.textContent, '', 'Clears formula text');
+  });
+
+  QUnit.test('row dragging reorders rows', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    const rows = tbody.querySelectorAll('tr');
+    const row1 = rows[0];
+    const row2 = rows[1];
+    row1.querySelector('td.name').textContent = 'row1';
+    row2.querySelector('td.name').textContent = 'row2';
+
+    // Mock dataTransfer
+    const mockDataTransfer = {
+      effectAllowed: null,
+      setData: function() {},
+    };
+
+    // Simulate dragstart on row1
+    const handle1 = row1.querySelector('td.handle');
+    const dragStartEvent = new CustomEvent('dragstart', { bubbles: true });
+    dragStartEvent.dataTransfer = mockDataTransfer;
+    handle1.dispatchEvent(dragStartEvent);
+
+    // Simulate dragover on row2
+    const dragOverEvent = new CustomEvent('dragover', { bubbles: true });
+    dragOverEvent.preventDefault = function() {};
+    row2.dispatchEvent(dragOverEvent);
+
+    // Simulate drop on row2 (set clientY to 0 for after)
+    const dropEvent = new CustomEvent('drop', { bubbles: true });
+    dropEvent.preventDefault = function() {};
+    dropEvent.clientY = 0;
+    row2.dispatchEvent(dropEvent);
+
+    // Simulate dragend
+    const dragEndEvent = new CustomEvent('dragend', { bubbles: true });
+    handle1.dispatchEvent(dragEndEvent);
+
+    const newRows = tbody.querySelectorAll('tr');
+    assert.strictEqual(newRows[0].querySelector('td.name').textContent, 'row2', 'Row2 now first');
+    assert.strictEqual(newRows[1].querySelector('td.name').textContent, 'row1', 'Row1 now second');
+  });
+
+  QUnit.test('column dragging reorders result columns', function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    // Add a second result column for dragging
+    const thead = table.querySelector('thead');
+    const headerRow = thead.querySelector('tr');
+    const addTh = headerRow.querySelector('th.add-result');
+    const newTh = document.createElement('th');
+    newTh.classList.add('result');
+    newTh.draggable = true;
+    newTh.textContent = 'Result 1';
+    headerRow.insertBefore(newTh, addTh);
+    // Add corresponding td to each existing tr
+    for (const tr of tbody.querySelectorAll('tr')) {
+      const newTd = document.createElement('td');
+      newTd.classList.add('result');
+      newTd.dataset.value = '';
+      newTd.textContent = '';
+      tr.insertBefore(newTd, tr.querySelector('td.add-result'));
+    }
+    // Update headers for clarity
+    const ths = thead.querySelectorAll('th.result');
+    ths[0].textContent = 'Result 0';
+    ths[1].textContent = 'Result 1';
+
+    // Mock dataTransfer
+    const mockDataTransfer = {
+      effectAllowed: null,
+      setData: function() {},
+    };
+
+    // Simulate dragstart on first result th
+    const th0 = ths[0];
+    const dragStartEvent = new CustomEvent('dragstart', { bubbles: true });
+    dragStartEvent.dataTransfer = mockDataTransfer;
+    th0.dispatchEvent(dragStartEvent);
+
+    // Simulate dragover on second
+    const dragOverEvent = new CustomEvent('dragover', { bubbles: true });
+    dragOverEvent.preventDefault = function() {};
+    ths[1].dispatchEvent(dragOverEvent);
+
+    // Simulate drop on second (set clientX to 0 for right)
+    const dropEvent = new CustomEvent('drop', { bubbles: true });
+    dropEvent.preventDefault = function() {};
+    dropEvent.clientX = 0;
+    ths[1].dispatchEvent(dropEvent);
+
+    // Simulate dragend
+    const dragEndEvent = new CustomEvent('dragend', { bubbles: true });
+    th0.dispatchEvent(dragEndEvent);
+
+    const newThs = thead.querySelectorAll('th.result');
+    assert.strictEqual(newThs[0].textContent, 'Result 1', 'Result 1 now first');
+    assert.strictEqual(newThs[1].textContent, 'Result 0', 'Result 0 now second');
+  });
+
 });
