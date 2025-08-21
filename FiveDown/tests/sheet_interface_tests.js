@@ -1,4 +1,4 @@
-// tests/sheet_interface_tests.js
+// tests/sheet-interface_tests.js
 
 import { enforceRowRules, ensureBlankFive, isBlankRow, setupTableInterface } from '../js/sheet_interface.js';
 import { RowCollection } from '../js/row_collection.js';
@@ -306,10 +306,11 @@ QUnit.module('Sheet Interface Tests', function(hooks) {
     dragOverEvent.preventDefault = function() {};
     row2.dispatchEvent(dragOverEvent);
 
-    // Simulate drop on row2 (set clientY to 0 for after)
+    // Simulate drop on row2 (after)
+    const rect = row2.getBoundingClientRect();
     const dropEvent = new CustomEvent('drop', { bubbles: true });
     dropEvent.preventDefault = function() {};
-    dropEvent.clientY = 0;
+    dropEvent.clientY = rect.top + 1;
     row2.dispatchEvent(dropEvent);
 
     // Simulate dragend
@@ -365,10 +366,11 @@ QUnit.module('Sheet Interface Tests', function(hooks) {
     dragOverEvent.preventDefault = function() {};
     ths[1].dispatchEvent(dragOverEvent);
 
-    // Simulate drop on second (set clientX to 0 for right)
+    // Simulate drop on second (after)
+    const rect = ths[1].getBoundingClientRect();
     const dropEvent = new CustomEvent('drop', { bubbles: true });
     dropEvent.preventDefault = function() {};
-    dropEvent.clientX = 0;
+    dropEvent.clientX = rect.left + 1;
     ths[1].dispatchEvent(dropEvent);
 
     // Simulate dragend
@@ -378,6 +380,28 @@ QUnit.module('Sheet Interface Tests', function(hooks) {
     const newThs = thead.querySelectorAll('th.result');
     assert.strictEqual(newThs[0].textContent, 'Result 1', 'Result 1 now first');
     assert.strictEqual(newThs[1].textContent, 'Result 0', 'Result 0 now second');
+  });
+
+  QUnit.test('delete row removes from DOM and collection, publishes recalc, ensures blanks', async function(assert) {
+    const table = createMockTable();
+    const tbody = table.querySelector('tbody');
+    addMockRow(tbody, true);
+    setupTableInterface(table);
+    // Add a named row
+    const tr = addMockRow(tbody, false, '', '', 'testName');
+    table.row_collection.addRow('testName', new TableRow(tr));
+    let published = false;
+    table.pubsub.subscribe('recalculation', (msg) => { if (msg === 'go') published = true; });
+
+    // Simulate click on delete button
+    const deleteButton = tr.querySelector('td.delete');
+    deleteButton.dispatchEvent(new Event('click', { bubbles: true }));
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+
+    assert.strictEqual(tbody.querySelectorAll('tr').length, 5, 'Rows back to 5 blanks');
+    assert.strictEqual(table.row_collection.getRow('testName'), undefined, 'Removed from collection');
+    assert.true(published, 'Published recalc');
   });
 
 });
