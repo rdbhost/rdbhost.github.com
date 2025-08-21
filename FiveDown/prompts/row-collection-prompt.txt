@@ -1,17 +1,41 @@
 
-create a module row_collection.js, with a class row_collection
+create a module row_collection.js, with a class RowCollection, and a class ColumnObjectWrapper
 
+the term 'row' below, refers to instances of TableRow
+
+RowCollection
 
 methods:
 
     constructor(rows)
 
-    add_row(name, row)
+    addRow(name, row)
 
-        adds given
+        adds given row to collection, tracked by given name
 
-    get_row(name)
+    getRow(name)
 
-    remove_row(name)
+        retrieves row for given name
+
+    removeRow(name)
+
+        removes name provided by given name
 
     audit()
+
+        iterates over collection, verifying that key == name.text == name.data-value
+
+    also, in an onDOMLoad handler, create an empty RowCollection and attach it to
+    table#main-sheet as row_collection. 
+
+
+    ColumnObjectWrapper
+
+    constructor(RowCollection, idx)
+
+      constructor is a Proxy object, providing keyword access to one result columns worth of data
+
+      ie: col1 = ColumnObjectWrapper(rowcol, 1)
+
+      v = col1['first']  # returns result column 1 value for row 'first'
+      v = 123            # stores value in result column 1

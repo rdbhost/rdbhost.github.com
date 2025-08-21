@@ -1,149 +1,140 @@
-// tests/row_collection_test.js
-// Test file for RowCollection using QUnit
-// Assume this is run in a browser environment where QUnit is loaded via script.
+// tests/row_collection_tests.js
 
-// Import the classes (adjust path as needed, assuming row_collection.js is in the parent directory and exports both classes)
-import { TableRow} from '../js/table_row.js';
-import { RowCollection } from '../js/row_collection.js';
+import { RowCollection, ColumnObjectWrapper } from '../js/row_collection.js';
+import { TableRow } from '../js/table_row.js';
+import { Data } from '../js/dim_data.js';
 
-QUnit.module('RowCollection');
+QUnit.module('RowCollection and ColumnObjectWrapper Tests', function() {
 
-const sampleRowHTML1 = `
-  <tr>
-    <td>drag handle</td>
-    <td>desc1</td>
-    <td>name1</td>
-    <td>formula1</td>
-    <td>result1</td>
-    <td>add-results</td>
-    <td>unit1</td>
-    <td>close</td>
-  </tr>
-`;
+  function htmlToElement(html) {
+    const temp = document.createElement('table');
+    temp.innerHTML = html.trim();
+    return temp.querySelector('tr');
+  }
 
-const sampleRowHTML2 = `
-  <tr>
-    <td>drag handle</td>
-    <td>desc2</td>
-    <td>name2</td>
-    <td>formula2</td>
-    <td>result2</td>
-    <td>add-results</td>
-    <td>unit2</td>
-    <td>close</td>
-  </tr>
-`;
+  function escapeHtmlAttribute(str) {
+    return str.replace(/"/g, '&quot;');
+  }
 
-const duplicateNameHTML = `
-  <tr>
-    <td>drag handle</td>
-    <td>desc</td>
-    <td>name1</td>
-    <td>formula</td>
-    <td>result</td>
-    <td>add-results</td>
-    <td>unit</td>
-    <td>close</td>
-  </tr>
-`;
+  function createSampleRowHtml(name = 'testRow', resultValues = [{text: '5', data: '5'}], unit = 'unit') {
+    let results = resultValues.map(({text, data}) => `<td class="result" data-value="${escapeHtmlAttribute(data)}">${text}</td>`).join('');
+    return `
+      <tr>
+        <td class="handle">H</td>
+        <td class="description">Desc</td>
+        <td class="name">${name}</td>
+        <td class="formula" data-value="formula">formula</td>
+        ${results}
+        <td class="add-result">Add</td>
+        <td class="unit">${unit}</td>
+        <td class="delete">Del</td>
+      </tr>
+    `;
+  }
 
-const blankNameHTML = `
-  <tr>
-    <td>drag handle</td>
-    <td>desc</td>
-    <td> </td>
-    <td>formula</td>
-    <td>result</td>
-    <td>add-results</td>
-    <td>unit</td>
-    <td>close</td>
-  </tr>
-`;
+  QUnit.test('RowCollection constructor empty', function(assert) {
+    const collection = new RowCollection();
+    assert.strictEqual(collection.rows.size, 0, 'Empty collection');
+  });
 
-QUnit.test('constructor with empty array', assert => {
-  const collection = new RowCollection();
-  assert.ok(collection instanceof RowCollection, 'Instance created');
-  assert.strictEqual(collection.collection.size, 0, 'Empty map');
-});
+  QUnit.test('RowCollection constructor with rows', function(assert) {
+    const html1 = createSampleRowHtml('row1');
+    const tr1 = htmlToElement(html1);
+    const row1 = new TableRow(tr1);
 
-QUnit.test('constructor with valid array', assert => {
-  const row1 = new TableRow(sampleRowHTML1);
-  const row2 = new TableRow(sampleRowHTML2);
-  const collection = new RowCollection([row1, row2]);
-  assert.strictEqual(collection.collection.size, 2, 'Two rows added');
-  assert.strictEqual(collection.getRow('name1').name(), 'name1', 'Row1 by name');
-  assert.strictEqual(collection.getRow('name2').name(), 'name2', 'Row2 by name');
-});
+    const html2 = createSampleRowHtml('row2');
+    const tr2 = htmlToElement(html2);
+    const row2 = new TableRow(tr2);
 
-QUnit.test('constructor throws if not array', assert => {
-  assert.throws(() => new RowCollection('invalid'), new Error('Constructor requires an array of TableRow instances.'), 'Throws error');
-});
+    const collection = new RowCollection([row1, row2]);
+    assert.strictEqual(collection.rows.size, 2, 'Two rows added');
+    assert.strictEqual(collection.getRow('row1').name(), 'row1', 'Row1 retrieved');
+    assert.strictEqual(collection.getRow('row2').name(), 'row2', 'Row2 retrieved');
+  });
 
-QUnit.test('constructor throws if items not TableRow', assert => {
-  assert.throws(() => new RowCollection([{}]), new Error('addRow requires a TableRow instance.'), 'Throws error');
-});
+  QUnit.test('addRow adds row', function(assert) {
+    const collection = new RowCollection();
 
-QUnit.test('constructor throws on duplicate names', assert => {
-  const row1 = new TableRow(sampleRowHTML1);
-  const duplicateRow = new TableRow(duplicateNameHTML);
-  assert.throws(() => new RowCollection([row1, duplicateRow]), new Error('Row with name "name1" already exists. Names must be unique.'), 'Throws error');
-});
+    const html = createSampleRowHtml('row1');
+    const tr = htmlToElement(html);
+    const row = new TableRow(tr);
 
-QUnit.test('addRow adds valid row', assert => {
-  const collection = new RowCollection();
-  const row = new TableRow(sampleRowHTML1);
-  collection.addRow(row);
-  assert.strictEqual(collection.collection.size, 1, 'Row added');
-  assert.strictEqual(collection.getRow('name1').name(), 'name1', 'Row by name');
-});
+    collection.addRow('row1', row);
+    assert.strictEqual(collection.rows.size, 1, 'Row added');
+    assert.strictEqual(collection.getRow('row1').name(), 'row1', 'Row retrieved');
+  });
 
-QUnit.test('addRow throws if not TableRow', assert => {
-  const collection = new RowCollection();
-  assert.throws(() => collection.addRow({}), new Error('addRow requires a TableRow instance.'), 'Throws error');
-});
+  QUnit.test('addRow throws if not TableRow', function(assert) {
+    const collection = new RowCollection();
+    assert.throws(() => collection.addRow('invalid', {}), /Row must be an instance of TableRow/, 'Throws for invalid row');
+  });
 
-//QUnit.test('addRow throws if blank name', assert => {
-//  const collection = new RowCollection();
-//  const blankRow = new TableRow(blankNameHTML);
-//  assert.throws(() => collection.addRow(blankRow), new Error('Cannot add row with blank or undefined name.'), 'Throws error');
-//});
+  QUnit.test('getRow returns undefined if not found', function(assert) {
+    const collection = new RowCollection();
+    assert.strictEqual(collection.getRow('nonexistent'), undefined, 'Undefined for missing row');
+  });
 
-QUnit.test('addRow throws on duplicate name', assert => {
-  const row1 = new TableRow(sampleRowHTML1);
-  const duplicateRow = new TableRow(duplicateNameHTML);
-  const collection = new RowCollection([row1]);
-  assert.throws(() => collection.addRow(duplicateRow), new Error('Row with name "name1" already exists. Names must be unique.'), 'Throws error');
-});
+  QUnit.test('removeRow removes row', function(assert) {
+    const html = createSampleRowHtml('row1');
+    const tr = htmlToElement(html);
+    const row = new TableRow(tr);
 
-QUnit.test('removeRow removes existing row', assert => {
-  const row1 = new TableRow(sampleRowHTML1);
-  const row2 = new TableRow(sampleRowHTML2);
-  const collection = new RowCollection([row1, row2]);
-  collection.removeRow(row1);
-  assert.strictEqual(collection.collection.size, 1, 'One row removed');
-  assert.throws(() => collection.getRow('name1'), new Error('Row with name "name1" not found.'), 'Row1 removed');
-  assert.strictEqual(collection.getRow('name2').name(), 'name2', 'Row2 remains');
-});
+    const collection = new RowCollection();
+    collection.addRow('row1', row);
+    collection.removeRow('row1');
+    assert.strictEqual(collection.rows.size, 0, 'Row removed');
+    assert.strictEqual(collection.getRow('row1'), undefined, 'Row not found after remove');
+  });
 
-QUnit.test('removeRow throws if not TableRow', assert => {
-  const collection = new RowCollection();
-  assert.throws(() => collection.removeRow({}), new Error('removeRow requires a TableRow instance.'), 'Throws error');
-});
+  QUnit.test('audit passes with matching names', function(assert) {
+    const html1 = createSampleRowHtml('row1');
+    const tr1 = htmlToElement(html1);
+    const row1 = new TableRow(tr1);
 
-QUnit.test('removeRow throws if row not found', assert => {
-  const row1 = new TableRow(sampleRowHTML1);
-  const row2 = new TableRow(sampleRowHTML2);
-  const collection = new RowCollection([row1]);
-  assert.throws(() => collection.removeRow(row2), new Error('TableRow not found in the collection.'), 'Throws error');
-});
+    const html2 = createSampleRowHtml('row2');
+    const tr2 = htmlToElement(html2);
+    const row2 = new TableRow(tr2);
 
-QUnit.test('getRow throws if not found', assert => {
-  const collection = new RowCollection();
-  assert.throws(() => collection.getRow('nonexistent'), new Error('Row with name "nonexistent" not found.'), 'Throws error');
-});
+    const collection = new RowCollection([row1, row2]);
+    collection.audit();
+    assert.ok(true, 'Audit passes without throwing');
+  });
 
-QUnit.test('getRow handles trimmed names', assert => {
-  const row = new TableRow(sampleRowHTML1);
-  const collection = new RowCollection([row]);
-  assert.strictEqual(collection.getRow(' name1 ').name(), 'name1', 'Gets with trimmed name');
+  QUnit.test('audit throws on mismatch', function(assert) {
+    const html = createSampleRowHtml('row1');
+    const tr = htmlToElement(html);
+    const row = new TableRow(tr);
+
+    const collection = new RowCollection();
+    collection.addRow('rowMismatch', row);
+    assert.throws(() => collection.audit(), /Mismatch: key "rowMismatch" does not match row name "row1"/, 'Throws on mismatch');
+  });
+
+  QUnit.test('ColumnObjectWrapper get and set', function(assert) {
+    const html1 = createSampleRowHtml('row1', [{text: '10', data: '10'}]);
+    const tr1 = htmlToElement(html1);
+    const row1 = new TableRow(tr1);
+
+    const html2 = createSampleRowHtml('row2', [{text: '20', data: '20'}]);
+    const tr2 = htmlToElement(html2);
+    const row2 = new TableRow(tr2);
+
+    const collection = new RowCollection([row1, row2]);
+    const col0 = new ColumnObjectWrapper(collection, 0);
+
+    // Get
+    assert.strictEqual(col0.row1.val(), 10, 'Get row1 value');
+    assert.strictEqual(col0.row2.val(), 20, 'Get row2 value');
+    assert.strictEqual(col0.nonexistent, undefined, 'Undefined for missing row');
+
+    // Set
+    const newData = new Data(30, 'unit');
+    col0.row1 = newData;
+    assert.strictEqual(row1.result(0).val(), 30, 'Set row1 value');
+
+    const err = new Error('Test error');
+    col0.row2 = err;
+    assert.true(row2.row.querySelector('td.result').classList.contains('error'), 'Set error on row2');
+  });
+
 });

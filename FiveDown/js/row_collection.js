@@ -1,105 +1,107 @@
+// js/row_collection.js
 
-// Module exporting ES classes for RowCollection and ColumnObjectWrapper
-// Assuming TableRow is defined elsewhere; import if needed
-import { TableRow } from './table_row_handler.js';
+import { TableRow } from './table_row.js';
 
-export class RowCollection {
+/**
+ * A collection of TableRow instances, keyed by their names.
+ * @class
+ */
+class RowCollection {
   /**
-   * Constructor taking a list of TableRow instances.
-   * Tracks rows by their unique names in a Map.
-   * @param {TableRow[]} tableRowHandlers - An array of TableRow objects.
+   * Creates a new RowCollection.
+   * @constructor
+   * @param {Array<TableRow>} [rows=[]] - Initial rows to add.
    */
-  constructor(tableRowHandlers = []) {
-    if (!Array.isArray(tableRowHandlers)) {
-      throw new Error('Constructor requires an array of TableRow instances.');
+  constructor(rows = []) {
+    this.rows = new Map();
+    for (const row of rows) {
+      this.addRow(row.name(), row);
     }
-    this.rowMap = new Map();
-    tableRowHandlers.forEach(row => this.addRow(row));
   }
 
   /**
-   * Adds a TableRow to the collection.
-   * Ensures names are unique.
-   * @param {TableRow} row - The TableRow to add.
+   * Adds a row to the collection.
+   * @param {string} name - The name key for the row.
+   * @param {TableRow} row - The TableRow instance to add.
+   * @throws {Error} If row is not a TableRow instance.
    */
-  addRow(row) {
+  addRow(name, row) {
     if (!(row instanceof TableRow)) {
-      throw new Error('addRow requires a TableRow instance.');
+      throw new Error('Row must be an instance of TableRow');
     }
-    const name = row.name().trim();
-    if (!name) {
-      throw new Error('Cannot add row with blank or undefined name.');
-    }
-    if (this.rowMap.has(name)) {
-      throw new Error(`Row with name "${name}" already exists. Names must be unique.`);
-    }
-    this.rowMap.set(name, row);
+    this.rows.set(name, row);
   }
 
   /**
-   * Removes a TableRow from the collection.
-   * @param {TableRow} row - The TableRow to remove.
-   */
-  removeRow(row) {
-    if (!(row instanceof TableRow)) {
-      throw new Error('removeRow requires a TableRow instance.');
-    }
-    const name = row.name().trim();
-    if (!this.rowMap.has(name)) {
-      throw new Error('TableRow not found in the collection.');
-    }
-    this.rowMap.delete(name);
-  }
-
-  /**
-   * Gets a TableRow by name.
-   * @param {string} name - The name of the row to retrieve.
-   * @returns {TableRow} The TableRow instance.
+   * Retrieves a row by name.
+   * @param {string} name - The name key.
+   * @returns {TableRow|undefined} The row or undefined if not found.
    */
   getRow(name) {
-    const trimmedName = name.trim();
-    if (!this.rowMap.has(trimmedName)) {
-      throw new Error(`Row with name "${trimmedName}" not found.`);
+    return this.rows.get(name);
+  }
+
+  /**
+   * Removes a row by name.
+   * @param {string} name - The name key.
+   */
+  removeRow(name) {
+    this.rows.delete(name);
+  }
+
+  /**
+   * Audits the collection to ensure keys match row names.
+   * @throws {Error} If any mismatch is found.
+   */
+  audit() {
+    for (const [key, row] of this.rows) {
+      if (key !== row.name()) {
+        throw new Error(`Mismatch: key "${key}" does not match row name "${row.name()}"`);
+      }
     }
-    return this.rowMap.get(trimmedName);
   }
 }
 
-export class ColumnObjectWrapper {
+/**
+ * A proxy wrapper for accessing a specific result column across rows.
+ * @class
+ */
+class ColumnObjectWrapper {
   /**
-   * Constructor taking a RowCollection and a column index.
-   * Returns a Proxy that allows object-like access to results by row name, with get and set support.
-   * @param {RowCollection} rowCollection - The RowCollection instance.
-   * @param {number} columnIndex - The 0-based column index for results.
+   * Creates a new ColumnObjectWrapper.
+   * @constructor
+   * @param {RowCollection} rowCollection - The collection of rows.
+   * @param {number} idx - The result column index.
+   * @returns {Proxy} A proxy for keyword access to the column.
    */
-  constructor(rowCollection, columnIndex) {
-    if (!(rowCollection instanceof RowCollection)) {
-      throw new Error('Constructor requires a RowCollection instance.');
-    }
-    if (typeof columnIndex !== 'number' || columnIndex < 0) {
-      throw new Error('Column index must be a non-negative number.');
-    }
+  constructor(rowCollection, idx) {
     this.rowCollection = rowCollection;
-    this.columnIndex = columnIndex;
-
-    return new Proxy(this, {
-      get(target, prop) {
-        if (prop in target) {
-          return target[prop];
+    this.idx = idx;
+    return new Proxy({}, {
+      get: (target, prop) => {
+        const row = this.rowCollection.getRow(prop);
+        if (row) {
+          return row.result(this.idx);
         }
-        // Attempt to get result from row by name
-        const row = target.rowCollection.getRow(prop);
-        return row.result(target.columnIndex);
+        return undefined;
       },
-      set(target, prop, value) {
-        if (prop in target) {
-          throw new Error('Cannot set built-in properties of ColumnObjectWrapper.');
+      set: (target, prop, value) => {
+        const row = this.rowCollection.getRow(prop);
+        if (row) {
+          row.result(this.idx, value);
+          return true;
         }
-        // Attempt to set result in row by name
-        const row = target.rowCollection.getRow(prop);
-        row.result(target.columnIndex, value);
-        return true;
+        return false;
       }
     });
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const table = document.querySelector('table#main-sheet');
+  if (table) {
+    table.row_collection = new RowCollection([]);
+  }
+});
+
+export { RowCollection, ColumnObjectWrapper };
