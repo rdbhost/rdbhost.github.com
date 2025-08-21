@@ -1,148 +1,211 @@
-// TableRow.js
-import { Data } from './dim_data.js'; // Assuming the Data class is available from the provided file
+// js/table_row.js
 
+import { Data } from './dim_data.js';
+
+/**
+ * Represents a table row with specific columns and validation.
+ * Columns: handle, description, name, formula, result(s), add-result, unit, delete.
+ * Each column <td> has a corresponding class.
+ * @class
+ */
 class TableRow {
-  constructor(html) {
-    this.tr = this.parseHtmlToTr(html);
+  /**
+   * Creates a new TableRow instance from a <tr> HTMLElement.
+   * @constructor
+   * @param {HTMLElement} element - The <tr> element.
+   * @throws {Error} If the element is invalid or does not meet column criteria.
+   */
+  constructor(element) {
+    if (!element || element.tagName !== 'TR') {
+      throw new Error('Invalid table row element');
+    }
+    this.row = element;
     this.validate();
-    this.initTDs();
   }
 
-  parseHtmlToTr(html) {
-    const table = document.createElement('table');
-    table.innerHTML = html;
-    const tr = table.querySelector('tr');
-    if (!tr) throw new Error('Provided HTML does not contain a <tr> element');
-    return tr;
+  /**
+   * Updates the row with a new <tr> element.
+   * Replaces the current row element, including in the DOM if attached.
+   * @param {HTMLElement} newElement - The new <tr> element.
+   * @throws {Error} If the element is invalid or does not meet column criteria.
+   */
+  update(newElement) {
+    if (!newElement || newElement.tagName !== 'TR') {
+      throw new Error('Invalid table row element');
+    }
+    if (this.row.parentNode) {
+      this.row.parentNode.replaceChild(newElement, this.row);
+    }
+    this.row = newElement;
+    this.validate();
   }
 
+  /**
+   * Validates the row structure and column classes.
+   * @private
+   * @throws {Error} If validation fails.
+   */
   validate() {
-    const tds = Array.from(this.tr.children);
-    if (tds.length < 8) throw new Error('Row has too few columns');
-    const fixedClasses = ['handle', 'description', 'name', 'formula'];
-    for (let i = 0; i < 4; i++) {
-      if (!tds[i].classList.contains(fixedClasses[i]))
-        throw new Error(`Column ${i + 1} does not have class "${fixedClasses[i]}"`);
+    const tds = Array.from(this.row.querySelectorAll('td'));
+    if (tds.length < 8) {
+      throw new Error('Insufficient columns (minimum 8 required)');
     }
-    const endClasses = ['add-result', 'unit', 'delete'];
-    for (let i = 0; i < 3; i++) {
-      if (!tds[tds.length - 3 + i].classList.contains(endClasses[i]))
-        throw new Error(`Column ${tds.length - 2 + i} does not have class "${endClasses[i]}"`);
+    let pos = 0;
+    this._checkClass(tds[pos++], 'handle');
+    this._checkClass(tds[pos++], 'description');
+    this._checkClass(tds[pos++], 'name');
+    this._checkClass(tds[pos++], 'formula');
+    const resultEnd = tds.length - 3;
+    if (resultEnd <= pos) {
+      throw new Error('At least one result column required');
     }
-    for (let i = 4; i < tds.length - 3; i++) {
-      if (!tds[i].classList.contains('result'))
-        throw new Error(`Column ${i + 1} does not have class "result"`);
+    for (let i = pos; i < resultEnd; i++) {
+      this._checkClass(tds[i], 'result');
+    }
+    this._checkClass(tds[resultEnd], 'add-result');
+    this._checkClass(tds[resultEnd + 1], 'unit');
+    this._checkClass(tds[resultEnd + 2], 'delete');
+  }
+
+  /**
+   * Checks if a <td> has the expected class.
+   * @private
+   * @param {HTMLElement} td - The table cell element.
+   * @param {string} cls - The expected class name.
+   * @throws {Error} If the class is missing.
+   */
+  _checkClass(td, cls) {
+    if (!td.classList.contains(cls)) {
+      throw new Error(`Expected class "${cls}" on column`);
     }
   }
 
-  initTDs() {
-    const tds = Array.from(this.tr.children);
-    this.descriptionTD = tds[1];
-    this.nameTD = tds[2];
-    this.formulaTD = tds[3];
-    this.resultTDs = tds.slice(4, tds.length - 3);
-    this.unitTD = tds[tds.length - 2];
-  }
-
-  update(html) {
-    const newTr = this.parseHtmlToTr(html);
-    const temp = { tr: newTr };
-    this.validate.call(temp);
-    if (this.tr.parentNode) this.tr.parentNode.replaceChild(newTr, this.tr);
-    this.tr = newTr;
-    this.initTDs();
-  }
-
+  /**
+   * Gets the description text.
+   * @returns {string} The description.
+   */
   description() {
-    return this.descriptionTD.textContent.trim();
+    return this.row.querySelector('td.description').textContent.trim();
   }
 
-  name(newName = null) {
-    if (newName !== null) {
-      if (!newName || newName.trim() === '') throw new Error('Name cannot be blank');
-      const old = this.name();
-      this.nameTD.textContent = newName;
-      return old;
-    }
-    return this.nameTD.textContent.trim();
-  }
-
+  /**
+   * Gets the formula from the data-value attribute.
+   * @returns {string} The formula.
+   */
   formula() {
-    return this.formulaTD.textContent.trim();
+    return this.row.querySelector('td.formula').getAttribute('data-value') || '';
   }
 
+  /**
+   * Gets the unit text.
+   * @returns {string} The unit.
+   */
   unit() {
-    return this.unitTD.textContent.trim();
+    return this.row.querySelector('td.unit').textContent.trim();
   }
 
-  result(idx, newValue = null) {
-    if (idx < 0 || idx >= this.resultTDs.length) throw new Error('Invalid result index');
-    const resultTD = this.resultTDs[idx];
-    const currentData = this.getResultData(idx);
-    if (newValue === null) return currentData;
-    resultTD.classList.remove('converted', 'error');
-    resultTD.removeAttribute('data-value');
-    if (newValue instanceof Error) {
-      resultTD.textContent = newValue.message;
-      resultTD.classList.add('error');
-    } else {
-      if (!(newValue instanceof Data)) throw new Error('newValue must be a Data instance');
-      let setData = newValue;
-      const targetUnit = this.unit();
-      if (!targetUnit) {
-        this.unitTD.textContent = newValue.unit();
-      } else if (targetUnit !== newValue.unit()) {
-        try {
-          setData = newValue.asGivenUnit(targetUnit);
-          resultTD.classList.add('converted');
-        } catch (error) {
-          throw new Error(`Unit conversion failed: ${error.message}`);
-        }
+  /**
+   * Getter/setter for the name.
+   * @param {string} [new_name] - If provided, sets the new name (cannot be blank).
+   * @returns {string} The prior/current name.
+   * @throws {Error} If setting a blank name.
+   */
+  name(new_name) {
+    const td = this.row.querySelector('td.name');
+    const oldName = td.textContent.trim();
+    if (new_name !== undefined) {
+      if (typeof new_name !== 'string' || new_name.trim() === '') {
+        throw new Error('Name cannot be blank');
       }
-      const v = setData.val();
-      resultTD.textContent = this.formattedString(v);
-      resultTD.setAttribute('data-value', this.valueToString(v));
+      td.textContent = new_name.trim();
     }
-    return currentData;
+    return oldName;
   }
 
-  getResultData(idx) {
-    const resultTD = this.resultTDs[idx];
-    if (resultTD.classList.contains('error')) return new Error(resultTD.textContent.trim());
-    const valueStr = resultTD.getAttribute('data-value') || resultTD.textContent.trim();
-    const value = this.parseValue(valueStr);
-    return new Data(value, this.unit());
-  }
-
-  parseValue(str) {
-    if (str.startsWith('[') && str.endsWith(']'))
-      return str.slice(1, -1).split(',').map(x => parseFloat(x.trim()));
-    else if (str === 'true') return true;
-    else if (str === 'false') return false;
-    else if (!isNaN(parseFloat(str))) {
-      const num = parseFloat(str);
-      return Number.isInteger(num) ? Math.floor(num) : num;
-    } else return str;
-  }
-
-  valueToString(v) {
-    if (Array.isArray(v)) return `[${v.map(x => x.toString()).join(', ')}]`;
-    else return String(v);
-  }
-
-  formattedString(v) {
-    if (typeof v === 'number') {
-      if (v === 0) return '0.000'
-      if (Math.abs(v) < 0.01) return v.toExponential(3);
-      else return v.toFixed(3);
-    } else if (Array.isArray(v)) {
-      return `[${v.map(x => {
-        if (typeof x !== 'number') return x.toString();
-        if (x === 0) return '0.00'
-        if (Math.abs(x) < 0.01) return x.toExponential(2);
-        else return x.toFixed(2);
-      }).join(', ')}]`;
-    } else return String(v);
+  /**
+   * Getter/setter for a result at the given index.
+   * On get: Returns Data instance from data-value and unit, or null if no data-value.
+   * On set: Handles Data or Error, updates text, data-value, classes, and unit as needed.
+   * Ensures value is number, boolean, vector of numbers, or text; no objects.
+   * @param {number} idx - The result column index (0-based).
+   * @param {Data|Error} [new_value] - If provided, sets the new value (Data or Error).
+   * @returns {Data|null} The prior value (Data or null).
+   * @throws {Error} If invalid index, type, or conversion issues.
+   */
+  result(idx, new_value) {
+    const resultTds = this.row.querySelectorAll('td.result');
+    if (idx < 0 || idx >= resultTds.length) {
+      throw new Error('Invalid result index');
+    }
+    const td = resultTds[idx];
+    if (new_value === undefined) {
+      // Getter
+      const dataValStr = td.getAttribute('data-value');
+      if (!dataValStr) {
+        return null;
+      }
+      let value;
+      try {
+        value = JSON.parse(dataValStr);
+      } catch (e) {
+        return null;
+      }
+      const data = new Data(value, this.unit());
+      if (data.type() === 'unknown') {
+        return null;
+      }
+      return data;
+    } else {
+      // Setter
+      const prior = this.result(idx);
+      if (!(new_value instanceof Data) && !(new_value instanceof Error)) {
+        throw new Error('New value must be Data or Error instance');
+      }
+      td.classList.remove('converted', 'error');
+      td.removeAttribute('data-convert-factor');
+      if (new_value instanceof Error) {
+        td.textContent = new_value.message;
+        td.removeAttribute('data-value');
+        td.classList.add('error');
+        return prior;
+      }
+      // Handle Data
+      const typ = new_value.type();
+      if (typ === 'unknown') {
+        throw new Error('Invalid value type: must be number, boolean, vector of numbers, or text');
+      }
+      let toSet = new_value;
+      let currentUnit = this.unit();
+      if (currentUnit === '') {
+        const unitTd = this.row.querySelector('td.unit');
+        unitTd.textContent = new_value.unit();
+        currentUnit = new_value.unit();
+      } else if (currentUnit !== new_value.unit() && new_value.unit() !== '') {
+        const [converted, factor] = new_value.asGivenUnit(currentUnit);
+        toSet = converted;
+        td.classList.add('converted');
+        td.setAttribute('data-convert-factor', factor.toString());
+      }
+      // Set display text and data-value
+      const val = toSet.val();
+      let text = '';
+      if (typ === 'number') {
+        if (Math.abs(val) < 0.01 && val !== 0) {
+          text = val.toExponential(3);
+        } else {
+          text = val.toFixed(3);
+        }
+      } else if (typ === 'vector') {
+        text = val.map(x => x.toFixed(2)).join(',');
+      } else if (typ === 'boolean') {
+        text = val ? 'true' : 'false';
+      } else if (typ === 'string') {
+        text = val;
+      }
+      td.textContent = text;
+      td.setAttribute('data-value', JSON.stringify(val));
+      return prior;
+    }
   }
 }
 

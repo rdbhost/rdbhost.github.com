@@ -1,7 +1,7 @@
 
-Provide a class TableRow
+Provide a class TableRow in file 'js/table_row.js'
 
-1) Constructor(html segment with table row <tr></tr>)
+1) Constructor(HTMLElement with table row <tr></tr>)
 
 2) update(html segment with table row)
    update and constructor will validate that row meets criteria here.
@@ -28,17 +28,27 @@ Each <td> will have a class with the above value "handle", "description" etc
 
    description, formula, unit getters should take no parameters, meaning no setting functionality.
 
+   formula()
+
+      return value of td.data-value attribute
+
    result(idx, new_value=Data) returns prior value of result[idx]
+
+      On getting, retrieve value of data-value, not td text.
 
       result getter/setter will also get and set the unit column, as the Data instance has both value and unit. 
       On setting:
         if unit column is empty, set it from new_value
-        if unit column is set but not a match for new_value unit, convert new_value to unit in column and add class="converted" to result column
+        if unit column is set but not a match for new_value unit:
+           convert new_value to unit in column and add class="converted" to result column
+           add a data attribute data-convert-factor=cf  where cf is conversion factor
 
       On setting result:
-        in addition to setting td text, add a data attribute 'data-value' to the td containing the same value.  The data attribute can be the full value, the text
-        should be formatted to 3 decimal places, or floating point if < 0.01
+        in addition to setting td text, add a data attribute 'data-value' to the td containing the same value.  The data attribute 
+        can be the full value (unlimited digits), the text should be formatted to 3 decimal places, or floating point if < 0.01
         vectors should be formatted to 2 decimal places
+
+        the result value (in data-value or the text) must be number, boolean, vector (of numbers) or text.  no objects
 
       new_value can also be an Error object, and the Error.message should be displayed in the td, and the data-value cleared.
       only if the value is an Error, the 'error' class should be set on the td.
