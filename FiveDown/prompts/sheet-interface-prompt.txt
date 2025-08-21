@@ -93,7 +93,7 @@ unit
 
 delete
 
-  on the button in this td, add a click handler that deletes the row html and the row_collection entry for the row.
+  on this td, add a click handler that deletes the row html and the row_collection entry for the row.
   the row deletion is done through a RowCollection object on the table, table.row_collection
   trigger a recalc by sending 'go' message on topic 'recalculation' in pubsub.
 
