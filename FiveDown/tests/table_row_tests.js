@@ -358,4 +358,30 @@ QUnit.module('TableRow Class Tests', function() {
     assert.false(resultTd.hasAttribute('data-value'), 'Data-value removed again');
   });
 
+  QUnit.test('result() getter handles non-JSON data-value as string', function(assert) {
+    const html = createSampleHtml([{text: 'hello', data: 'hello'}]);
+    const tr = htmlToElement(html);
+    const row = new TableRow(tr);
+    const data = row.result(0);
+    assert.strictEqual(data.val(), 'hello', 'Treats as string');
+    assert.strictEqual(data.type(), 'string', 'String type');
+  });
+
+  QUnit.test('result() getter and setter for plain text', function(assert) {
+    const html = createSampleHtml([{text: 'plain text', data: 'plain text'}]);
+    const tr = htmlToElement(html);
+    const row = new TableRow(tr);
+    const data = row.result(0);
+    assert.strictEqual(data.val(), 'plain text', 'Gets plain text as string');
+    assert.strictEqual(data.type(), 'string', 'String type');
+
+    // Setter for text
+    const newData = new Data('new plain text', '');
+    row.result(0, newData);
+    const resultTd = row.row.querySelector('td.result');
+    assert.strictEqual(resultTd.textContent, 'new plain text', 'Sets plain text');
+    assert.strictEqual(resultTd.getAttribute('data-value'), '"new plain text"', 'Data-value as JSON string');
+    assert.strictEqual(row.result(0).val(), 'new plain text', 'Gets updated plain text');
+  });
+
 });
