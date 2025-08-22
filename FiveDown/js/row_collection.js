@@ -67,7 +67,7 @@ class RowCollection {
    * @returns {ColumnObjectWrapper}
    */
   getColumnProxy(idx) {
-    return new ColumnObjectWrapper(this.rows, idx)
+    return new ColumnObjectWrapper(this, idx)
   }
 
 }

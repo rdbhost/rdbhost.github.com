@@ -110,6 +110,23 @@ QUnit.module('RowCollection and ColumnObjectWrapper Tests', function() {
     assert.throws(() => collection.audit(), /Mismatch: key "rowMismatch" does not match row name "row1"/, 'Throws on mismatch');
   });
 
+  QUnit.test('columnProxy get', function(assert) { 
+    const html1 = createSampleRowHtml('row1', [{text: '10', data: '10'}]);
+    const tr1 = htmlToElement(html1);
+    const row1 = new TableRow(tr1);
+
+    const html2 = createSampleRowHtml('row2', [{text: '20', data: '20'}]);
+    const tr2 = htmlToElement(html2);
+    const row2 = new TableRow(tr2);
+
+    const collection = new RowCollection([row1, row2]);
+    const col0 = collection.getColumnProxy(0);
+
+    // Get
+    assert.strictEqual(col0.row1.val(), 10, 'Get row1 value');
+    assert.strictEqual(col0.row2.val(), 20, 'Get row2 value');
+  })
+
   QUnit.test('ColumnObjectWrapper get and set', function(assert) {
     const html1 = createSampleRowHtml('row1', [{text: '10', data: '10'}]);
     const tr1 = htmlToElement(html1);

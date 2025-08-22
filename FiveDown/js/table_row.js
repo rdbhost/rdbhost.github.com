@@ -189,7 +189,7 @@ class TableRow {
       // Set display text and data-value
       const val = toSet.val();
 
-      text = formatResult(val, typ)
+      const text = formatResult(val, typ)
 
       td.textContent = text;
       td.setAttribute('data-value', JSON.stringify(val));
