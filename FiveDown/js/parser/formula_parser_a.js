@@ -1,7 +1,7 @@
 // formula_parser_a.js
 // Parser for text formulas into a syntax tree, supporting variable names, function names, numbers, vectors, and booleans
 
-import { unaryOps, binaryOps, ternaryOps, functions } from './numeric_operators.js';
+import { unaryOps, binaryOps, functions } from './numeric_ops.js';
 
 class Parser {
     constructor(formula) {

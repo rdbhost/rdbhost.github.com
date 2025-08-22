@@ -87,7 +87,7 @@ QUnit.test('Parse binary addition', assert => {
     }, 'Parses addition');
 });
 
-QUnit.test('Parse binary multiplication with precedence', assert => {
+QUnit.test('Parse binary multiplication with precedence -- 1+2*3', assert => {
     const ast = parseFormula('1 + 2 * 3');
     assert.deepEqual(ast, {
         type: 'Binary',
@@ -102,7 +102,7 @@ QUnit.test('Parse binary multiplication with precedence', assert => {
     }, 'Respects multiplication precedence');
 });
 
-QUnit.test('Parse power operator', assert => {
+QUnit.test('Parse power operator -- 2^3^4', assert => {
     const ast = parseFormula('2 ^ 3 ^ 4');
     assert.deepEqual(ast, {
         type: 'Binary',
@@ -117,7 +117,7 @@ QUnit.test('Parse power operator', assert => {
     }, 'Parses right-associative power');
 });
 
-QUnit.test('Parse comparison', assert => {
+QUnit.test('Parse comparison -- x>5', assert => {
     const ast = parseFormula('x > 5');
     assert.deepEqual(ast, {
         type: 'Binary',
@@ -137,7 +137,7 @@ QUnit.test('Parse logical and', assert => {
     }, 'Parses and');
 });
 
-QUnit.test('Parse ternary', assert => {
+QUnit.test('Parse ternary -- x>0?1:-1', assert => {
     const ast = parseFormula('x > 0 ? 1 : -1');
     assert.deepEqual(ast, {
         type: 'Ternary',
@@ -153,7 +153,7 @@ QUnit.test('Parse ternary', assert => {
     }, 'Parses ternary');
 });
 
-QUnit.test('Parse function call', assert => {
+QUnit.test('Parse function call -- sin(pi)', assert => {
     const ast = parseFormula('sin(3.14)');
     assert.deepEqual(ast, {
         type: 'FunctionCall',
@@ -162,7 +162,7 @@ QUnit.test('Parse function call', assert => {
     }, 'Parses function call');
 });
 
-QUnit.test('Parse array indexing', assert => {
+QUnit.test('Parse array indexing -- vec[0]', assert => {
     const ast = parseFormula('vec[0]');
     assert.deepEqual(ast, {
         type: 'Binary',
@@ -172,7 +172,7 @@ QUnit.test('Parse array indexing', assert => {
     }, 'Parses array indexing');
 });
 
-QUnit.test('Parse complex expression', assert => {
+QUnit.test('Parse complex expression -- (1+2)*sin(x)^2>0and.not.false', assert => {
     const ast = parseFormula('(1 + 2) * sin(x) ^ 2 > 0 and not false');
     assert.deepEqual(ast, {
         type: 'Binary',

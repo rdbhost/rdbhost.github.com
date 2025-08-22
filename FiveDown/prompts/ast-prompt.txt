@@ -1,10 +1,9 @@
 
-Provide a few Javascript modules.
+Provide three Javascript modules.
 
-The first will parse a text formula into an AST.
-The second will evaluate the AST with a dictionary of values.
-
-subordinate modules will contain
+The first will parse a text formula into an AST.  Call this one ./js/parser/formula_parser.js
+The second will evaluate the AST with a dictionary of values.  Call this one ./js/parser/formula_evaluator.js
+The third will provide functions and operators for dimensioned data.  Call this one ./js/parser/numeric_ops.js
 
 
 Both will handle data types:

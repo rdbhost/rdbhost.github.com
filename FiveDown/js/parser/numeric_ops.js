@@ -1,5 +1,5 @@
 // numeric_ops.js
-import { Data, formatFormula, formatResult } from './dim_data.js';
+import { Data, formatFormula, formatResult } from '../dim_data.js';
 
 function parseUnit(unit) {
   const map = new Map();
