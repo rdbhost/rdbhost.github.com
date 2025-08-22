@@ -1,9 +1,30 @@
-// formula_parser_a.js
+// formula_parser.js
 // Parser for text formulas into a syntax tree, supporting variable names, function names, numbers, vectors, and booleans
 
 import { unaryOps, binaryOps, functions } from './numeric_ops.js';
 
+/**
+ * Represents an Abstract Syntax Tree (AST) for parsed formulas.
+ */
+class AST {
+    /**
+     * Creates a new AST instance.
+     * @param {Object} root - The root node of the AST.
+     */
+    constructor(root) {
+        this.root = root;
+    }
+}
+
+/**
+ * Parser class for converting formula strings into abstract syntax trees (AST).
+ * Supports operators, functions, variables, literals (numbers, booleans), vectors, and grouping.
+ */
 class Parser {
+    /**
+     * Initializes the parser with the given formula.
+     * @param {string} formula - The formula string to parse.
+     */
     constructor(formula) {
         this.formula = formula.trim();
         this.index = 0;
@@ -11,6 +32,11 @@ class Parser {
     }
 
     // Main parsing function
+    /**
+     * Parses the entire formula into an AST.
+     * @returns {Object} The root node of the AST.
+     * @throws {Error} If there are unexpected characters after parsing.
+     */
     parse() {
         const result = this.parseTernary();
         if (this.index < this.length) {
@@ -20,6 +46,11 @@ class Parser {
     }
 
     // Parse ternary operator (?:)
+    /**
+     * Parses ternary expressions (condition ? trueExpr : falseExpr).
+     * @returns {Object} The AST node for the ternary expression or the underlying logical OR expression.
+     * @throws {Error} If the ':' is missing in a ternary operator.
+     */
     parseTernary() {
         let node = this.parseLogicalOr();
         if (this.match('?')) {
@@ -41,6 +72,10 @@ class Parser {
     }
 
     // Parse logical OR (or)
+    /**
+     * Parses logical OR expressions (left or right).
+     * @returns {Object} The AST node for the logical OR expression or the underlying logical AND expression.
+     */
     parseLogicalOr() {
         let node = this.parseLogicalAnd();
         while (this.match('or')) {
@@ -58,6 +93,10 @@ class Parser {
     }
 
     // Parse logical AND (and)
+    /**
+     * Parses logical AND expressions (left and right).
+     * @returns {Object} The AST node for the logical AND expression or the underlying comparison expression.
+     */
     parseLogicalAnd() {
         let node = this.parseComparison();
         while (this.match('and')) {
@@ -75,6 +114,10 @@ class Parser {
     }
 
     // Parse comparison operators (==, !=, <, >, <=, >=, in)
+    /**
+     * Parses comparison expressions (e.g., left == right).
+     * @returns {Object} The AST node for the comparison expression or the underlying additive expression.
+     */
     parseComparison() {
         let node = this.parseAdditive();
         let op;
@@ -92,6 +135,10 @@ class Parser {
     }
 
     // Parse additive operators (+, -)
+    /**
+     * Parses additive expressions (e.g., left + right).
+     * @returns {Object} The AST node for the additive expression or the underlying multiplicative expression.
+     */
     parseAdditive() {
         let node = this.parseMultiplicative();
         let op;
@@ -109,6 +156,10 @@ class Parser {
     }
 
     // Parse multiplicative operators (*, /, %, @)
+    /**
+     * Parses multiplicative expressions (e.g., left * right).
+     * @returns {Object} The AST node for the multiplicative expression or the underlying power expression.
+     */
     parseMultiplicative() {
         let node = this.parsePower();
         let op;
@@ -126,6 +177,10 @@ class Parser {
     }
 
     // Parse power operator (^), right-associative
+    /**
+     * Parses power expressions (e.g., left ^ right), right-associative.
+     * @returns {Object} The AST node for the power expression or the underlying unary expression.
+     */
     parsePower() {
         let node = this.parseUnary();
         while (this.match('^')) {
@@ -143,6 +198,11 @@ class Parser {
     }
 
     // Parse unary operators (-, +, not)
+    /**
+     * Parses unary expressions (e.g., -operand, not operand).
+     * Handles signed numbers by delegating to primary parsing if applicable.
+     * @returns {Object} The AST node for the unary expression or the underlying primary expression.
+     */
     parseUnary() {
         this.skipWhitespace();
         const peek = this.peek();
@@ -171,6 +231,11 @@ class Parser {
     }
 
     // Parse primary expressions (literals, variables, functions, vectors, grouped expressions)
+    /**
+     * Parses primary expressions such as literals, variables, function calls, vectors, or grouped expressions.
+     * @returns {Object} The AST node for the primary expression.
+     * @throws {Error} If there's an unexpected token or mismatched brackets/parentheses.
+     */
     parsePrimary() {
         this.skipWhitespace();
 
@@ -265,6 +330,11 @@ class Parser {
     }
 
     // Parse a number (integer, floating-point, scientific notation, with optional leading sign)
+    /**
+     * Parses a numeric literal, including integers, floats, and scientific notation.
+     * @returns {Object} A Literal AST node with the parsed numeric value.
+     * @throws {Error} If the number is invalid.
+     */
     parseNumber() {
         let numStr = '';
         const start = this.index;
@@ -274,21 +344,37 @@ class Parser {
             numStr += this.formula[this.index++];
         }
 
+        let hasDigitsBeforeDecimal = false;
+        let hasDecimal = false;
+        let hasDigitsAfterDecimal = false;
+
         // Digits before decimal or decimal start
         if (this.peek() === '.') {
             numStr += this.formula[this.index++];
+            hasDecimal = true;
         } else {
             while (this.isDigit()) {
                 numStr += this.formula[this.index++];
+                hasDigitsBeforeDecimal = true;
             }
             if (this.match('.')) {
                 numStr += '.';
+                hasDecimal = true;
             }
         }
 
         // Digits after decimal
         while (this.isDigit()) {
             numStr += this.formula[this.index++];
+            hasDigitsAfterDecimal = true;
+        }
+
+        // Check for double decimal or invalid decimal
+        if (hasDecimal && !hasDigitsBeforeDecimal && !hasDigitsAfterDecimal) {
+            throw new Error(`Invalid number at position ${start}`);
+        }
+        if (this.peek() === '.' && hasDecimal) {
+            throw new Error(`Invalid number at position ${start}`);
         }
 
         // Scientific notation
@@ -299,8 +385,13 @@ class Parser {
             if (sign) {
                 numStr += sign;
             }
+            let hasExponentDigits = false;
             while (this.isDigit()) {
                 numStr += this.formula[this.index++];
+                hasExponentDigits = true;
+            }
+            if (!hasExponentDigits) {
+                throw new Error(`Invalid number at position ${start}`);
             }
         }
 
@@ -312,6 +403,10 @@ class Parser {
     }
 
     // Parse an identifier (variable or function name)
+    /**
+     * Parses an identifier (alphanumeric with underscores).
+     * @returns {string} The parsed identifier name.
+     */
     parseIdentifier() {
         let name = '';
         while (this.isLetter() || this.isDigit() || this.peek() === '_') {
@@ -321,10 +416,19 @@ class Parser {
     }
 
     // Utility methods
+    /**
+     * Peeks at the current character without advancing the index.
+     * @returns {string} The current character or empty string if at end.
+     */
     peek() {
         return this.index < this.length ? this.formula[this.index] : '';
     }
 
+    /**
+     * Matches a token case-insensitively and advances the index if matched.
+     * @param {string} token - The token to match.
+     * @returns {boolean} True if matched, false otherwise.
+     */
     match(token) {
         this.skipWhitespace();
         if (this.formula.slice(this.index, this.index + token.length).toLowerCase() === token.toLowerCase()) {  // Case-insensitive for words like 'and', 'or', 'not', 'in', 'true', 'false'
@@ -334,6 +438,11 @@ class Parser {
         return false;
     }
 
+    /**
+     * Matches any of the given tokens (longest first) case-insensitively.
+     * @param {string[]} tokens - Array of tokens to try matching.
+     * @returns {string|false} The matched token or false if none match.
+     */
     matchAny(tokens) {
         this.skipWhitespace();
         tokens = [...tokens].sort((a, b) => b.length - a.length);  // Try longer tokens first
@@ -346,15 +455,27 @@ class Parser {
         return false;
     }
 
+    /**
+     * Checks if the current character is a digit.
+     * @param {string} [char=this.peek()] - The character to check.
+     * @returns {boolean} True if it's a digit, false otherwise.
+     */
     isDigit(char = this.peek()) {
         return /[0-9]/.test(char);
     }
 
+    /**
+     * Checks if the current character is a letter.
+     * @returns {boolean} True if it's a letter, false otherwise.
+     */
     isLetter() {
         const c = this.peek();
         return /[a-zA-Z]/.test(c);
     }
 
+    /**
+     * Skips over whitespace characters.
+     */
     skipWhitespace() {
         while (this.index < this.length && /\s/.test(this.formula[this.index])) {
             this.index++;
@@ -362,8 +483,15 @@ class Parser {
     }
 }
 
-// Export the parse function
-export function parseFormula(formula) {
+/**
+ * Exported function to parse a formula into an AST instance.
+ * @param {string} formula - The formula string to parse.
+ * @returns {AST} An AST instance containing the parsed tree.
+ */
+function parseFormula(formula) {
     const parser = new Parser(formula);
-    return parser.parse();
+    const root = parser.parse();
+    return new AST(root);
 }
+
+export { AST, Parser, parseFormula };
