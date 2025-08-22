@@ -67,45 +67,27 @@ class RowCollection {
    * @returns {ColumnObjectWrapper}
    */
   getColumnProxy(idx) {
-    return new ColumnObjectWrapper(this, idx)
-  }
-
-}
-
-/**
- * A proxy wrapper for accessing a specific result column across rows.
- * @class
- */
-class ColumnObjectWrapper {
-  /**
-   * Creates a new ColumnObjectWrapper.
-   * @constructor
-   * @param {RowCollection} rowCollection - The collection of rows.
-   * @param {number} idx - The result column index.
-   * @returns {Proxy} A proxy for keyword access to the column.
-   */
-  constructor(rowCollection, idx) {
-    this.rowCollection = rowCollection;
-    this.idx = idx;
     return new Proxy({}, {
       get: (target, prop) => {
-        const row = this.rowCollection.getRow(prop);
+        const row = this.getRow(prop);
         if (row) {
-          return row.result(this.idx);
+          return row.result(idx);
         }
         return undefined;
       },
       set: (target, prop, value) => {
-        const row = this.rowCollection.getRow(prop);
+        const row = this.getRow(prop);
         if (row) {
-          row.result(this.idx, value);
+          row.result(idx, value);
           return true;
         }
         return false;
       }
     });
   }
+
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('table#main-sheet');
@@ -114,4 +96,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-export { RowCollection, ColumnObjectWrapper };
+export { RowCollection };

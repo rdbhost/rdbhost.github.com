@@ -4,7 +4,6 @@
 import { unaryOps, binaryOps, functions } from './numeric_ops.js';
 import { AST } from './formula_parser.js';
 import { Data } from '../dim_data.js';
-import { ColumnObjectWrapper } from '../row_collection.js';
 
 // Helper functions copied from numeric_ops.js for vector handling
 function parseUnit(unit) {
@@ -82,17 +81,17 @@ function mapsEqual(m1, m2) {
  * Evaluates the Abstract Syntax Tree (AST) produced by the formula parser.
  * Supports scalar, vector, and boolean operations using provided variables.
  * @param {AST} ast - The AST instance to evaluate.
- * @param {ColumnObjectWrapper} variables - A ColumnObjectWrapper providing Data values for variables.
+ * @param {Proxy} variables - A Proxy providing Data values for variables.
  * @returns {Data} The result of the evaluation as a Data instance.
- * @throws {Error} If the ast is not an instance of AST, variables is not a ColumnObjectWrapper, or if there are undefined variables, type mismatches, or unknown operations.
+ * @throws {Error} If the ast is not an instance of AST, variables is not a Proxy, or if there are undefined variables, type mismatches, or unknown operations.
  */
 function evaluate(ast, variables) {
     if (!(ast instanceof AST)) {
         throw new Error('ast must be an instance of AST');
     }
-    if (!(variables instanceof ColumnObjectWrapper)) {
-        throw new Error('variables must be an instance of ColumnObjectWrapper');
-    }
+    //if (!(variables instanceof Proxy)) {
+    //    throw new Error('variables must be an instance of Proxy');
+    //}
 
     function evaluateNode(node, variables) {
         switch (node.type) {

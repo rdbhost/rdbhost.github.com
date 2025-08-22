@@ -1,6 +1,6 @@
 // tests/row_collection_tests.js
 
-import { RowCollection, ColumnObjectWrapper } from '../js/row_collection.js';
+import { RowCollection } from '../js/row_collection.js';
 import { TableRow } from '../js/table_row.js';
 import { Data } from '../js/dim_data.js';
 
@@ -127,31 +127,6 @@ QUnit.module('RowCollection and ColumnObjectWrapper Tests', function() {
     assert.strictEqual(col0.row2.val(), 20, 'Get row2 value');
   })
 
-  QUnit.test('ColumnObjectWrapper get and set', function(assert) {
-    const html1 = createSampleRowHtml('row1', [{text: '10', data: '10'}]);
-    const tr1 = htmlToElement(html1);
-    const row1 = new TableRow(tr1);
-
-    const html2 = createSampleRowHtml('row2', [{text: '20', data: '20'}]);
-    const tr2 = htmlToElement(html2);
-    const row2 = new TableRow(tr2);
-
-    const collection = new RowCollection([row1, row2]);
-    const col0 = new ColumnObjectWrapper(collection, 0);
-
-    // Get
-    assert.strictEqual(col0.row1.val(), 10, 'Get row1 value');
-    assert.strictEqual(col0.row2.val(), 20, 'Get row2 value');
-    assert.strictEqual(col0.nonexistent, undefined, 'Undefined for missing row');
-
-    // Set
-    const newData = new Data(30, 'unit');
-    col0.row1 = newData;
-    assert.strictEqual(row1.result(0).val(), 30, 'Set row1 value');
-
-    const err = new Error('Test error');
-    col0.row2 = err;
-    assert.true(row2.row.querySelector('td.result').classList.contains('error'), 'Set error on row2');
-  });
+  
 
 });
