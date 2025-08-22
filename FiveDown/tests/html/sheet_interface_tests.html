@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RowCollection Tests</title>
+  <title>TableRow Tests</title>
   <!-- QUnit CSS for styling the test results -->
   <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.20.0.css">
 </head>
@@ -13,9 +13,10 @@
   <div id="qunit-fixture"></div>
 
   <!-- Load QUnit -->
-  <script src="https://code.jquery.com/qunit/qunit-2.20.0.js"></script>
+  <script type="module" src="https://code.jquery.com/qunit/qunit-2.20.0.js"></script>
 
-  <!-- Load the test script (assumes row_collection_test.js is in the tests subdirectory, and classes are in row_collection.js in the parent directory) -->
-  <script type="module" src="pubsub_tests.js"></script>
+  <!-- Load the test script (assumes TableRow.js and test.js are in the same directory) -->
+  <script type="module" src="../../js/sheet_interface.js"></script>
+  <script type="module" src="../sheet_interface_tests.js"></script>
 </body>
 </html>

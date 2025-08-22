@@ -60,6 +60,16 @@ class RowCollection {
       }
     }
   }
+
+  /**
+   * Returns a column-dictionary for given result column
+   * @param {number} idx - the chosen column
+   * @returns {ColumnObjectWrapper}
+   */
+  getColumnProxy(idx) {
+    return new ColumnObjectWrapper(this.rows, idx)
+  }
+
 }
 
 /**

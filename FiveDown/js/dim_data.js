@@ -148,8 +148,8 @@ const units = {
  * @returns {string}
  */
 function formatFormula(formula) {
-      return formula.replace(/@/g, '⋅').replace(/\*/g, '×');
-}
+      return formula.replace(/@/g, '•').replace(/\*/g, '×');
+}    
 
 /**
  * 
