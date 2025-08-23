@@ -1,0 +1,24 @@
+
+
+
+formula            result     |      formula         result
+
+b e                b e               b e             b e
+b e                b n               b e             b e
+b n                b e               b e             b e
+b n                b n               b e             b e
+
+d e                b e               d e             b n
+d e                d e               d e             d n
+d n                b e               d e             b n
+d n                d e               d e             d n
+
+b e                d e               b n             d e
+b e                d n               b n             d e
+b n                d e               b n             d e
+b n                d n               b n             d n
+
+d e                b n               d e             b n 
+d e                d n               d e             d n
+d n                b n               d e             b n 
+d n                d n               d e             d n 

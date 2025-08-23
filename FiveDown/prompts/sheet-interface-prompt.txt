@@ -1,20 +1,20 @@
 
 This module to be called js/sheet_interface.js
 
-refer to pubsub.js and index.html
+refer to pubsub.js, index.html, and row_collection.js
 
 Create handlers for each column.  Use delegation, so that handlers are active on every row, even when new rows have been 
   dynamically added.  Generally, prefer delegation to thead or tbody rather than table.
 
 general rules that should be applied after each relevant change are
-  1) if formula is not blank, results columns must be noneditable
-  2) if any result column is editable, formula must be blank and not editable
+  1) if formula is not blank, results columns must be noneditable.  null and undefined count as blank.
+  2) if any result column is editable (tabindex > -1 or absent) and non-blank, formula must be blank and not editable
+  3) whenever contentEditable is not 'true', tabindex should be -1, and all focus related handlers should return immediately
+  4) noneditable formula column should have class 'readonly'.  noneditable result columns should have classes 'readonly' and 'output'
 
+  be thorough in enforcing rules, setting contenteditable, tabindex, and classes on each (formula and result) column explicitly.
 
 handle 
-
-  rows are draggable, with td.handle being the drag handle.  Use delegation, so drag functionality applies to rows
-    added dynamically.
 
   double-click handler
    duplicate the tr, placing the copy immediately after the original
@@ -54,9 +54,8 @@ formula
 
 results
 
-  there can be multiple results columns.  they are draggable, where the <th> cell is the drag handle.  they can only
-    be dragged between the formula and add-result columns, so they stay grouped together.  Assume that when result
-    columns are added, they have the draggable attribute and the 'result' class.
+  the button on the results th will cause the column to be deleted.
+  when a result column is deleted, the saved blank row should be changed to match.
 
   doubleclick handler on column header 'th'
     makes header editable with contenteditable=true
@@ -82,7 +81,10 @@ add-result
   the click handler adds a column to the table, to the right of the existing result cells, and to the left of the add-result
     column.  it has same classes as existing result columns.
   the text in the new th will have the form 'Result n' where n is the index of the new result column.  
-  the first result column header will have the text Result 0 as soon as a second result column is added.
+  the first result column header will have the text Result 0 only when its text is 'Result' and a second result column is added.
+
+  when a result column is added, the saved blank row should be changed to match. correcting the saved blank row should not rely on
+    a blank row being available in the table.
 
 
 unit
@@ -99,14 +101,17 @@ delete
 
 
 table.row_collection will be created as empty.  all the interfaces will be created in a function 'setupTableInterface(table)'
-that is called from an onDOMLoad handler.  enforceRowRules and setuTableInterface will be exported.
+that is called from an onDOMLoad handler.  enforceRowRules and setupTableInterface will be exported.
 
 On DOMLoad, perform the following:
 
 1) find a blank row and save it as an attribute on table, called 'blank_row'
      a blank row is one where the cell text is "" for the columns 'description', 'name', 'formula', 'unit' and all 'result' columns.
 2) delete all rows
-3) run ensure_blank_five
+3) run ensureBlankFive
+
+do not add existing table rows to table.row_collection.
+do not add text to any buttons, nor add any buttons
 
 The function ensure_blank_five will look at the last rows in the table, and ensure that exactly the last five rows are blank. Remove 
 extra blank lines, and insert blanks as necessary.  The blanks can be copied from the 'blank_row' attribute.
