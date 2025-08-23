@@ -277,6 +277,12 @@ function setupTableInterface(table) {
         changed = true;
         table.pubsub.publish('recalculation', 'go');
       }
+    } else if (td.classList.contains('description')) {
+      if (currentText !== '')
+        ensureBlankFive(table);
+    } else if (td.classList.contains('unit')) {
+      if (currentText !== '')
+        ensureBlankFive(table);
     }
     enforceRowRules(row);
   });
