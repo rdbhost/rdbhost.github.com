@@ -1,4 +1,8 @@
 
+  create a new module, in file:  js/drag_drop.js
+
+  refer to index.html
+
 
   rows are draggable, with td.handle being the drag handle.  Use delegation, so drag functionality applies to rows
     added dynamically.
