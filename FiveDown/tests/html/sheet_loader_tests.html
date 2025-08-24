@@ -1,0 +1,44 @@
+<!-- tests.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit Tests for loadSample</title>
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.20.0.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture">
+    <table id="test-table">
+      <thead>
+        <tr>
+          <th class="handle"></th>
+          <th class="description">Description</th>
+          <th class="name">Name</th>
+          <th class="formula">Formula</th>
+          <th class="result" draggable="true">
+            <span>Result</span><button class="close-res"></button>
+          </th>
+          <th class="add-result"><button></button></th>
+          <th class="unit" contenteditable="true">Unit</th>
+          <th class="delete"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="handle" draggable="true"></td>
+          <td class="description" contenteditable="true"></td>
+          <td class="name" contenteditable="true"></td>
+          <td class="formula" tabindex="0"></td>
+          <td class="result" tabindex="0"></td>
+          <td class="add-result"></td>
+          <td class="unit" contenteditable="true"></td>
+          <td class="delete"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <script src="https://code.jquery.com/qunit/qunit-2.20.0.js"></script>
+  <script type="module" src="../sheet_loader_tests.js"></script>
+</body>
+</html>

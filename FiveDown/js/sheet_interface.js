@@ -365,4 +365,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-export { enforceRowRules, setupTableInterface };
+export { enforceRowRules, setupTableInterface, ensureBlankFive, formatFormula, formatResult };
