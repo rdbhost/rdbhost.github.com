@@ -109,7 +109,6 @@ function loadSheet(table, header, rows) {
     tbody.appendChild(newRow);
     enforceRowRules(newRow);
   });
-
 }
 
 /**
@@ -124,4 +123,55 @@ function loadSample(table, samples, sampleName) {
   loadSheet(table, sample.header, sample.rows);
 }
 
-export { loadSheet, loadSample };
+/**
+ * Scans the table and converts it into a samples-like structure.
+ * @param {HTMLTableElement} table - The table element to scan.
+ * @returns {{header: string[], rows: (null | [string, string, string, (string | any[])])[]}} The scanned sheet structure.
+ */
+function scanSheet(table) {
+  const header = [];
+  const resultThs = table.tHead.rows[0].querySelectorAll('.result');
+  resultThs.forEach(th => {
+    const spanText = th.querySelector('span').textContent.trim();
+    header.push(spanText || null);
+  });
+
+  const rows = [];
+  const tbodyRows = table.tBodies[0].rows;
+  for (let i = 0; i < tbodyRows.length; i++) {
+    const tr = tbodyRows[i];
+    const description = tr.querySelector('.description').textContent.trim();
+    const name = tr.querySelector('.name').textContent.trim();
+    const unit = tr.querySelector('.unit').textContent.trim();
+    const formulaTd = tr.querySelector('.formula');
+    const formulaData = formulaTd.getAttribute('data-value');
+    const formulaText = formulaTd.textContent.trim();
+    const formula = formulaData !== null ? formulaData : formulaText;
+
+    const resultTds = tr.querySelectorAll('.result');
+    const results = [];
+    resultTds.forEach(td => {
+      const dataValue = td.getAttribute('data-value');
+      const textValue = td.textContent.trim();
+      let value = dataValue !== null ? dataValue : textValue;
+      try {
+        value = JSON.parse(value);
+      } catch (e) {
+        // If not parsable, keep as string
+      }
+      results.push(value);
+    });
+
+    const isBlank = !description && !name && !unit && !formula && results.every(r => r === '' || r === null);
+    if (isBlank) {
+      rows.push(null);
+    } else {
+      const other = formula ? formula : (results.length === 1 ? results[0] : results);
+      rows.push([description || null, name || null, unit || null, other]);
+    }
+  }
+
+  return { header, rows };
+}
+
+export { loadSheet, loadSample, scanSheet };

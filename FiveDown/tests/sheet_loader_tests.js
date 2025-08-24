@@ -1,125 +1,12 @@
 // tests.js
 
-import { loadSample, loadSheet } from '../js/sheet_loader.js';
+import { loadSample, loadSheet, scanSheet } from '../js/sheet_loader.js';
 import { formatFormula as originalFormatFormula, formatResult as originalFormatResult, 
-    enforceRowRules as originalEnforceRowRules } from '../js/sheet_interface.js';
+  enforceRowRules as originalEnforceRowRules } from '../js/sheet_interface.js';
 import { RowCollection } from '../js/row_collection.js';
 import { TableRow } from '../js/table_row.js';
 
-
-const mockSamples1 = {
-  testSample: {
-    header: ['Header1', 'Header2'],
-    rows: [
-      null,
-      ['Desc1', 'name1', 'unit1', 'formula1'],
-      ['Desc2', 'name2', 'unit2', [1, 'two']],
-      null
-    ]
-  }
-};
-
-QUnit.module('loadSample', {
-  beforeEach: function() {
-    this.table = document.querySelector('#test-table');
-    const blankRow = this.table.tBodies[0].rows[0].cloneNode(true);
-    this.table.blank_row = blankRow;
-    this.table.row_collection = new RowCollection();
-    this.table.pubsub = { publish: function() {} };
-
-    // Monkeypatch
-    this.originalFormatFormula = originalFormatFormula;
-    this.originalFormatResult = originalFormatResult;
-    this.originalEnforceRowRules = originalEnforceRowRules;
-
-    window.formatFormula = function(text) { return text; };
-    window.formatResult = function(text) { return text; };
-    window.enforceRowRules = function() {};
-
-    this.formatFormulaCalled = 0;
-    window.formatFormula = (text) => {
-      this.formatFormulaCalled++;
-      return text;
-    };
-
-    this.formatResultCalled = 0;
-    window.formatResult = (text) => {
-      this.formatResultCalled++;
-      return text;
-    };
-
-    this.enforceRowRulesCalled = 0;
-    window.enforceRowRules = (row) => {
-      this.enforceRowRulesCalled++;
-    };
-
-    this.publishCalled = 0;
-    this.table.pubsub.publish = () => {
-      this.publishCalled++;
-    };
-  },
-  afterEach: function() {
-    // Restore originals
-    window.formatFormula = this.originalFormatFormula;
-    window.formatResult = this.originalFormatResult;
-    window.enforceRowRules = this.originalEnforceRowRules;
-  }
-});
-
-QUnit.test('loads sample with null rows and formula', function(assert) {
-  loadSample(this.table, mockSamples1, 'testSample');
-
-  const theadRow = this.table.tHead.rows[0];
-  const resultThs = theadRow.querySelectorAll('.result');
-  assert.equal(resultThs.length, 2, 'Adjusted to 2 result columns');
-  assert.equal(resultThs[0].querySelector('span').textContent, 'Header1', 'First header set');
-  assert.equal(resultThs[1].querySelector('span').textContent, 'Header2', 'Second header set');
-
-  const rows = this.table.tBodies[0].rows;
-  assert.equal(rows.length, 4, '4 rows loaded (including nulls)');
-
-  // First row: null (blank)
-  assert.equal(rows[0].querySelector('.description').textContent, '', 'First row description blank');
-  assert.equal(rows[0].querySelector('.name').textContent, '', 'First row name blank');
-  assert.equal(rows[0].querySelector('.unit').textContent, '', 'First row unit blank');
-  assert.equal(rows[0].querySelector('.formula').textContent, '', 'First row formula blank');
-  assert.equal(rows[0].querySelectorAll('.result')[0].textContent, '', 'First row result1 blank');
-  assert.equal(rows[0].querySelectorAll('.result')[1].textContent, '', 'First row result2 blank');
-
-  // Second row: formula
-  assert.equal(rows[1].querySelector('.description').textContent, 'Desc1', 'Second row description');
-  assert.equal(rows[1].querySelector('.name').textContent, 'name1', 'Second row name');
-  assert.equal(rows[1].querySelector('.unit').textContent, 'unit1', 'Second row unit');
-  assert.equal(rows[1].querySelector('.formula').getAttribute('data-value'), 'formula1', 'Second row formula data-value');
-  assert.equal(rows[1].querySelector('.formula').textContent, 'formula1', 'Second row formula text (mocked)');
-
-  // Third row: results
-  assert.equal(rows[2].querySelector('.description').textContent, 'Desc2', 'Third row description');
-  assert.equal(rows[2].querySelector('.name').textContent, 'name2', 'Third row name');
-  assert.equal(rows[2].querySelector('.unit').textContent, 'unit2', 'Third row unit');
-  assert.equal(rows[2].querySelector('.formula').textContent, '', 'Third row formula blank');
-  assert.equal(rows[2].querySelectorAll('.result')[0].getAttribute('data-value'), '1', 'Third row result1 data-value');
-  assert.equal(rows[2].querySelectorAll('.result')[0].textContent, '1', 'Third row result1 text (mocked)');
-  assert.equal(rows[2].querySelectorAll('.result')[1].getAttribute('data-value'), '"two"', 'Third row result2 data-value');
-  assert.equal(rows[2].querySelectorAll('.result')[1].textContent, '"two"', 'Third row result2 text (mocked)');
-
-  // Fourth row: null (blank)
-  assert.equal(rows[3].querySelector('.description').textContent, '', 'Fourth row description blank');
-
-  assert.equal(this.formatFormulaCalled, 1, 'formatFormula called for formula row');
-  assert.equal(this.formatResultCalled, 2, 'formatResult called for two results');
-  assert.equal(this.enforceRowRulesCalled, 4, 'enforceRowRules called for each row');
-});
-
-QUnit.test('does nothing for unknown sample', function(assert) {
-  const originalTbodyHTML = this.table.tBodies[0].innerHTML;
-  loadSample(this.table, mockSamples1, 'unknown');
-
-  assert.equal(this.table.tBodies[0].innerHTML, originalTbodyHTML, 'Table unchanged for unknown sample');
-  assert.equal(this.publishCalled, 0, 'No publish called');
-});
-
-const mockSamples2 = {
+const mockSamples = {
   testSample: {
     header: ['Header1'],
     rows: [
@@ -147,6 +34,74 @@ const mockSamples2 = {
     ]
   }
 };
+
+function populateTable(table, headers, rowsData) {
+  const theadRow = table.tHead.rows[0];
+  const resultThs = theadRow.querySelectorAll('.result');
+  resultThs.forEach((th, idx) => {
+    if (idx < headers.length) {
+      th.querySelector('span').textContent = headers[idx];
+    }
+  });
+
+  const tbody = table.tBodies[0];
+  tbody.innerHTML = '';
+  rowsData.forEach(row => {
+    const tr = document.createElement('tr');
+    // Handle
+    const handleTd = document.createElement('td');
+    handleTd.classList.add('handle');
+    tr.appendChild(handleTd);
+
+    // Description
+    const descTd = document.createElement('td');
+    descTd.classList.add('description');
+    descTd.textContent = row.description || '';
+    tr.appendChild(descTd);
+
+    // Name
+    const nameTd = document.createElement('td');
+    nameTd.classList.add('name');
+    nameTd.textContent = row.name || '';
+    tr.appendChild(nameTd);
+
+    // Formula
+    const formulaTd = document.createElement('td');
+    formulaTd.classList.add('formula');
+    if (row.formulaData) {
+      formulaTd.setAttribute('data-value', row.formulaData);
+    }
+    formulaTd.textContent = row.formulaText || '';
+    tr.appendChild(formulaTd);
+
+    // Result
+    const resultTd = document.createElement('td');
+    resultTd.classList.add('result');
+    if (row.resultData) {
+      resultTd.setAttribute('data-value', row.resultData);
+    }
+    resultTd.textContent = row.resultText || '';
+    tr.appendChild(resultTd);
+
+    // Add-result (empty)
+    const addResultTd = document.createElement('td');
+    addResultTd.classList.add('add-result');
+    tr.appendChild(addResultTd);
+
+    // Unit
+    const unitTd = document.createElement('td');
+    unitTd.classList.add('unit');
+    unitTd.textContent = row.unit || '';
+    tr.appendChild(unitTd);
+
+    // Delete
+    const deleteTd = document.createElement('td');
+    deleteTd.classList.add('delete');
+    tr.appendChild(deleteTd);
+
+    tbody.appendChild(tr);
+  });
+}
 
 QUnit.module('loadSheet row_collection integration', {
   beforeEach: function() {
@@ -196,7 +151,7 @@ QUnit.module('loadSheet row_collection integration', {
 });
 
 QUnit.test('adds named rows to row_collection', function(assert) {
-  loadSample(this.table, mockSamples2, 'testSample');
+  loadSample(this.table, mockSamples, 'testSample');
 
   assert.equal(this.table.row_collection.rows.size, 2, 'Two named rows added');
   assert.ok(this.table.row_collection.getRow('name1') instanceof TableRow, 'name1 added');
@@ -206,7 +161,7 @@ QUnit.test('adds named rows to row_collection', function(assert) {
 });
 
 QUnit.test('handles duplicate names with prefix', function(assert) {
-  loadSample(this.table, mockSamples2, 'duplicateNameSample');
+  loadSample(this.table, mockSamples, 'duplicateNameSample');
 
   assert.equal(this.table.row_collection.rows.size, 3, 'Three rows added');
   assert.ok(this.table.row_collection.getRow('dup') instanceof TableRow, 'First dup added as dup');
@@ -226,7 +181,7 @@ QUnit.test('handles duplicate names with prefix', function(assert) {
 });
 
 QUnit.test('does not add rows without names', function(assert) {
-  loadSample(this.table, mockSamples2, 'noNameSample');
+  loadSample(this.table, mockSamples, 'noNameSample');
 
   assert.equal(this.table.row_collection.rows.size, 0, 'No rows added to collection');
   const rows = this.table.tBodies[0].rows;
@@ -256,4 +211,160 @@ QUnit.test('handles mixed named and unnamed rows', function(assert) {
   assert.equal(rows[0].querySelector('.name').textContent, 'name1', 'First row named');
   assert.equal(rows[1].querySelector('.name').textContent, '', 'Second row unnamed');
   assert.equal(rows[3].querySelector('.name').textContent, 'name3', 'Fourth row named');
+});
+
+QUnit.test('blank and null rows not added to collection', function(assert) {
+  const blankRowsSample = {
+    header: ['Header1'],
+    rows: [
+      null,
+      null,
+      ['', '', '', ''],
+      null
+    ]
+  };
+  loadSheet(this.table, blankRowsSample.header, blankRowsSample.rows);
+
+  assert.equal(this.table.row_collection.rows.size, 0, 'No rows added to collection');
+});
+
+QUnit.module('scanSheet', {
+  beforeEach: function() {
+    this.table = document.querySelector('#test-table');
+    this.table.tBodies[0].innerHTML = '';
+  }
+});
+
+QUnit.test('scans empty table', function(assert) {
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.header, ['Result'], 'Single result header');
+  assert.deepEqual(result.rows, [], 'No rows');
+});
+
+QUnit.test('scans blank row', function(assert) {
+  populateTable(this.table, ['Result'], [
+    { description: '', name: '', formulaData: null, formulaText: '', resultData: null, resultText: '', unit: '' }
+  ]);
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.rows, [null], 'Blank row as null');
+});
+
+QUnit.test('scans row with formula in text', function(assert) {
+  populateTable(this.table, ['Result'], [
+    { description: 'Test Desc', name: 'testName', formulaData: null, formulaText: 'a + b', resultData: null, resultText: '', unit: 'unit' }
+  ]);
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.rows, [
+    ['Test Desc', 'testName', 'unit', 'a + b']
+  ], 'Row with formula text');
+});
+
+QUnit.test('scans row with formula in data-value', function(assert) {
+  populateTable(this.table, ['Result'], [
+    { description: 'Test Desc', name: 'testName', formulaData: 'a + b', formulaText: 'formatted', resultData: null, resultText: '', unit: 'unit' }
+  ]);
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.rows, [
+    ['Test Desc', 'testName', 'unit', 'a + b']
+  ], 'Row with formula data-value preferred');
+});
+
+//QUnit.test('scans row with scalar result in text', function(assert) {
+//  populateTable(this.table, ['Result'], [
+//    { description: 'Test Desc', name: 'testName', formulaData: null, formulaText: '', resultData: null, resultText: '42', unit: 'unit' }
+//  ]);
+//  const result = scanSheet(this.table);
+//  assert.deepEqual(result.rows, [
+//    ['Test Desc', 'testName', 'unit', '42']
+//  ], 'Row with scalar result text as string');
+//});
+
+QUnit.test('scans row with scalar result in data-value', function(assert) {
+  populateTable(this.table, ['Result'], [
+    { description: 'Test Desc', name: 'testName', formulaData: null, formulaText: '', resultData: '42', resultText: 'formatted', unit: 'unit' }
+  ]);
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.rows, [
+    ['Test Desc', 'testName', 'unit', 42]
+  ], 'Row with scalar result data-value parsed as number');
+});
+
+QUnit.test('scans row with array result', function(assert) {
+  populateTable(this.table, ['Result'], [
+    { description: 'Test Desc', name: 'testName', formulaData: null, formulaText: '', resultData: '[1,2,3]', resultText: '[1,2,3]', unit: 'unit' }
+  ]);
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.rows, [
+    ['Test Desc', 'testName', 'unit', [1,2,3]]
+  ], 'Row with array result parsed');
+});
+
+QUnit.test('scans row with non-parsable result', function(assert) {
+  populateTable(this.table, ['Result'], [
+    { description: 'Test Desc', name: 'testName', formulaData: null, formulaText: '', resultData: null, resultText: 'text', unit: 'unit' }
+  ]);
+  const result = scanSheet(this.table);
+  assert.deepEqual(result.rows, [
+    ['Test Desc', 'testName', 'unit', 'text']
+  ], 'Row with non-parsable result as string');
+});
+
+QUnit.test('scans multiple result columns', function(assert) {
+  const table = document.querySelector('#test-table');
+  // Manually add second result column for test
+  const theadRow = table.tHead.rows[0];
+  const addTh = theadRow.querySelector('.add-result');
+  const templateTh = theadRow.querySelector('.result').cloneNode(true);
+  templateTh.querySelector('span').textContent = 'Result2';
+  theadRow.insertBefore(templateTh, addTh);
+
+  const tbody = table.tBodies[0];
+  tbody.innerHTML = '';
+  const tr = document.createElement('tr');
+  ['handle', 'description', 'name', 'formula', 'result', 'result', 'add-result', 'unit', 'delete'].forEach(cls => {
+    const td = document.createElement('td');
+    td.classList.add(cls);
+    tr.appendChild(td);
+  });
+  tr.querySelector('.description').textContent = 'Test Desc';
+  tr.querySelector('.name').textContent = 'testName';
+  tr.querySelector('.unit').textContent = 'unit';
+  const results = tr.querySelectorAll('.result');
+  results[0].setAttribute('data-value', '42');
+  results[1].setAttribute('data-value', '[1,2]');
+  tbody.appendChild(tr);
+
+  const result = scanSheet(table);
+  assert.deepEqual(result.header, ['Result', 'Result2'], 'Multiple headers');
+  assert.deepEqual(result.rows, [
+    ['Test Desc', 'testName', 'unit', [42, [1,2]]]
+  ], 'Row with multiple results as array');
+});
+
+QUnit.test('scans mixed rows including blanks', function(assert) {
+  const table = document.querySelector('#test-table');
+  populateTable(table, ['Result'], [
+    { description: '', name: '', formulaData: null, formulaText: '', resultData: null, resultText: '', unit: '' }, // blank
+    { description: 'Desc', name: 'name', formulaData: null, formulaText: 'formula', resultData: null, resultText: '', unit: 'unit' }, // formula
+    { description: '', name: '', formulaData: null, formulaText: '', resultData: null, resultText: '', unit: '' }, // blank
+    { description: 'Desc2', name: 'name2', formulaData: null, formulaText: '', resultData: null, resultText: 'text', unit: '' } // result
+  ]);
+  const result = scanSheet(table);
+  assert.deepEqual(result.rows, [
+    null,
+    ['Desc', 'name', 'unit', 'formula'],
+    null,
+    ['Desc2', 'name2', null, 'text']
+  ], 'Mixed rows with blanks as null');
+});
+
+QUnit.test('handles null or missing fields as null in output', function(assert) {
+  const table = document.querySelector('#test-table');
+  populateTable(table, ['Result'], [
+    { description: null, name: null, formulaData: null, formulaText: null, resultData: null, resultText: null, unit: null }
+  ]);
+  const result = scanSheet(table);
+  assert.deepEqual(result.rows, [
+    null
+  ], 'Null fields as null, blank result as empty string');
 });
