@@ -1,6 +1,6 @@
-// js/sample_loader.js
+// js/sheet_loader.js
 
-import { ensureBlankFive } from './sheet_interface.js';
+import { TableRow } from './table_row.js';
 
 /**
  * Loads the table with specified header and rows data.
@@ -29,14 +29,28 @@ function loadSheet(table, header, rows) {
   }
 
   while (currentColumns < neededColumns) {
-    const templateTh = resultThs[0] ? resultThs[0].cloneNode(true) : null;
-    if (templateTh) {
-      templateTh.querySelector('span').textContent = '';
-      theadRow.insertBefore(templateTh, addTh);
-      const templateTd = table.blank_row.querySelector('.result').cloneNode(true);
-      const addTdIdx = Array.from(table.blank_row.cells).findIndex(td => td.classList.contains('add-result'));
-      table.blank_row.insertBefore(templateTd, table.blank_row.cells[addTdIdx]);
+    // Inline add column logic
+    const resultThsTemp = theadRow.querySelectorAll('.result');
+    let numResults = resultThsTemp.length;
+    let newN = numResults;
+
+    if (numResults === 1 && resultThsTemp[0].querySelector('span').textContent.trim() === 'Result') {
+      resultThsTemp[0].querySelector('span').textContent = 'Result 0';
     }
+
+    const templateTh = resultThsTemp[0] ? resultThsTemp[0].cloneNode(true) : null;
+    if (!templateTh) throw new Error('No result column to clone from');
+    templateTh.querySelector('span').textContent = 'Result ' + newN;
+    theadRow.insertBefore(templateTh, addTh);
+
+    const templateTd = table.blank_row.querySelector('.result').cloneNode(true);
+    templateTd.textContent = '';
+    templateTd.setAttribute('data-value', '');
+
+    const blankAddTd = table.blank_row.querySelector('.add-result');
+    const blankNewTd = templateTd.cloneNode(true);
+    table.blank_row.insertBefore(blankNewTd, blankAddTd);
+
     resultThs = theadRow.querySelectorAll('.result');
     currentColumns++;
   }
@@ -61,7 +75,7 @@ function loadSheet(table, header, rows) {
       const resultTds = newRow.querySelectorAll('.result');
 
       descriptionTd.textContent = rowData[0] || '';
-      nameTd.textContent = rowData[1] || '';
+      let name = rowData[1] || '';
       unitTd.textContent = rowData[2] || '';
 
       const other = rowData[3];
@@ -80,13 +94,22 @@ function loadSheet(table, header, rows) {
           }
         });
       }
+
+      // Add to row_collection if name is present
+      if (name.trim() !== '') {
+        let finalName = name;
+        while (table.row_collection.getRow(finalName)) {
+          finalName = '_' + finalName;
+        }
+        nameTd.setAttribute('data-value', finalName);
+        nameTd.textContent = finalName;
+        table.row_collection.addRow(finalName, new TableRow(newRow));
+      }
     }
     tbody.appendChild(newRow);
     enforceRowRules(newRow);
   });
 
-  //ensureBlankFive(table);
-  //table.pubsub.publish('recalculation', 'go');
 }
 
 /**
