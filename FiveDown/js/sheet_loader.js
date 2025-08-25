@@ -1,6 +1,7 @@
 // js/sheet_loader.js
 
 import { TableRow } from './table_row.js';
+import { RowCollection } from './row_collection.js';
 
 /**
  * Loads the table with specified header and rows data.
@@ -17,6 +18,10 @@ function loadSheet(table, header, rows) {
   let resultThs = theadRow.querySelectorAll('.result');
   const neededColumns = header.length;
   let currentColumns = resultThs.length;
+
+  // Clear existing rows and row_collection
+  tbody.innerHTML = '';
+  table.row_collection = new RowCollection();
 
   // Adjust number of result columns
   while (currentColumns > neededColumns) {
@@ -60,9 +65,6 @@ function loadSheet(table, header, rows) {
     const span = th.querySelector('span');
     span.textContent = header[idx] || 'Result ' + idx;
   });
-
-  // Clear tbody
-  tbody.innerHTML = '';
 
   // Populate rows
   rows.forEach(rowData => {
@@ -174,4 +176,50 @@ function scanSheet(table) {
   return { header, rows };
 }
 
-export { loadSheet, loadSample, scanSheet };
+/**
+ * Saves the sheet object to localStorage if the name is not already in samples.
+ * @param {string} name - The name to save the sheet under.
+ * @param {Object} object - The sheet object to save.
+ * @returns {boolean} True if saved, false if name exists in samples.
+ */
+function saveSheet(name, object) {
+  if (samples[name]) return false;
+  localStorage.setItem(name, JSON.stringify(object));
+  return true;
+}
+
+/**
+ * Retrieves the sheet object from samples or localStorage.
+ * @param {string} name - The name of the sheet to retrieve.
+ * @returns {Object|null} The sheet object or null if not found.
+ */
+function retrieveSheet(name) {
+  if (samples[name]) return samples[name];
+  const stored = localStorage.getItem(name);
+  if (stored) return JSON.parse(stored);
+  return null;
+}
+
+/**
+ * Retrieves all sheet names from samples and localStorage, consolidated uniquely.
+ * @returns {string[]} Array of unique sheet names.
+ */
+function allSheetNames() {
+  const sampleKeys = Object.keys(samples);
+  const localKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    localKeys.push(localStorage.key(i));
+  }
+  const allKeys = [...new Set([...sampleKeys, ...localKeys])];
+  return allKeys;
+}
+
+/**
+ * Removes the stored sheet from localStorage.
+ * @param {string} name - The name of the sheet to remove.
+ */
+function removeStoredSheet(name) {
+  localStorage.removeItem(name);
+}
+
+export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, removeStoredSheet };
