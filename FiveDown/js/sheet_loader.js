@@ -3,7 +3,8 @@
 import { samples } from './samples.js';
 import { TableRow } from './table_row.js';
 import { RowCollection } from './row_collection.js';
-import { enforceRowRules, formatResult, formatFormula, ensureBlankFive } from './sheet_interface.js'
+import { enforceRowRules, ensureBlankFive } from './sheet_interface.js'
+import { formatResult, formatFormula, Data } from './dim_data.js'
 
 /**
  * Loads the table with specified header and rows data.
@@ -97,7 +98,7 @@ true);
           if (idx < resultTds.length) {
             const raw = JSON.stringify(val);
             resultTds[idx].setAttribute('data-value', raw);
-            resultTds[idx].textContent = formatResult(raw);
+            resultTds[idx].textContent = formatResult(val); 
           }
         });
       }

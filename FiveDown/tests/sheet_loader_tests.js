@@ -1,8 +1,8 @@
 // tests.js
 
 import { loadSample, loadSheet, scanSheet } from '../js/sheet_loader.js';
-import { formatFormula as originalFormatFormula, formatResult as originalFormatResult, 
-  enforceRowRules as originalEnforceRowRules } from '../js/sheet_interface.js';
+import { formatFormula as originalFormatFormula, formatResult as originalFormatResult } from './js/dim_data.js'
+import { enforceRowRules as originalEnforceRowRules } from '../js/sheet_interface.js';
 import { RowCollection } from '../js/row_collection.js';
 import { TableRow } from '../js/table_row.js';
 
@@ -117,7 +117,7 @@ QUnit.module('loadSheet row_collection integration', {
     this.originalEnforceRowRules = originalEnforceRowRules;
 
     window.formatFormula = function(text) { return text; };
-    window.formatResult = function(text) { return text; };
+    window.formatResult = function(text, typ) { return text; };
     window.enforceRowRules = function() {};
 
     this.formatFormulaCalled = 0;
@@ -127,7 +127,7 @@ QUnit.module('loadSheet row_collection integration', {
     };
 
     this.formatResultCalled = 0;
-    window.formatResult = (text) => {
+    window.formatResult = (text, typ) => {
       this.formatResultCalled++;
       return text;
     };

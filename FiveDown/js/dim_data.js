@@ -157,16 +157,20 @@ function formatFormula(formula) {
  * @param {string} typ - the type of value (number, boolean, string, vector, unknown)
  * @returns {string}
  */
-function formatResult(val, typ) {
+function formatResult(val, typ=null) {
   let text = '';
+  if (typ === null) {
+    const DT = new Data(val);
+    typ = DT.type()
+  }
+    
   if (typ === 'number') {
-    if (Math.abs(val) < 0.01 && val !== 0) {
+    if (Math.abs(val) < 0.01 && val !== 0) 
       text = val.toExponential(3);
-    } else {
+    else 
       text = val.toFixed(3);
-    }
   } else if (typ === 'vector') {
-    text = val.map(x => x.toFixed(2)).join(',');
+    text = '['+val.map(x => x.toFixed(2)).join(',')+']';
   } else if (typ === 'boolean') {
     text = val ? 'true' : 'false';
   } else if (typ === 'string') {

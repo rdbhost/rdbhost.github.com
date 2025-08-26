@@ -1,5 +1,6 @@
 // js/sheet_interface.js
 
+import { formatResult, formatFormula } from './dim_data.js'
 import { RowCollection } from './row_collection.js';
 import { TableRow } from './table_row.js';
 
@@ -70,46 +71,6 @@ function isNumberString(str) {
 function isBooleanString(str) {
   str = str.toLowerCase();
   return str === 'true' || str === 'false';
-}
-
-/**
- * Formats formula text by replacing '@' with a dot (·) and '*' with a multiplication symbol (×).
- * @param {string} text - The formula text to format.
- * @returns {string} The formatted formula text.
- */
-function formatFormula(text) {
-  return text.replace(/@/g, '\u00B7').replace(/\*/g, '\u00D7');
-}
-
-/**
- * Formats result text based on its type: numbers to 3 significant digits, vectors with 2 significant digits per element, booleans and text as is.
- * @param {string} text - The result text to format.
- * @returns {string} The formatted result text.
- */
-function formatResult(text) {
-  text = text.trim();
-  if (!text) return '';
-
-  if (isBooleanString(text)) {
-    return text.toLowerCase();
-  }
-
-  if (isNumberString(text)) {
-    const num = parseFloat(text);
-    return num.toPrecision(3);
-  }
-
-  if (text.startsWith('[') && text.endsWith(']')) {
-    try {
-      const arr = JSON.parse(text);
-      if (Array.isArray(arr) && arr.every(n => typeof n === 'number' && !isNaN(n))) {
-        const formatted = arr.map(n => n.toPrecision(2));
-        return '[' + formatted.join(',') + ']';
-      }
-    } catch (e) {}
-  }
-
-  return text;
 }
 
 /**
@@ -232,9 +193,9 @@ function setupTableInterface(table) {
     const td = e.target;
     if (td.contentEditable !== 'true') return;
     const row = td.parentNode;
-    let changed = false;
     const currentText = td.textContent;
     const oldRaw = td.getAttribute('data-value') || '';
+    const newRaw = currentText;
     if (td.classList.contains('name')) {
       let newName = currentText.trim();
       if (newName === '' && oldRaw !== '') {
@@ -242,47 +203,35 @@ function setupTableInterface(table) {
         return;
       }
       if (newName !== oldRaw) {
-        changed = true;
-        if (oldRaw !== '') {
+        if (oldRaw !== '') 
           table.row_collection.removeRow(oldRaw);
-        }
         let finalName = newName;
-        while (table.row_collection.getRow(finalName)) {
+        while (table.row_collection.getRow(finalName)) 
           finalName = '_' + finalName;
-        }
         td.setAttribute('data-value', finalName);
         td.textContent = finalName;
-        if (finalName !== '') {
+        if (finalName !== '') 
           table.row_collection.addRow(finalName, new TableRow(row));
-        }
-        if (oldRaw === '' && newName !== '') {
-          ensureBlankFive(table);
-        }
+        ensureBlankFive(table);
       }
     } else if (td.classList.contains('formula')) {
-      const newRaw = currentText;
       td.setAttribute('data-value', newRaw);
       const formatted = formatFormula(newRaw);
       td.textContent = formatted;
-      if (newRaw !== oldRaw) {
-        changed = true;
-        table.pubsub.publish('recalculation', 'go');
-      }
+      if (newRaw !== oldRaw) 
+         table.pubsub.publish('recalculation', 'go');
     } else if (td.classList.contains('result')) {
-      const newRaw = currentText;
       td.setAttribute('data-value', newRaw);
       const formatted = formatResult(newRaw);
       td.textContent = formatted;
-      if (newRaw !== oldRaw) {
-        changed = true;
+      if (newRaw !== oldRaw) 
         table.pubsub.publish('recalculation', 'go');
-      }
     } else if (td.classList.contains('description')) {
-      if (currentText !== '')
         ensureBlankFive(table);
     } else if (td.classList.contains('unit')) {
-      if (currentText !== '')
-        ensureBlankFive(table);
+      if (newRaw !== oldRaw) 
+        table.pubsub.publish('recalculation', 'go');
+      ensureBlankFive(table);
     }
     enforceRowRules(row);
   });
@@ -297,14 +246,12 @@ function setupTableInterface(table) {
     const nameTd = copyRow.querySelector('.name');
     let name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
     let newName = name;
-    while (table.row_collection.getRow(newName)) {
+    while (table.row_collection.getRow(newName)) 
       newName = '_' + newName;
-    }
     nameTd.setAttribute('data-value', newName);
     nameTd.textContent = newName;
-    if (newName !== '') {
+    if (newName !== '') 
       table.row_collection.addRow(newName, new TableRow(copyRow));
-    }
     enforceRowRules(copyRow);
     ensureBlankFive(table);
   });
@@ -316,9 +263,8 @@ function setupTableInterface(table) {
     const row = td.parentNode;
     const nameTd = row.querySelector('.name');
     const name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
-    if (name !== '') {
+    if (name !== '') 
       table.row_collection.removeRow(name);
-    }
     row.parentNode.removeChild(row);
     table.pubsub.publish('recalculation', 'go');
     ensureBlankFive(table);
@@ -360,9 +306,8 @@ function setupTableInterface(table) {
 
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('table#main-sheet');
-  if (table) {
+  if (table) 
     setupTableInterface(table);
-  }
 });
 
-export { enforceRowRules, setupTableInterface, ensureBlankFive, formatFormula, formatResult };
+export { enforceRowRules, setupTableInterface, ensureBlankFive };
