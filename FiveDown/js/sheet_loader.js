@@ -1,22 +1,24 @@
 // js/sheet_loader.js
 
+import { samples } from './samples.js';
 import { TableRow } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 
 /**
  * Loads the table with specified header and rows data.
- * Adjusts the number of result columns, sets header texts, clears and populates the tbody with rows.
- * Handles null rows as blank, string in row[3] as formula, array in row[3] as results.
+ * Adjusts the number of result columns, sets header texts, clears and
+ * populates the tbody with rows.
+ * Handles null rows as blank, string in row[3] as formula, array in row[3] as
+ * results.
  * @param {HTMLTableElement} table - The table element to load data into.
- * @param {string[]} header - Array of header texts for result columns.
- * @param {(null | [string, string, string, (string | any[])])[]} rows - Array of row data or null for blank rows.
+ * @param {Object} data - The data object with title, header and rows.
  */
-function loadSheet(table, header, rows) {
+function loadSheet(table, data) {
   const tbody = table.tBodies[0];
   const theadRow = table.tHead.rows[0];
   const addTh = theadRow.querySelector('.add-result');
   let resultThs = theadRow.querySelectorAll('.result');
-  const neededColumns = header.length;
+  const neededColumns = data.header.length;
   let currentColumns = resultThs.length;
 
   // Clear existing rows and row_collection
@@ -39,16 +41,18 @@ function loadSheet(table, header, rows) {
     let numResults = resultThsTemp.length;
     let newN = numResults;
 
-    if (numResults === 1 && resultThsTemp[0].querySelector('span').textContent.trim() === 'Result') {
+    if (numResults === 1 && resultThsTemp[0].querySelector('span')
+.textContent.trim() === 'Result')
       resultThsTemp[0].querySelector('span').textContent = 'Result 0';
-    }
 
-    const templateTh = resultThsTemp[0] ? resultThsTemp[0].cloneNode(true) : null;
+    const templateTh = resultThsTemp[0] ? resultThsTemp[0].cloneNode(true) :
+null;
     if (!templateTh) throw new Error('No result column to clone from');
     templateTh.querySelector('span').textContent = 'Result ' + newN;
     theadRow.insertBefore(templateTh, addTh);
 
-    const templateTd = table.blank_row.querySelector('.result').cloneNode(true);
+    const templateTd = table.blank_row.querySelector('.result').cloneNode(
+true);
     templateTd.textContent = '';
     templateTd.setAttribute('data-value', '');
 
@@ -63,11 +67,11 @@ function loadSheet(table, header, rows) {
   // Set header texts
   resultThs.forEach((th, idx) => {
     const span = th.querySelector('span');
-    span.textContent = header[idx] || 'Result ' + idx;
+    span.textContent = data.header[idx] || 'Result ' + idx;
   });
 
   // Populate rows
-  rows.forEach(rowData => {
+  data.rows.forEach(rowData => {
     let newRow = table.blank_row.cloneNode(true);
     if (rowData !== null) {
       const descriptionTd = newRow.querySelector('.description');
@@ -100,9 +104,8 @@ function loadSheet(table, header, rows) {
       // Add to row_collection if name is present
       if (name.trim() !== '') {
         let finalName = name;
-        while (table.row_collection.getRow(finalName)) {
+        while (table.row_collection.getRow(finalName))
           finalName = '_' + finalName;
-        }
         nameTd.setAttribute('data-value', finalName);
         nameTd.textContent = finalName;
         table.row_collection.addRow(finalName, new TableRow(newRow));
@@ -114,21 +117,23 @@ function loadSheet(table, header, rows) {
 }
 
 /**
- * Loads a predefined sample into the table by retrieving from the samples object and calling loadSheet.
+ * Loads a predefined sample into the table by retrieving from the sample-data
+ * or localStorage and calling loadSheet.
  * @param {HTMLTableElement} table - The table element to load the sample into.
- * @param {Object} samples - The dictionary containing samples.
- * @param {string} sampleName - The name of the sample to load.
+ * @param {Object} sampledata - The dictionary containing samples.
+ * @param {string} name - The name of the sample to load.
  */
-function loadSample(table, samples, sampleName) {
-  const sample = samples[sampleName];
+function loadSample(table, sampledata, name) {
+  const sample = sampledata[name] || JSON.parse(localStorage.getItem(name));
   if (!sample) return;
-  loadSheet(table, sample.header, sample.rows);
+  loadSheet(table, sample);
 }
 
 /**
  * Scans the table and converts it into a samples-like structure.
  * @param {HTMLTableElement} table - The table element to scan.
- * @returns {{header: string[], rows: (null | [string, string, string, (string | any[])])[]}} The scanned sheet structure.
+ * @returns {{title: string, header: string[], rows: (null | [string, string,
+ * string, (string | any[])])[]}} The scanned sheet structure.
  */
 function scanSheet(table) {
   const header = [];
@@ -164,11 +169,13 @@ function scanSheet(table) {
       results.push(value);
     });
 
-    const isBlank = !description && !name && !unit && !formula && results.every(r => r === '' || r === null);
-    if (isBlank) {
+    const isBlank = !description && !name && !unit && !formula && results.every(
+r => r === '' || r === null);
+    if (isBlank)
       rows.push(null);
-    } else {
-      const other = formula ? formula : (results.length === 1 ? results[0] : results);
+    else {
+      const other = formula ? formula : (results.length === 1 ? results[0] :
+results);
       rows.push([description || null, name || null, unit || null, other]);
     }
   }
@@ -177,13 +184,17 @@ function scanSheet(table) {
 }
 
 /**
- * Saves the sheet object to localStorage if the name is not already in samples.
+ * Saves the sheet object to localStorage if the name is not already in
+ * samples.
  * @param {string} name - The name to save the sheet under.
  * @param {Object} object - The sheet object to save.
  * @returns {boolean} True if saved, false if name exists in samples.
  */
 function saveSheet(name, object) {
   if (samples[name]) return false;
+  if (!name.match(/^sheet\d+$/)) return false;
+  if (!object.title)
+    object.title = name;
   localStorage.setItem(name, JSON.stringify(object));
   return true;
 }
@@ -196,22 +207,37 @@ function saveSheet(name, object) {
 function retrieveSheet(name) {
   if (samples[name]) return samples[name];
   const stored = localStorage.getItem(name);
-  if (stored) return JSON.parse(stored);
+  if (stored) {
+    const object = JSON.parse(stored);
+    if (!object.title)
+      object.title = name;
+    return object;
+  }
   return null;
 }
 
 /**
- * Retrieves all sheet names from samples and localStorage, consolidated uniquely.
- * @returns {string[]} Array of unique sheet names.
+ * Retrieves all sheet names from samples and localStorage, consolidated
+ * uniquely.
+ * @returns {Object} Dictionary with keys as sheet names and values as titles.
  */
 function allSheetNames() {
-  const sampleKeys = Object.keys(samples);
-  const localKeys = [];
+  const nameDict = {};
+  Object.keys(samples).forEach(key => {
+    const obj = samples[key];
+    nameDict[key] = obj.title || key;
+  });
+
   for (let i = 0; i < localStorage.length; i++) {
-    localKeys.push(localStorage.key(i));
+    const key = localStorage.key(i);
+    if (/^sheet\d+$/.test(key)) {
+      const stored = localStorage.getItem(key);
+      const obj = JSON.parse(stored);
+      nameDict[key] = obj.title || key;
+    }
   }
-  const allKeys = [...new Set([...sampleKeys, ...localKeys])];
-  return allKeys;
+
+  return nameDict;
 }
 
 /**
@@ -219,7 +245,9 @@ function allSheetNames() {
  * @param {string} name - The name of the sheet to remove.
  */
 function removeStoredSheet(name) {
+  if (!name.match(/^sheet\d+$/)) return;
   localStorage.removeItem(name);
 }
 
-export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, removeStoredSheet };
+export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet,
+allSheetNames, removeStoredSheet };
