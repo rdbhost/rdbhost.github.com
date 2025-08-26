@@ -201,7 +201,7 @@ QUnit.test('handles mixed named and unnamed rows', function(assert) {
       ['Desc3', 'name3', 'unit3', 'formula3']
     ]
   };
-  loadSheet(this.table, mixedSample.header, mixedSample.rows);
+  loadSheet(this.table, mixedSample);
 
   assert.equal(this.table.row_collection.rows.size, 2, 'Two named rows added');
   assert.ok(this.table.row_collection.getRow('name1') instanceof TableRow, 'name1 added');
@@ -223,7 +223,7 @@ QUnit.test('blank and null rows not added to collection', function(assert) {
       null
     ]
   };
-  loadSheet(this.table, blankRowsSample.header, blankRowsSample.rows);
+  loadSheet(this.table, blankRowsSample);
 
   assert.equal(this.table.row_collection.rows.size, 0, 'No rows added to collection');
 });
