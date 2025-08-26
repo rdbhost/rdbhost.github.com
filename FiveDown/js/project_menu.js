@@ -50,9 +50,6 @@ function setupProjectMenu() {
     currentSpan.classList.add('active');
   }
 
-  // Ensure current-sheet is saved
-  localStorage.setItem('current-sheet', currentSheet);
-
   // Publish recalc
   pubsub.publish('recalculation', 'go');
 }
@@ -81,6 +78,9 @@ function handleSheetSelectClick(event) {
 
   // Save as current-sheet
   localStorage.setItem('current-sheet', key);
+
+  // Activate the selected span
+  activateSheetSpan(span);
 
   // Publish recalc
   pubsub.publish('recalculation', 'go');
@@ -117,6 +117,10 @@ function handleSheetDeleteClick(event) {
   // Save as current-sheet
   localStorage.setItem('current-sheet', newCurrent);
 
+  // Activate the new current span
+  const newSpan = projectMenu.querySelector(`#${newCurrent.replace(/\s+/g, '_')}`);
+  activateSheetSpan(newSpan);
+
   // Publish recalc
   pubsub.publish('recalculation', 'go');
 }
@@ -131,6 +135,19 @@ function handleVisibilityChange() {
     const currentData = scanSheet(table);
     saveSheet(current, currentData);
   }
+}
+
+/**
+ * Removes 'active' class from all sheet-selecter spans and adds it to the
+ * specified one.
+ * @param {HTMLElement} activeSpan - The span to activate.
+ */
+function activateSheetSpan(activeSpan) {
+  document.querySelectorAll('.sheet-selecter').forEach(span => {
+    span.classList.remove('active');
+  });
+  if (activeSpan)
+    activeSpan.classList.add('active');
 }
 
 /**
@@ -162,10 +179,13 @@ function handleNewSheetClick(event) {
   projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
 
   // Clear sheet (load empty data)
-  loadSheet(table, [], []);
+  loadSheet(table, {header: [null], rows: []});
 
   // Save as current-sheet
   localStorage.setItem('current-sheet', newKey);
+
+  // Activate new span
+  activateSheetSpan(newSpan);
 
   // Publish recalc
   pubsub.publish('recalculation', 'go');

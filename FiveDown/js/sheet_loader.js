@@ -3,7 +3,7 @@
 import { samples } from './samples.js';
 import { TableRow } from './table_row.js';
 import { RowCollection } from './row_collection.js';
-import { enforceRowRules, formatResult, formatFormula } from './sheet_interface.js'
+import { enforceRowRules, formatResult, formatFormula, ensureBlankFive } from './sheet_interface.js'
 
 /**
  * Loads the table with specified header and rows data.
@@ -115,6 +115,7 @@ true);
     tbody.appendChild(newRow);
     enforceRowRules(newRow);
   });
+  ensureBlankFive(table)
 }
 
 /**
