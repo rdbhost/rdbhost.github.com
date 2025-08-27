@@ -185,7 +185,8 @@ const binaryOps = {
     const power = b.val();
     const siResult = Math.pow(siA, power);
     const dims = new Map();
-    for (let [k, v] of aInfo.dims) dims.set(k, v * power);
+    for (let [k, v] of aInfo.dims) 
+      dims.set(k, v * power);
     const newUnit = unitToString(dims);
     return new Data(siResult, newUnit);
   },
@@ -198,7 +199,8 @@ const binaryOps = {
     if (Array.isArray(siA) && Array.isArray(siB) && siA.length === siB.length) {
       const siResult = siA.reduce((sum, val, i) => sum + val * siB[i], 0);
       const dims = new Map(aInfo.dims);
-      for (let [k, v] of bInfo.dims) dims.set(k, (dims.get(k) || 0) + v);
+      for (let [k, v] of bInfo.dims) 
+        dims.set(k, (dims.get(k) || 0) + v);
       const newUnit = unitToString(dims);
       return new Data(siResult, newUnit);
     }
@@ -347,6 +349,12 @@ const functions = {
     else if (typeof siVal === 'string') result = siVal.length;
     else throw new Error('Invalid length');
     return new Data(result, a.unit());
+  },
+  dimension: (a) => {
+    let result;
+    if (Array.isArray(siVal)) result = siVal.length;
+    else throw new Error('only vectors have dimension');
+    return new Data(result, '');
   },
   random: () => new Data(Math.random(), ''),
   fac: (n) => {

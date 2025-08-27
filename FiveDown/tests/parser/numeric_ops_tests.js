@@ -1,5 +1,5 @@
-import { unaryOps, binaryOps, functions } from '../js/numeric_ops.js';
-import { Data } from '../js/dim_data.js';
+import { unaryOps, binaryOps, functions } from '../../js/parser/numeric_ops.js';
+import { Data } from '../../js/dim_data.js';
 
 QUnit.module('numeric_ops', {
   beforeEach: function() {
@@ -95,6 +95,14 @@ QUnit.test('binaryOps /', function(assert) {
   assert.equal(result.unit(), 'm/s', 'Derived unit');
 });
 
+QUnit.test('binaryOps / non-base', function(assert) {
+  const a = this.createData(6, 'cm');
+  const b = this.createData(2, 's');
+  const result = binaryOps['/'](a, b);
+  assert.equal(result.val(), 0.03, 'Scalar division');
+  assert.equal(result.unit(), 'm/s', 'Derived unit');
+});
+
 QUnit.test('binaryOps %', function(assert) {
   const a = this.createData(5, 'm');
   const b = this.createData(3, 'm');
@@ -123,10 +131,10 @@ QUnit.test('binaryOps @ (dot)', function(assert) {
 });
 
 QUnit.test('binaryOps comparisons', function(assert) {
-  const a = this.createData(5, 'm');
-  const b = this.createData(3, 'cm');
+  const a = this.createData(3, 'm');
+  const b = this.createData(5, 'cm');
   const greater = binaryOps['>'](a, b);
-  assert.true(greater.val(), '5m > 3cm');
+  assert.true(greater.val(), '3m > 5cm');
 });
 
 QUnit.test('binaryOps logical', function(assert) {
