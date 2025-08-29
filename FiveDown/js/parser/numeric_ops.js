@@ -1,5 +1,5 @@
 // js/num_partial.js
-import { Data } from '../../js/dim_data.js';
+import { Data } from '../dim_data.js';
 
 function parseDims(unit) {
   unit = unit.replace(/\s/g, '');
@@ -255,26 +255,34 @@ function trigFunction(mathFunc, a) {
   const baseA = a.asBaseUnit();
   const u = baseA.unit();
   if (u !== '' && u !== 'rad') throw new Error(`${mathFunc.name} expects unitless or rad`);
-  const elFunc = elementwise(mathFunc);
-  return new Data(elFunc(baseA.val()));
+  if (baseA.type() !== 'number') throw new Error(`${mathFunc.name} for numbers only`);
+  const resultVal = mathFunc(baseA.val());
+  if (Number.isNaN(resultVal)) throw new Error(`invalid input to ${mathFunc.name}`);
+  return new Data(resultVal);
 }
 
 function invTrigFunction(mathFunc, a) {
   if (a.unit()) throw new Error(`${mathFunc.name} expects unitless argument`);
-  const elFunc = elementwise(mathFunc);
-  return new Data(elFunc(a.val()));
+  if (a.type() !== 'number') throw new Error(`${mathFunc.name} for numbers only`);
+  const resultVal = mathFunc(a.val());
+  if (Number.isNaN(resultVal)) throw new Error(`invalid input to ${mathFunc.name}`);
+  return new Data(resultVal);
 }
 
 function hyperbolicFunction(mathFunc, a) {
   if (a.unit()) throw new Error(`${mathFunc.name} expects unitless argument`);
-  const elFunc = elementwise(mathFunc);
-  return new Data(elFunc(a.val()));
+  if (a.type() !== 'number') throw new Error(`${mathFunc.name} for numbers only`);
+  const resultVal = mathFunc(a.val());
+  if (Number.isNaN(resultVal)) throw new Error(`invalid inputs to ${mathFunc.name}`);
+  return new Data(resultVal);
 }
 
 function logFunction(mathFunc, a) {
   if (a.unit()) throw new Error(`${mathFunc.name} expects unitless argument`);
-  const elFunc = elementwise(mathFunc);
-  return new Data(elFunc(a.val()));
+  if (a.type() !== 'number') throw new Error(`${mathFunc.name} for numbers only`);
+  const resultVal = mathFunc(a.val());
+  if (Number.isNaN(resultVal)) throw new Error(`invalid inputs to ${mathFunc.name}`);
+  return new Data(resultVal);
 }
 
 const functions = {
@@ -287,7 +295,9 @@ const functions = {
   atan2: (y, x) => {
     if (y.unit() || x.unit()) throw new Error('atan2 expects unitless arguments');
     if (y.type() !== 'number' || x.type() !== 'number') throw new Error('atan2 for numbers only');
-    return new Data(Math.atan2(y.val(), x.val()));
+    const resultVal = Math.atan2(y.val(), x.val());
+    if (Number.isNaN(resultVal)) throw new Error('invalid inputs to atan2');
+    return new Data(resultVal);
   },
   sinh: (a) => hyperbolicFunction(Math.sinh, a),
   cosh: (a) => hyperbolicFunction(Math.cosh, a),
@@ -391,6 +401,10 @@ const functions = {
     const val = a.val();
     const resultVal = Math.hypot(...val);
     return new Data(resultVal, a.unit());
+  },
+  length: (a) => {
+    if (a.type() !== 'vector') throw new Error('length for vectors only');
+    return functions.hypot(a)
   },
 };
 
