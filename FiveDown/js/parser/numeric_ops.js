@@ -1,69 +1,52 @@
-// numeric_ops.js
-import { Data, formatFormula, formatResult } from '../dim_data.js';
+// js/num_partial.js
+import { Data } from '../../js/dim_data.js';
 
-function parseUnit(unit) {
-  const map = new Map();
-  if (!unit) return map;
+function parseDims(unit) {
   unit = unit.replace(/\s/g, '');
-  const terms = unit.split('*');
-  terms.forEach(term => {
-    let sign = 1;
-    if (term.startsWith('/')) {
-      sign = -1;
-      term = term.slice(1);
+  const dims = new Map();
+  if (!unit) return dims;
+  const parts = unit.split('/');
+  const processPart = (part, sign) => {
+    if (part.includes('^')) {
+      const [base, expStr] = part.split('^');
+      const exp = parseFloat(expStr) || 1;
+      dims.set(base, (dims.get(base) || 0) + sign * exp);
+    } else {
+      const match = part.match(/^([a-zA-Z]+)(\d*)$/);
+      if (match) {
+        const base = match[1];
+        const exp = match[2] ? parseInt(match[2]) : 1;
+        dims.set(base, (dims.get(base) || 0) + sign * exp);
+      } else {
+        dims.set(part, (dims.get(part) || 0) + sign * 1);
+      }
     }
-    let [base, expStr] = term.split('^');
-    const exp = expStr ? parseFloat(expStr) : 1;
-    const current = map.get(base) || 0;
-    map.set(base, current + sign * exp);
-  });
-  return map;
+  };
+  processPart(parts[0], 1);
+  for (let i = 1; i < parts.length; i++) {
+    processPart(parts[i], -1);
+  }
+  return dims;
 }
 
 function unitToString(dims) {
   if (dims.size === 0) return '';
-  const pos = []
-  const neg = []
+  const pos = [];
+  const neg = [];
   for (let [dim, exp] of [...dims.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
-    if (exp > 0) {
-      pos.push(exp === 1 ? dim : `${dim}^${exp}`)
-    } else if (exp < 0) {
-      neg.push(exp === -1 ? dim : `${dim}^${-exp}`)
-    }
+    if (exp === 0) continue;
+    let term = dim;
+    const absExp = Math.abs(exp);
+    if (absExp !== 1) term += `^${absExp}`;
+    if (exp > 0) pos.push(term);
+    else neg.push(term);
   }
-  let str = pos.join('*');
-  if (neg.length) {
-    str = str ? `${str}/` : '1/';
-    str += neg.join('*');
+  let str = pos.join(' ');
+  if (neg.length > 0) {
+    str = str ? `${str} / ` : '1 / ';
+    str += neg.join(' ');
   }
   return str;
-}
-
-function getUnitInfo(unit) {
-  const baseMap = parseUnit(unit)
-  let factor = 1
-  const dims = new Map()
-  for (let [base, exp] of baseMap) {
-    const conv = new Data(1, base).asBaseUnit()
-    const baseFactor = conv.val()
-    const trueBase = conv.unit()
-    factor *= Math.pow(baseFactor, exp)
-    dims.set(trueBase, (dims.get(trueBase) || 0) + exp)
-  }
-  const normalized = unitToString(dims)
-  return {dims, factor, normalized}
-}
-
-function multiplyVal(val, factor) {
-  if (typeof val === 'number') return val * factor;
-  if (Array.isArray(val)) return val.map(x => x * factor);
-  throw new Error('Invalid value type for multiply');
-}
-
-function divideVal(val, factor) {
-  if (typeof val === 'number') return val / factor;
-  if (Array.isArray(val)) return val.map(x => x / factor);
-  throw new Error('Invalid value type for divide');
 }
 
 function addVal(a, b) {
@@ -79,6 +62,7 @@ function subtractVal(a, b) {
 }
 
 function crossProduct(a, b) {
+  if (a.length !== 3 || b.length !== 3) throw new Error('Cross product requires 3D vectors');
   return [
     a[1] * b[2] - a[2] * b[1],
     a[2] * b[0] - a[0] * b[2],
@@ -86,330 +70,328 @@ function crossProduct(a, b) {
   ];
 }
 
-function mapsEqual(m1, m2) {
-  if (m1.size !== m2.size) return false;
-  for (let [k, v] of m1) if (v !== m2.get(k)) return false;
-  return true;
-}
-
 function elementwise(f) {
   return (val) => {
     if (typeof val === 'number') return f(val);
     if (Array.isArray(val)) return val.map(f);
-    throw new Error(`Invalid type for ${f.name}`);
+    throw new Error(`Invalid type for ${f.name || 'function'}`);
   };
 }
 
 const unaryOps = {
   '-': (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    let siResult;
-    if (typeof siVal === 'number') siResult = -siVal;
-    else if (Array.isArray(siVal)) siResult = siVal.map(x => -x);
-    else throw new Error('Invalid type for unary -');
-    return new Data(divideVal(siResult, info.factor), a.unit());
+    const typ = a.type();
+    if (typ !== 'number' && typ !== 'vector') throw new Error('Invalid type for unary -');
+    const negVal = elementwise(x => -x)(a.val());
+    return new Data(negVal, a.unit());
   },
   '+': (a) => a,
   'not': (a) => {
-    if (a.unit()) throw new Error('not unitless');
+    if (a.unit()) throw new Error('not expects unitless');
     const val = a.val();
     if (typeof val === 'boolean') return new Data(!val);
-    throw new Error('Invalid not');
+    throw new Error('Invalid type for not');
   },
 };
 
 const binaryOps = {
   '+': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in +');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    const siResult = addVal(siA, siB);
-    return new Data(divideVal(siResult, aInfo.factor), a.unit());
+    const aTyp = a.type();
+    const bTyp = b.type();
+    if (aTyp !== bTyp) throw new Error('Type mismatch in +');
+    if (aTyp !== 'number' && aTyp !== 'vector') throw new Error('Invalid type for +');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    const resultVal = addVal(a.val(), bConv.val());
+    return new Data(resultVal, a.unit());
   },
   '-': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in -');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    const siResult = subtractVal(siA, siB);
-    return new Data(divideVal(siResult, aInfo.factor), a.unit());
+    const aTyp = a.type();
+    const bTyp = b.type();
+    if (aTyp !== bTyp) throw new Error('Type mismatch in -');
+    if (aTyp !== 'number' && aTyp !== 'vector') throw new Error('Invalid type for -');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    const resultVal = subtractVal(a.val(), bConv.val());
+    return new Data(resultVal, a.unit());
   },
   '*': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
+    const aBase = a.asBaseUnit();
+    const bBase = b.asBaseUnit();
+    const siA = aBase.val();
+    const siB = bBase.val();
     let siResult;
     if (typeof siA === 'number' && typeof siB === 'number') siResult = siA * siB;
     else if (typeof siA === 'number' && Array.isArray(siB)) siResult = siB.map(x => siA * x);
     else if (Array.isArray(siA) && typeof siB === 'number') siResult = siA.map(x => x * siB);
-    else if (Array.isArray(siA) && Array.isArray(siB)) {
-      siResult = crossProduct(siA, siB);
-    } else throw new Error('Invalid *');
-    const dims = new Map(aInfo.dims);
-    for (let [k, v] of bInfo.dims) dims.set(k, (dims.get(k) || 0) + v);
+    else if (Array.isArray(siA) && Array.isArray(siB) && siA.length === 3 && siB.length === 3) siResult = crossProduct(siA, siB);
+    else throw new Error('Invalid types for *');
+    let dims = parseDims(aBase.unit());
+    const bDims = parseDims(bBase.unit());
+    for (let [k, v] of bDims) dims.set(k, (dims.get(k) || 0) + v);
     const newUnit = unitToString(dims);
     return new Data(siResult, newUnit);
   },
   '/': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
+    const aBase = a.asBaseUnit();
+    const bBase = b.asBaseUnit();
+    const siA = aBase.val();
+    const siB = bBase.val();
     let siResult;
     if (typeof siA === 'number' && typeof siB === 'number') siResult = siA / siB;
     else if (Array.isArray(siA) && typeof siB === 'number') siResult = siA.map(x => x / siB);
-    else throw new Error('Invalid /');
-    const dims = new Map(aInfo.dims);
-    for (let [k, v] of bInfo.dims) dims.set(k, (dims.get(k) || 0) - v);
+    else throw new Error('Invalid types for /');
+    let dims = parseDims(aBase.unit());
+    const bDims = parseDims(bBase.unit());
+    for (let [k, v] of bDims) dims.set(k, (dims.get(k) || 0) - v);
     const newUnit = unitToString(dims);
     return new Data(siResult, newUnit);
   },
   '%': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in %');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    const siResult = siA % siB;
-    return new Data(divideVal(siResult, aInfo.factor), a.unit());
+    const aTyp = a.type();
+    const bTyp = b.type();
+    if (aTyp !== 'number' || bTyp !== 'number') throw new Error('% for numbers only');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    const resultVal = a.val() % bConv.val();
+    return new Data(resultVal, a.unit());
   },
   '^': (a, b) => {
-    if (b.unit()) throw new Error('Exponent unitless');
-    const aInfo = getUnitInfo(a.unit());
-    const siA = multiplyVal(a.val(), aInfo.factor);
+    const aTyp = a.type();
+    if (aTyp !== 'number' || b.type() !== 'number') throw new Error('^ for numbers only');
+    if (b.unit()) throw new Error('Exponent must be unitless');
+    const aBase = a.asBaseUnit();
+    const siA = aBase.val();
     const power = b.val();
     const siResult = Math.pow(siA, power);
-    const dims = new Map();
-    for (let [k, v] of aInfo.dims) 
-      dims.set(k, v * power);
+    let dims = parseDims(aBase.unit());
+    for (let [k, v] of dims) dims.set(k, v * power);
     const newUnit = unitToString(dims);
     return new Data(siResult, newUnit);
   },
   '@': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in @');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    if (Array.isArray(siA) && Array.isArray(siB) && siA.length === siB.length) {
-      const siResult = siA.reduce((sum, val, i) => sum + val * siB[i], 0);
-      const dims = new Map(aInfo.dims);
-      for (let [k, v] of bInfo.dims) 
-        dims.set(k, (dims.get(k) || 0) + v);
-      const newUnit = unitToString(dims);
-      return new Data(siResult, newUnit);
-    }
-    throw new Error('Invalid @');
+    if (a.type() !== 'vector' || b.type() !== 'vector') throw new Error('@ for vectors only');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    const aVal = a.val();
+    const bVal = bConv.val();
+    if (aVal.length !== bVal.length) throw new Error('Vectors must have same length for @');
+    const siResult = aVal.reduce((sum, val, i) => sum + val * bVal[i], 0);
+    return new Data(siResult, a.unit());
   },
   '>': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in >');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    return new Data(siA > siB);
-  },
-  '>=': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in >=');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    return new Data(siA >= siB);
+    if (a.type() !== b.type()) return new Data(false);
+    if (a.type() !== 'number') throw new Error('> for numbers only');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    return new Data(a.val() > bConv.val());
   },
   '<': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in <');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    return new Data(siA < siB);
+    if (a.type() !== b.type()) return new Data(false);
+    if (a.type() !== 'number') throw new Error('< for numbers only');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    return new Data(a.val() < bConv.val());
+  },
+  '>=': (a, b) => {
+    if (a.type() !== b.type()) return new Data(false);
+    if (a.type() !== 'number') throw new Error('>= for numbers only');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    return new Data(a.val() >= bConv.val());
   },
   '<=': (a, b) => {
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) throw new Error('Dimension mismatch in <=');
-    const siA = multiplyVal(a.val(), aInfo.factor);
-    const siB = multiplyVal(b.val(), bInfo.factor);
-    return new Data(siA <= siB);
+    if (a.type() !== b.type()) return new Data(false);
+    if (a.type() !== 'number') throw new Error('<= for numbers only');
+    const bConv = b.asGivenUnit(a.unit())[0];
+    return new Data(a.val() <= bConv.val());
   },
   '==': (a, b) => {
     const aVal = a.val();
     const bVal = b.val();
-    if (typeof aVal !== typeof bVal) return new Data(false);
-    if (typeof aVal === 'string') return new Data(aVal === bVal);
-    const aInfo = getUnitInfo(a.unit());
-    const bInfo = getUnitInfo(b.unit());
-    if (!mapsEqual(aInfo.dims, bInfo.dims)) return new Data(false);
-    const siA = multiplyVal(aVal, aInfo.factor);
-    const siB = multiplyVal(bVal, bInfo.factor);
-    if (Array.isArray(siA) && Array.isArray(siB)) {
-      return new Data(siA.length === siB.length && siA.every((x, i) => x === siB[i]));
+    const aTyp = a.type();
+    const bTyp = b.type();
+    if (aTyp !== bTyp) return new Data(false);
+    if (aTyp === 'string' || aTyp === 'boolean') return new Data(aVal === bVal);
+    try {
+      const bConv = b.asGivenUnit(a.unit())[0];
+      if (aTyp === 'vector') {
+        return new Data(aVal.length === bConv.val().length && aVal.every((x, i) => x === bConv.val()[i]));
+      }
+      return new Data(aVal === bConv.val());
+    } catch (e) {
+      if (e.message.includes('Incompatible units')) return new Data(false);
+      throw e;
     }
-    return new Data(siA === siB);
   },
   '!=': (a, b) => new Data(!binaryOps['=='](a, b).val()),
   'and': (a, b) => {
-    const aVal = a.val();
-    const bVal = b.val();
-    if (typeof aVal === 'boolean' && typeof bVal === 'boolean') return new Data(aVal && bVal);
-    throw new Error('Invalid and');
+    if (a.type() !== 'boolean' || b.type() !== 'boolean') throw new Error('and for booleans only');
+    if (a.unit() || b.unit()) throw new Error('and expects unitless');
+    return new Data(a.val() && b.val());
   },
   'nand': (a, b) => {
-    const aVal = a.val();
-    const bVal = b.val();
-    if (typeof aVal === 'boolean' && typeof bVal === 'boolean') return new Data(!(aVal && bVal));
-    throw new Error('Invalid nand');
+    if (a.type() !== 'boolean' || b.type() !== 'boolean') throw new Error('nand for booleans only');
+    if (a.unit() || b.unit()) throw new Error('nand expects unitless');
+    return new Data(!(a.val() && b.val()));
   },
   'or': (a, b) => {
-    const aVal = a.val();
-    const bVal = b.val();
-    if (typeof aVal === 'boolean' && typeof bVal === 'boolean') return new Data(aVal || bVal);
-    throw new Error('Invalid or');
+    if (a.type() !== 'boolean' || b.type() !== 'boolean') throw new Error('or for booleans only');
+    if (a.unit() || b.unit()) throw new Error('or expects unitless');
+    return new Data(a.val() || b.val());
   },
   'xor': (a, b) => {
-    const aVal = a.val();
-    const bVal = b.val();
-    if (typeof aVal === 'boolean' && typeof bVal === 'boolean') return new Data(aVal !== bVal);
-    throw new Error('Invalid xor');
+    if (a.type() !== 'boolean' || b.type() !== 'boolean') throw new Error('xor for booleans only');
+    if (a.unit() || b.unit()) throw new Error('xor expects unitless');
+    return new Data(a.val() !== b.val());
   },
   'in': (a, b) => {
-    const aVal = a.val();
-    const bVal = b.val();
-    if (typeof aVal === 'number' && Array.isArray(bVal)) return new Data(bVal.includes(aVal));
-    throw new Error('Invalid in');
+    const aTyp = a.type();
+    const bTyp = b.type();
+    if (a.unit() || b.unit()) throw new Error('in expects unitless');
+    if (aTyp === 'number' && bTyp === 'vector') {
+      return new Data(b.val().includes(a.val()));
+    } else if (aTyp === 'string' && bTyp === 'string') {
+      return new Data(b.val().includes(a.val()));
+    }
+    throw new Error('Invalid types for in');
   },
 };
 
+function trigFunction(mathFunc, a) {
+  const baseA = a.asBaseUnit();
+  const u = baseA.unit();
+  if (u !== '' && u !== 'rad') throw new Error(`${mathFunc.name} expects unitless or rad`);
+  const elFunc = elementwise(mathFunc);
+  return new Data(elFunc(baseA.val()));
+}
+
+function invTrigFunction(mathFunc, a) {
+  if (a.unit()) throw new Error(`${mathFunc.name} expects unitless argument`);
+  const elFunc = elementwise(mathFunc);
+  return new Data(elFunc(a.val()));
+}
+
+function hyperbolicFunction(mathFunc, a) {
+  if (a.unit()) throw new Error(`${mathFunc.name} expects unitless argument`);
+  const elFunc = elementwise(mathFunc);
+  return new Data(elFunc(a.val()));
+}
+
+function logFunction(mathFunc, a) {
+  if (a.unit()) throw new Error(`${mathFunc.name} expects unitless argument`);
+  const elFunc = elementwise(mathFunc);
+  return new Data(elFunc(a.val()));
+}
+
 const functions = {
-  sin: (a) => {
-    if (a.unit()) throw new Error('sin expects unitless argument');
-    return new Data(elementwise(Math.sin)(a.val()), '');
+  sin: (a) => trigFunction(Math.sin, a),
+  cos: (a) => trigFunction(Math.cos, a),
+  tan: (a) => trigFunction(Math.tan, a),
+  asin: (a) => invTrigFunction(Math.asin, a),
+  acos: (a) => invTrigFunction(Math.acos, a),
+  atan: (a) => invTrigFunction(Math.atan, a),
+  atan2: (y, x) => {
+    if (y.unit() || x.unit()) throw new Error('atan2 expects unitless arguments');
+    if (y.type() !== 'number' || x.type() !== 'number') throw new Error('atan2 for numbers only');
+    return new Data(Math.atan2(y.val(), x.val()));
   },
-  // Similar for other trig, log, exp functions - unitless input/output
+  sinh: (a) => hyperbolicFunction(Math.sinh, a),
+  cosh: (a) => hyperbolicFunction(Math.cosh, a),
+  tanh: (a) => hyperbolicFunction(Math.tanh, a),
+  asinh: (a) => hyperbolicFunction(Math.asinh, a),
+  acosh: (a) => hyperbolicFunction(Math.acosh, a),
+  atanh: (a) => hyperbolicFunction(Math.atanh, a),
+  log: (a) => logFunction(Math.log10, a),
+  ln: (a) => logFunction(Math.log, a),
+  log2: (a) => logFunction(Math.log2, a),
   sqrt: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.sqrt)(siVal);
-    const newDims = new Map();
-    for (let [k, v] of info.dims) newDims.set(k, v * 0.5);
-    const newUnit = unitToString(newDims);
+    const aBase = a.asBaseUnit();
+    const siVal = aBase.val();
+    const elSqrt = elementwise(Math.sqrt);
+    const siResult = elSqrt(siVal);
+    let dims = parseDims(aBase.unit());
+    for (let [k, v] of dims) dims.set(k, v * 0.5);
+    const newUnit = unitToString(dims);
     return new Data(siResult, newUnit);
   },
   cbrt: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.cbrt)(siVal);
-    const newDims = new Map();
-    for (let [k, v] of info.dims) newDims.set(k, v / 3);
-    const newUnit = unitToString(newDims);
+    const aBase = a.asBaseUnit();
+    const siVal = aBase.val();
+    const elCbrt = elementwise(Math.cbrt);
+    const siResult = elCbrt(siVal);
+    let dims = parseDims(aBase.unit());
+    for (let [k, v] of dims) dims.set(k, v / 3);
+    const newUnit = unitToString(dims);
     return new Data(siResult, newUnit);
   },
-  abs: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.abs)(siVal);
-    return new Data(divideVal(siResult, info.factor), a.unit());
+  sign: (a) => {
+    if (a.unit()) throw new Error('sign expects unitless');
+    const elSign = elementwise(Math.sign);
+    return new Data(elSign(a.val()));
   },
-  ceil: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.ceil)(siVal);
-    return new Data(divideVal(siResult, info.factor), a.unit());
-  },
-  floor: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.floor)(siVal);
-    return new Data(divideVal(siResult, info.factor), a.unit());
-  },
-  round: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.round)(siVal);
-    return new Data(divideVal(siResult, info.factor), a.unit());
-  },
-  trunc: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    const siResult = elementwise(Math.trunc)(siVal);
-    return new Data(divideVal(siResult, info.factor), a.unit());
-  },
-  sign: (a) => new Data(elementwise(Math.sign)(a.val()), ''),
-  length: (a) => {
-    const info = getUnitInfo(a.unit());
-    const siVal = multiplyVal(a.val(), info.factor);
-    let result;
-    if (Array.isArray(siVal)) result = Math.hypot(...siVal);
-    else if (typeof siVal === 'string') result = siVal.length;
-    else throw new Error('Invalid length');
-    return new Data(result, a.unit());
-  },
-  dimension: (a) => {
-    let result;
-    if (Array.isArray(siVal)) result = siVal.length;
-    else throw new Error('only vectors have dimension');
-    return new Data(result, '');
-  },
-  random: () => new Data(Math.random(), ''),
-  fac: (n) => {
-    if (n.unit()) throw new Error('fac unitless');
-    const val = n.val();
-    if (!Number.isInteger(val) || val < 0) throw new Error('Invalid fac');
+  random: () => new Data(Math.random()),
+  fac: (a) => {
+    if (a.unit()) throw new Error('fac expects unitless');
+    const val = a.val();
+    if (typeof val !== 'number' || !Number.isInteger(val) || val < 0) throw new Error('Invalid argument for fac');
     let r = 1;
     for (let i = 2; i <= val; i++) r *= i;
-    return new Data(r, '');
+    return new Data(r);
   },
   min: (...args) => {
-    if (args.length === 0) throw new Error('min requires arguments');
-    const infos = args.map(arg => getUnitInfo(arg.unit()));
-    const firstInfo = infos[0];
-    infos.forEach(info => {
-      if (!mapsEqual(info.dims, firstInfo.dims)) throw new Error('Dimension mismatch in min');
-    });
-    const siVals = args.map((arg, i) => multiplyVal(arg.val(), infos[i].factor));
-    const siResult = Math.min(...siVals);
-    return new Data(siResult / firstInfo.factor, args[0].unit());
+    if (args.length < 2) throw new Error('min requires at least 2 arguments');
+    args.forEach(arg => { if (arg.type() !== 'number') throw new Error('min for numbers only'); });
+    const unit = args[0].unit();
+    const vals = args.map(arg => arg.asGivenUnit(unit)[0].val());
+    const resultVal = Math.min(...vals);
+    return new Data(resultVal, unit);
   },
   max: (...args) => {
-    if (args.length === 0) throw new Error('max requires arguments');
-    const infos = args.map(arg => getUnitInfo(arg.unit()));
-    const firstInfo = infos[0];
-    infos.forEach(info => {
-      if (!mapsEqual(info.dims, firstInfo.dims)) throw new Error('Dimension mismatch in max');
-    });
-    const siVals = args.map((arg, i) => multiplyVal(arg.val(), infos[i].factor));
-    const siResult = Math.max(...siVals);
-    return new Data(siResult / firstInfo.factor, args[0].unit());
+    if (args.length < 2) throw new Error('max requires at least 2 arguments');
+    args.forEach(arg => { if (arg.type() !== 'number') throw new Error('max for numbers only'); });
+    const unit = args[0].unit();
+    const vals = args.map(arg => arg.asGivenUnit(unit)[0].val());
+    const resultVal = Math.max(...vals);
+    return new Data(resultVal, unit);
   },
-  hypot: (...args) => {
-    if (args.length === 0) throw new Error('hypot requires arguments');
-    const infos = args.map(arg => getUnitInfo(arg.unit()));
-    const firstInfo = infos[0];
-    infos.forEach(info => {
-      if (!mapsEqual(info.dims, firstInfo.dims)) throw new Error('Dimension mismatch in hypot');
-    });
-    const siVals = args.map((arg, i) => multiplyVal(arg.val(), infos[i].factor));
-    const siResult = Math.hypot(...siVals);
-    return new Data(siResult / firstInfo.factor, args[0].unit());
-  },
-  atan2: (y, x) => {
-    if (y.unit() || x.unit()) throw new Error('atan2 unitless');
-    return new Data(Math.atan2(y.val(), x.val()), '');
+  abs: (a) => {
+    const typ = a.type();
+    if (typ !== 'number' && typ !== 'vector') throw new Error('abs for numbers and vectors');
+    const absVal = elementwise(Math.abs)(a.val());
+    return new Data(absVal, a.unit());
   },
   roundTo: (num, dec) => {
-    if (dec.unit()) throw new Error('roundTo dec unitless');
-    const nVal = num.val();
-    const dVal = dec.val();
-    const p = Math.pow(10, dVal);
-    return new Data(Math.round(nVal * p) / p, num.unit());
+    if (dec.unit()) throw new Error('roundTo decimal places must be unitless');
+    if (dec.type() !== 'number') throw new Error('roundTo decimal places must be number');
+    const typ = num.type();
+    if (typ !== 'number' && typ !== 'vector') throw new Error('roundTo for numbers and vectors');
+    const d = dec.val();
+    const p = Math.pow(10, d);
+    const elRound = elementwise(v => Math.round(v * p) / p);
+    const resultVal = elRound(num.val());
+    return new Data(resultVal, num.unit());
   },
-  // Add similar for other functions
+  trunc: (a) => {
+    const typ = a.type();
+    if (typ !== 'number' && typ !== 'vector') throw new Error('trunc for numbers and vectors');
+    const elTrunc = elementwise(Math.trunc);
+    const resultVal = elTrunc(a.val());
+    return new Data(resultVal, a.unit());
+  },
+  ceil: (a) => {
+    const typ = a.type();
+    if (typ !== 'number' && typ !== 'vector') throw new Error('ceil for numbers and vectors');
+    const elCeil = elementwise(Math.ceil);
+    const resultVal = elCeil(a.val());
+    return new Data(resultVal, a.unit());
+  },
+  floor: (a) => {
+    const typ = a.type();
+    if (typ !== 'number' && typ !== 'vector') throw new Error('floor for numbers and vectors');
+    const elFloor = elementwise(Math.floor);
+    const resultVal = elFloor(a.val());
+    return new Data(resultVal, a.unit());
+  },
+  hypot: (a) => {
+    if (a.type() !== 'vector') throw new Error('hypot for vectors only');
+    const val = a.val();
+    const resultVal = Math.hypot(...val);
+    return new Data(resultVal, a.unit());
+  },
 };
 
 export { unaryOps, binaryOps, functions };
