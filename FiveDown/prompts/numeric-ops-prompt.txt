@@ -1,0 +1,113 @@
+
+
+generate a file js/num_partial.js that contains three objects (dictionaries)
+
+unaryOps, binaryOps, functions
+
+each of these will have a few methods. each method will take parameters that are Data objects,
+  and will return a Data object.
+the Data class is from the dim_data.js module.
+
+
+the unaryOps object will have these methods:
+
+    -
+    +
+      these apply to numbers and vectors (elementwise)
+    
+    not
+      applies to booleans
+
+    
+
+the binaryOps object will have methods:
+
+   +
+   -
+     addition, subtraction for scalars, elementwise addition, subtraction for vectors
+   *
+     multiplication for scalars, cross-product for vectors.  elementwise multiplication for number * vector or vector * number
+   / 
+     division for scalars.  vector / scalar defined as elementwise division, scalar / vector not defined
+   ^
+     defined for numbers only, not vectors or other types. b must be unitless
+   %
+     remainder for scalars, undefined for other types
+   @
+     vector dot product. undefined for other types
+
+   >
+   <
+   >=
+   <=
+   ==
+   !=
+     defined for all types, but only where a.type == b.type
+
+   and
+   nand
+   or
+   xor
+     defined for booleans only
+
+   in 
+     defined for scalar in vector, or for text in text
+
+
+
+the functions object will have
+
+   sin
+   cos
+   tan
+     for trig operations, a can be radians, degrees, or unitless (interpreted as radians)
+
+   asin
+   acos
+   atan
+   atan2
+     for inverse trig operations, a must be unitless
+
+   sinh
+   cosh
+   tanh
+   asinh
+   acosh
+   atanh
+     hyperbolic functions take unitless numbers, return unitless numbers
+
+   log
+   ln
+   log2
+     for numbers only. argument must be unitless
+
+   sqrt
+   cbrt
+   sign
+   random
+   fac
+     defined for numbers
+
+   min 
+   max
+     defined for numbers, and take 2 or more arguments
+
+   abs 
+   roundTo
+   trunc
+   ceil
+   floor
+    defined for numbers, and elementwise for vectors
+
+  hypot
+    defined for vectors only.  takes one argument, a vector
+
+  
+the methods will be largely independant of each other.  rely on the methods in Data class for conversions.
+
+Each will
+1) check inputs, as far as type compatibility.
+2) convert inputs to base units, using Data asBaseUnits()
+3) do calculation, get result in computed base unit
+
+in derived units, represent powers with ^, and product with ' ' 

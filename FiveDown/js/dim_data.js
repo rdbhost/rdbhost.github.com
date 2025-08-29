@@ -22,7 +22,7 @@ const units = {
     }
   },
   area: {
-    base: 'm2',
+    base: 'm^2',
     conversions: {
       m2: 1,
       cm2: 0.0001,
@@ -35,7 +35,7 @@ const units = {
     }
   },
   volume: {
-    base: 'm3',
+    base: 'm^3',
     conversions: {
       m3: 1,
       cm3: 1e-6,
@@ -92,7 +92,7 @@ const units = {
     }
   },
   acceleration: {
-    base: 'm/s2',
+    base: 'm/s^2',
     conversions: {
       'm/s2': 1,
       g: 9.80665,
@@ -304,14 +304,14 @@ class Data {
    * @throws {Error} If units are incompatible, unspecified, or type not supported.
    */
   asGivenUnit(targetUnit) {
-    if (!this._unit || !targetUnit) {
+    if (this._unit == targetUnit)
+      return [new Data(this._value, this._unit), 1];
+    if (!this._unit || !targetUnit) 
       throw new Error('Units must be specified for conversion');
-    }
     const infoOrig = Data.unitInfo[this._unit];
     const infoTarget = Data.unitInfo[targetUnit];
-    if (!infoOrig || !infoTarget || infoOrig.category !== infoTarget.category) {
+    if (!infoOrig || !infoTarget || infoOrig.category !== infoTarget.category) 
       throw new Error('Incompatible units for conversion');
-    }
     const factor = infoOrig.toBase / infoTarget.toBase;
     let newValue;
     const typ = this.type();
