@@ -1,6 +1,13 @@
 // js/row_collection.js
 
 import { TableRow } from './table_row.js';
+import { Data } from './dim_data.js'
+
+const constants = {
+  'pi': new Data(Math.PI,''),
+  'e': new Data(Math.E, '')
+}
+
 
 /**
  * A collection of TableRow instances, keyed by their names.
@@ -69,6 +76,8 @@ class RowCollection {
   getColumnProxy(idx) {
     return new Proxy({}, {
       get: (target, prop) => {
+        if (prop in constants)
+          return constants[prop];
         const row = this.getRow(prop);
         if (row) {
           return row.result(idx);
