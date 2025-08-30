@@ -41,7 +41,8 @@ Each <td> will have a class with the above value "handle", "description" etc
         if unit column is empty, set it from new_value
         if unit column is set but not a match for new_value unit:
            convert new_value to unit in column and add class="converted" to result column
-           add a data attribute data-convert-factor=cf  where cf is conversion factor
+           also add a class="converted" to unit column
+           to formula column add a data attribute data-convert-factor=cf  where cf is conversion factor from toGivenUnit
 
       On setting result:
         in addition to setting td text, add a data attribute 'data-value' to the td containing the same value.  The data attribute 

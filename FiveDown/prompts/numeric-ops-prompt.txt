@@ -83,6 +83,7 @@ the functions object will have
 
    sqrt
    cbrt
+   abs
    sign
    random
    fac
