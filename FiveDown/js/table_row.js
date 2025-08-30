@@ -179,24 +179,26 @@ class TableRow {
         if (typ === 'unknown')
           throw new Error('Invalid value type: must be number, boolean, vector of numbers, or text');
         unitTd.setAttribute('data-computed-unit', new_value.unit());
+        let targetUnit;
+        if (unitTd.hasAttribute('data-value')) {
+          targetUnit = unitTd.getAttribute('data-value');
+          unitTd.textContent = targetUnit;
+          unitTd.classList.remove('unit-empty');
+        } else {
+          targetUnit = new_value.unit();
+          // unitTd.textContent = targetUnit;
+          unitTd.classList.add('unit-empty');
+        }
         let toSet = new_value;
-        let currentUnit = this.unit();
-        if (currentUnit !== '' && currentUnit !== new_value.unit() && new_value.unit() !== '') {
-          let [converted, factor] = new_value.asGivenUnit(currentUnit);
-          factor = (Math.abs(factor) > 0.001 && Math.abs(factor) < 10000 ) ? factor.toFixed(3) : factor.toExponential(2)
+        if (targetUnit !== new_value.unit() && targetUnit !== '' && new_value.unit() !== '') {
+          const [converted] = new_value.asGivenUnit(targetUnit);
           toSet = converted;
         }
-        // Set display text and data-value
         const val = toSet.val();
-
         const text = formatResult(val, typ)
-
         td.textContent = text;
         td.setAttribute('data-value', JSON.stringify(val));
       }
-      unitTd.classList.remove('unit-empty');
-      if (unitTd.textContent.trim() === '')
-        unitTd.classList.add('unit-empty');
       return prior;
     }
   }

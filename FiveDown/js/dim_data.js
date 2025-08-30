@@ -24,10 +24,10 @@ const units = {
   area: {
     base: 'm^2',
     conversions: {
-      m2: 1,
-      cm2: 0.0001,
-      mm2: 1e-6,
-      km2: 1e6,
+      'm^2': 1,
+      'cm^2': 0.0001,
+      'mm^2': 1e-6,
+      'km^2': 1e6,
       sqft: 0.092903,
       sqyd: 0.836127,
       sqmi: 2.58999e6,
@@ -37,9 +37,9 @@ const units = {
   volume: {
     base: 'm^3',
     conversions: {
-      m3: 1,
-      cm3: 1e-6,
-      mm3: 1e-9,
+      'm^3': 1,
+      'cm^3': 1e-6,
+      'mm^3': 1e-9,
       L: 0.001,
       mL: 1e-6,
       gal: 0.00378541,
@@ -94,9 +94,9 @@ const units = {
   acceleration: {
     base: 'm/s^2',
     conversions: {
-      'm/s2': 1,
+      'm/s^2': 1,
       g: 9.80665,
-      'ft/s2': 0.3048,
+      'ft/s^2': 0.3048,
     }
   },
   resistance: {

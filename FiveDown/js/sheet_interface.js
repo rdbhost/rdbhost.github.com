@@ -183,7 +183,8 @@ function setupTableInterface(table) {
     const td = e.target;
     if (td.contentEditable !== 'true') return;
     const raw = td.getAttribute('data-value');
-    if (raw !== null && (td.classList.contains('formula') || td.classList.contains('result'))) {
+    if (raw !== null && (td.classList.contains('formula') || td.classList.contains('result') 
+                          || td.classList.contains('unit'))) {
       td.textContent = raw;
     }
   });
@@ -229,7 +230,10 @@ function setupTableInterface(table) {
     } else if (td.classList.contains('description')) {
         ensureBlankFive(table);
     } else if (td.classList.contains('unit')) {
-      td.setAttribute('data-value', newRaw);
+      if (newRaw !== '')
+        td.setAttribute('data-value', newRaw);
+      else
+        td.removeAttribute('data-value')
       if (newRaw !== oldRaw) 
         table.pubsub.publish('recalculation', 'go');
       ensureBlankFive(table);

@@ -85,6 +85,8 @@ true);
       descriptionTd.textContent = rowData[0] || '';
       let name = rowData[1] || '';
       unitTd.textContent = rowData[2] || '';
+      if (rowData[2] && rowData[2].trim() !== '')
+        unitTd.setAttribute('data-value', rowData[2].trim())
 
       const other = rowData[3];
       if (typeof other === 'string') {
@@ -152,7 +154,7 @@ function scanSheet(table) {
     const tr = tbodyRows[i];
     const description = tr.querySelector('.description').textContent.trim();
     const name = tr.querySelector('.name').textContent.trim();
-    const unit = tr.querySelector('.unit').textContent.trim();
+    const unit = tr.querySelector('.unit').getAttribute('data-value');
     const formulaTd = tr.querySelector('.formula');
     const formulaData = formulaTd.getAttribute('data-value');
     const formulaText = formulaTd.textContent.trim();

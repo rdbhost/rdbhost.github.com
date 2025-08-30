@@ -247,14 +247,7 @@
 	color: yellowgreen;
   }
 
-  td.converted {
-	text-decoration: underline blue;
-    text-underline-offset: 2px;
-  }
-
-  td.formula.converted::after {
-	 content: " ✕" attr(data-convert-factor) "";
-	 padding-left: 0.2em;
-	 color: grey;
-	 font-size: x-small;
+  td.unit.unit-empty::after {
+	 content: attr(data-computed-unit);
+	 color: blue;
   }
