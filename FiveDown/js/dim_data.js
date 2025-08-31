@@ -158,6 +158,35 @@ function formatFormula(formula) {
  * @returns {string}
  */
 function formatResult(val, typ=null) {
+
+  function fmtNum(val) {
+    if (val == 0)
+      return '0.0'
+    const lg = Math.log10(Math.abs(val))
+    if (lg < 2)
+      return val.toFixed(3);
+    if (lg < 3)
+      return val.toFixed(2);
+    if (lg < 5)
+      return val.toFixed(1);
+    if (lg > 6)
+      return val.toExponential(3);
+    return val.toFixed(0)
+  }
+  function fmtNumV(val) {
+    if (val == 0)
+      return '0.0'
+    const lg = Math.log10(Math.abs(val))
+    if (lg < 2)
+      return val.toFixed(2);
+    if (lg < 3)
+      return val.toFixed(1);
+    if (lg > 6)
+      return val.toExponential(2);
+    return val.toFixed(0)
+  }
+
+
   let text = '';
   if (typ === null) {
     const DT = new Data(val);
@@ -165,12 +194,9 @@ function formatResult(val, typ=null) {
   }
     
   if (typ === 'number') {
-    if (Math.abs(val) < 0.01 && val !== 0) 
-      text = val.toExponential(3);
-    else 
-      text = val.toFixed(3);
+    text = fmtNum(val)
   } else if (typ === 'vector') {
-    text = '['+val.map(x => x.toFixed(2)).join(',')+']';
+    text = '['+val.map(x => fmtNumV(x)).join(',')+']';
   } else if (typ === 'boolean') {
     text = val ? 'true' : 'false';
   } else if (typ === 'string') {

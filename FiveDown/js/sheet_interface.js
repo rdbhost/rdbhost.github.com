@@ -1,7 +1,7 @@
 // js/sheet_interface.js
 
 import { formatResult, formatFormula } from './dim_data.js'
-import { RowCollection } from './row_collection.js';
+import { RowCollection, constants } from './row_collection.js';
 import { TableRow } from './table_row.js';
 
 /**
@@ -207,7 +207,7 @@ function setupTableInterface(table) {
         if (oldRaw !== '') 
           table.row_collection.removeRow(oldRaw);
         let finalName = newName;
-        while (table.row_collection.getRow(finalName)) 
+        while (table.row_collection.getRow(finalName) || finalName in constants) 
           finalName = '_' + finalName;
         td.setAttribute('data-value', finalName);
         td.textContent = finalName;
