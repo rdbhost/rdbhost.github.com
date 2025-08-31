@@ -1,7 +1,34 @@
 
 import { Parser, Expression } from "./expr-eval/dist/index.js"
 import { unaryOps, binaryOps, ternaryOps, functions } from './numeric_operators.js' 
-import { ObjectMapWrap, ValScope } from './scopes.js'
+
+
+// ObjectMapWrap - wraps a Map object (including ValScope and UnitScope objects)
+//  to make members of the Map object accessible as simple object attributes
+//  work with ValScope and UnitScope objects
+//
+//  use like: do_something_with_object(ObjectMapWrap(new ValScope(...)))
+//
+function ObjectMapWrap(map) {
+
+  const handler = {
+          get(target, prop, receiver) {
+            let $t = target.get(prop)
+            return $t ? $t.data('value') : undefined
+          },
+
+          set(target, prop, value) {
+              throw new Error('evaluater shouldnt be setting values in ValScope')
+          },
+
+          has(target, prop) {
+              return target.has(p)
+          }
+  }
+
+  return new Proxy(map, handler)
+}
+
 
 // Signal values for identifying types of errors
 //
@@ -151,10 +178,10 @@ class MyMath {
       let r = []
       for (let i=0; i<d.length; i++) {
 
-        r.push(Number(d[i]).toPrecision(2))
+        r.push(Number(d[i]).toPrecision(3))
       }
-      return '[' + r.join(',') + ']'
 
+      return '[' + r.join(',') + ']'
     } 
     else if (d === false || d === true) {
 
@@ -164,9 +191,17 @@ class MyMath {
 
       return ""
     } 
-    else {
+    else if (isFinite(d)) {
 
       return Number(d).toPrecision(5);
+    } 
+    else if (d?.length > 25) {
+
+      return d.substring(0,25)
+    }
+    else {
+
+      return d
     }
   }
 
@@ -175,6 +210,82 @@ class MyMath {
     return formula.replaceAll('@', '•').replaceAll('*', '×');
   }
 
-  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter,
+
+  // sets value into $(td) object stored.
+  //
+  function write_result_cell($td, val) {
+
+    let prev = $td.data('value')
+    let convert = false, value = false;
+    
+    // if value is converted, set convert flag
+    if (typeof val === 'object' && val?.convert) {
+      value = val.value
+      convert = true
+    }
+    else {
+      value = val
+      convert = false
+    }
+
+    // save value as data[value] and data[prev-val]
+    $td.data('value', value).data('prev-val', prev)
+
+    // if value is converted, save value 
+    if (convert) {
+
+      $td.text(result_formatter(value))
+      $td.addClass('convert').removeClass('error').attr('title', value)
+    }
+    // if value is an Error object, apply error style, and use error message
+    else if (typeof value == 'object' && value.name === 'Error') {
+
+      if (value.cause === BadInput)
+        $td.text(`${value.message}`)
+      else if ([BadFormula, EvaluationError].indexOf(value.cause) > -1)
+        $td.html(`<div>${value.message}</div>`)
+      $td.addClass('error').removeAttr('title').removeClass('convert')
+    }
+    else if (value === undefined) {
+
+      $td.removeClass('error output').removeAttr('title').removeClass('convert')
+      $td.text("")
+    } 
+    else if (Number.isNaN(value)) {
+
+      $td.removeClass('error output').removeAttr('title').removeClass('convert')
+      $td.text(value)
+    }
+    else if (Number.isFinite(value)) {
+
+      $td.text(result_formatter(value))
+      $td.attr('title', value)
+      $td.removeClass('error').attr('title', value).removeClass('convert')
+    }
+    else {
+
+      //if ((""+value).length > 25)
+      //  value = (""+value).substring(25)
+      $td.text(result_formatter(value))
+
+      $td.removeClass('error').attr('title', value).removeClass('convert')
+      if (value === false && $td.hasClass("output"))
+        $td.addClass('fail')
+    }
+    
+    return this
+  }
+    
+
+  // sets value into formula cell
+  //
+  function write_formula_cell($td, form) {
+
+    $td.data('value', form).data('prev-val', form)
+    $td.text(formula_formatter(form))
+  }
+
+  export { MyMath, name_valid, clean_name, data_valid, result_formatter, formula_formatter, 
+           write_result_cell, write_formula_cell, 
            BadFormula, BadInput, EvaluationError }
 

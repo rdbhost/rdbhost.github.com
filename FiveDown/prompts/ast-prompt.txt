@@ -1,0 +1,56 @@
+
+Provide three Javascript modules.
+
+The first will parse a text formula into an AST.  Call this one ./js/parser/formula_parser.js
+The second will evaluate the AST with a dictionary of values.  Call this one ./js/parser/formula_evaluator.js
+The third will provide functions and operators for dimensioned data.  Call this one ./js/parser/numeric_ops.js
+
+
+Both will handle data types:
+  1) numbers, in fixed and floating point
+  2) booleans
+  3) vectors of numbers (2-tuples or 3-tuples), expressed in square brackets, like [1,3.4,2e5]
+  4) text, in limited scope  
+
+The data will be handled as Data items from dim_data.js .  Data provided to the operators and other functions
+will be Data instances, and return values should be Data items as well.  The operators will do unit
+math on the Data items and provide a derived unit with the return value.
+
+They will handle arithmetic operators, including +-*/ % ^, and the ternary operator a ? b : c
+Also comparators like >, >=, != and logical operators like and, nand, or, xor
+
+a in b returns whether scalar a is in vector b
+
+They will handle vector math operations, including dot and cross products, and scaler multiplication.
+
+Use a @ b to represent dot product, and a * b to represent cross product of vectors.
+
+So, the symbol * is defined for scalars and vectors:
+  scalar * scalar => multiplication
+  scalar * vector => scalar multiplication (elementwise multiplication)
+  vector * scalar => scalar multiplication
+  vector * vector => vector cross product
+
+The symbol / is partially defined for scalars and vectors:
+  scalar / scalar => division
+  vector / scalar => scalar multiplication by inverse ( vector * 1/scalar )
+  scalar / vector => not defined
+  vector / vector => not defined
+
+Implement these unary operations: sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, acosh, asinh, atanh,
+        sqrt, cbrt, log, log2, ln, log10, expm1, log1p, abs, ceil, floor, round, trunc, exp, not, length, sign
+
+Implement these functions: random, fac, min, max, hypot, atan2, roundTo
+
+Put operator implementations in a file 'numeric_ops.js'
+
+Text values can be compared and used in ternary ops
+
+derived units should be created using unit math
+
+for example, in addition the units should match, or one should be convertible to the other. 
+For multiplication, the derived unit is a combination of the input units, with simplifications 
+such as squaring
+
+
+

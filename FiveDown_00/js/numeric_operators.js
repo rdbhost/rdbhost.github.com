@@ -13,11 +13,14 @@ function getType(a) {
     if (t.length === a.length)
       return 'vector'
 
-    throw new Error(`bad data type [${typeof a}]`)
+    throw new Error(`bad vector [${a}]`)
   }
 
-  if (a+0 === a)
+  if (isFinite(a))
     return 'number'
+
+  if (typeof a == 'object' && a.name == 'Error')
+    return 'error'
 
   return 'text'
   // throw new Error(`bad input ${a}`)
@@ -32,7 +35,7 @@ function validateTypes(types, okTypes, warn) {
   types.forEach(function(t) {
     if (okTypes.indexOf(t) === -1) {
       if (!warn) 
-        warn = `data provided with ineligible type [${t}]`
+        warn = `ineligible data type [${t}]`
       throw new Error(warn)
     }
   })

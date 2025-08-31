@@ -1,0 +1,13 @@
+
+  create a new module, in file:  js/drag_drop.js
+
+  refer to index.html
+
+
+  rows are draggable, with td.handle being the drag handle.  Use delegation, so drag functionality applies to rows
+    added dynamically.
+
+  there can be multiple results columns.  they are draggable, where the <th> cell is the drag handle.  they can only
+    be dragged between the formula and add-result columns, so they stay grouped together.  Assume that when result
+    columns are added, they have the draggable attribute and the 'result' class.
+

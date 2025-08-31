@@ -1,0 +1,119 @@
+
+This module to be called js/sheet_interface.js
+
+refer to pubsub.js, index.html, and row_collection.js
+
+Create handlers for each column.  Use delegation, so that handlers are active on every row, even when new rows have been 
+  dynamically added.  Generally, prefer delegation to thead or tbody rather than table.
+
+general rules that should be applied after each relevant change are
+  1) if formula is not blank, results columns must be noneditable.  null and undefined count as blank.
+  2) if any result column is editable (tabindex > -1 or absent) and non-blank, formula must be blank and not editable
+  3) whenever contentEditable is not 'true', tabindex should be -1, and all focus related handlers should return immediately
+  4) noneditable formula column should have class 'readonly'.  noneditable result columns should have classes 'readonly' and 'output'
+
+  be thorough in enforcing rules, setting contenteditable, tabindex, and classes on each (formula and result) column explicitly.
+
+handle 
+
+  double-click handler
+   duplicate the tr, placing the copy immediately after the original
+   handler is on the handle cell only
+
+   add the second row to table.row_collection, using name value as the key.  If there is key duplicate, modify name 
+     by prefixing '_' as many times as needed.
+
+
+description - nothing 
+
+name
+
+  on-exit handler
+    compare content to data-value attribute
+      if changed, and old value not blank, remove old value from row_collection, and add row with new name
+      new name cannot be blank, unless old value was blank also
+      store new name in data-value
+
+
+formula 
+
+  on-enter handler
+    checks for value in data-value attribute on td cell
+    if so, substitutes that value into td text, losing existing td text
+
+  on-exit handler
+    copies td text data, (even if blank) to data-value attribute on td cell
+    replaces td text with a formatted version of data
+
+    formatting replaces '@' with a unicode dot (&dot;) and replaces * with 'x' symbol.
+
+    if formula text changed from data-value, then trigger a recalc by sending a 'go' message on topic 'recalculation' in pubsub
+
+    if formula column has text, then all result columns should have added class="readonly output" and contenteditable=false
+
+
+results
+
+  the button on the results th will cause the column to be deleted.
+  when a result column is deleted, the saved blank row should be changed to match.
+
+  doubleclick handler on column header 'th'
+    makes header editable with contenteditable=true
+    installs a one-shot focusout handler that removes contenteditable
+
+  on-enter handler
+    checks for value in data-value attribute on td cell
+    if found, substitutes that value into td text, losing existing td text
+
+  on-exit handler
+    copies td text data, (even if blank) to data-value attribute on td cell
+    replaces td text with a formatted version of data, formatted similarly to table_row_handler
+
+    if result text changed from data-value, then
+      1) trigger a recalc by sending 'go' message on topic 'recalculation' in pubsub
+      2) ensure formula td is blank and contenteditable=false
+      3) ensure all result fields are contenteditable=true, adding class="input"
+
+
+add-result
+
+  on column header, <th> put a click handler on the one button.
+  the click handler adds a column to the table, to the right of the existing result cells, and to the left of the add-result
+    column.  it has same classes as existing result columns.
+  the text in the new th will have the form 'Result n' where n is the index of the new result column.  
+  the first result column header will have the text Result 0 only when its text is 'Result' and a second result column is added.
+
+  when a result column is added, the saved blank row should be changed to match. correcting the saved blank row should not rely on
+    a blank row being available in the table.
+
+
+unit
+
+  on-enter handler
+    nothing for now
+
+
+delete
+
+  on this td, add a click handler that deletes the row html and the row_collection entry for the row.
+  the row deletion is done through a RowCollection object on the table, table.row_collection
+  trigger a recalc by sending 'go' message on topic 'recalculation' in pubsub.
+
+
+table.row_collection will be created as empty.  all the interfaces will be created in a function 'setupTableInterface(table)'
+that is called from an onDOMLoad handler.  enforceRowRules and setupTableInterface will be exported.
+
+On DOMLoad, perform the following:
+
+1) find a blank row and save it as an attribute on table, called 'blank_row'
+     a blank row is one where the cell text is "" for the columns 'description', 'name', 'formula', 'unit' and all 'result' columns.
+2) delete all rows
+3) run ensureBlankFive
+
+do not add existing table rows to table.row_collection.
+do not add text to any buttons, nor add any buttons
+
+The function ensure_blank_five will look at the last rows in the table, and ensure that exactly the last five rows are blank. Remove 
+extra blank lines, and insert blanks as necessary.  The blanks can be copied from the 'blank_row' attribute.
+
+Assume that a blank row is available, and throw exceptions if not, or if blank row data attribute is not available.

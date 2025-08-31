@@ -3,103 +3,109 @@
     <link rel="stylesheet" href="src/normalize.css">
     <link rel="stylesheet" href="src/styles.css">
 
-    <script type="module" src="js/pubsub.js"></script>
-    <script type="module" src="js/row_collection.js"></script>
-    <script type="module" src="js/drag_drop.js"></script>
-    <script type="module" src="js/sheet_interface.js"></script>
-    <script type="module" src="js/project_menu.js"></script>
-    <script type="module" src="js/evaluator.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.js"></script>
+    <!-- script src="js/jexpr.js" type="module"></script -->
+    <script src="js/functions.js" type="module"></script>
+    <script src="js/math-tools.js" type="module"></script>
+    <!-- script src="js/unit-ops.js" type="module"></script>
+    <script src="js/unit-math.js" type="module"></script -->
+    <script src="js/scopes.js" type="module"></script>
+    <script src="js/datamanager.js" type="module"></script>
+    <script src="js/samples.js" type="module"></script>
+    <script src="js/persistance.js" type="module"></script>
+    <script src="js/menu.js" type="module"></script>
+    <script src="js/sheet.js" type="module"></script> 
+    <script src="js/main.js" type="module"></script>
 </head>
 <body>
     <div class="outer-box">
         <div class="project-menu">
             <span id="sheet_00" class="sheet-selecter active">
                 <span>Sheet 00</span>
-                <button class="sheet-delete"></button></span>
+                <button class="sheet-delete">x</button></span>
             <span id="new-sheet">[new sheet]</span>
         </div>
-        <table id="main-sheet">
+        <table>
             <thead>
                 <th class="handle"></th>
                 <th class="description">Description</th>
                 <th class="name">Name</th>
                 <th class="formula">Formula</th>
-                <th class="result" draggable="true">
-                    <span>Result</span><button class="close-res"></button>
-                </th>
-                <th class="add-result"><button></button></th>
-                <th class="unit" contenteditable="true">Unit</th>
+                <th class="result"><span>Result</span><button class="close-res"></button></th>
+                <th class="alt-add readonly"><button></button></th>
+                <th class="unit">Unit</th>
                 <th class="delete"></th>
             </thead>
             <tbody>
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true"></td>
                     <td class="name" contenteditable="true"></td>
                     <td class="formula" tabindex="0"></td>
                     <td class="result" tabindex="0"></td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true"></td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit"></td>
                     <td class="delete"></td>
                 </tr>    
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true">height</td>
                     <td class="name" contenteditable="true">h</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">3.0</td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true">cm</td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit">cm</td>
                     <td class="delete"></td>
                 </tr>    
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true">radius</td>
                     <td class="name" contenteditable="true">rad</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">2.5</td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true">cm</td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit">cm</td>
                     <td class="delete"></td>
                 </tr>    
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true">volume of cylinder</td>
                     <td class="name" contenteditable="true">vol</td>
                     <td class="formula" tabindex="0" contenteditable="true">h*3.14*rad*rad</td>
                     <td class="result" tabindex="-1"></td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true">cm</td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit">cm</td>
                     <td class="delete"></td>
                 </tr>    
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true"></td>
                     <td class="name" contenteditable="true"></td>
                     <td class="formula" tabindex="0"></td>
                     <td class="result" tabindex="0"></td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true"></td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit"></td>
                     <td class="delete"></td>
                 </tr>    
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true">x unit</td>
                     <td class="name" contenteditable="true">x</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">[1,0,0]</td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true">cm</td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit">cm</td>
                     <td class="delete"></td>
                 </tr>    
                 <tr>
-                    <td class="handle" draggable="true"></td>
+                    <td class="handle"></td>
                     <td class="description" contenteditable="true">y unit</td>
                     <td class="name" contenteditable="true">y</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">[0,1,0]</td>
-                    <td class="add-result"></td>
-                    <td class="unit" contenteditable="true">cm</td>
+                    <td class="alt-add readonly"></td>
+                    <td class="unit">cm</td>
                     <td class="delete"></td>
                 </tr>    
             </tbody>

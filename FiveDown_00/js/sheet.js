@@ -1,5 +1,5 @@
 import { DataManager } from './datamanager.js'
-import { name_valid, clean_name, formula_formatter, result_formatter } from './math-tools.js'
+import { name_valid, clean_name, formula_formatter, result_formatter, write_result_cell, write_formula_cell } from './math-tools.js'
 import { get_storable, replace_table_from_json } from './persistance.js';
 //import { format_unit } from './unit-math.js';
 
@@ -7,6 +7,40 @@ const MAX_ALTS = 8
 var draggable_rows = 0,
     draggable_columns = 0
     
+
+/*  
+    --- table
+    data = {
+        DM:  DataManager object for chosen sheet
+        blank_row: $(tr) as template for new rows
+    }
+
+    --- result cell
+    data = {
+        value: value
+        prev-val: previous value
+        alt: column number
+    }
+
+    --- result header
+    data = {
+        alt: column number
+        custom_name: user chosen name for column (optional)
+    }
+
+    --- name cell
+    data = { prev-val: previous value }
+
+    --- formula cell
+    data = { prev-val: previous value }
+
+    -- unit cell
+    data = { prev-val: previous value }
+
+
+*/
+
+
 // set_contenteditable_cols -- function to examine a row, and set 
 //   style and editability of formula, result, and unit cells
 //   based on content of row.
@@ -48,7 +82,7 @@ function set_contenteditable_cols($row) {
     }
 }
 
-// minimize_table_results - removes all results columns beyond first, from header
+// minimize_table - removes all results columns beyond first, from header
 //  and blank_row.  also removes all rows (other than saved blank)
 //
 function minimize_table($table) {
@@ -99,11 +133,7 @@ function add_row_to_sheet($table, $after, descr, name, formula, results, unit) {
     if (name) {
 
         let DM = $table.data('DM')
-        DM.add_row(name, $new.find('td.result'), $new.find('td.unit'))
-        if (formula) {
-
-            DM.change_formula(name, $new.find('.formula'))
-        }
+        DM.add_row(name, $new)
 
         set_contenteditable_cols($new)
     }
@@ -419,8 +449,8 @@ function load_sheet($table, sheet_name) {
     minimize_table($table)
     replace_table_from_json($table, saved)
  
-    ensure_five_blank($table)
-    table_normalize($table)
+    table_normalize_display($table)
+    update_alts($table)
  
     $table.trigger("table:global-recalc")
 }
@@ -445,11 +475,11 @@ function initialize($table) {
     minimize_table($table)
 }
  
-
+ 
 // processes all html table rows, saving to data(), saving data to 
 //   DataManager and formatting as necessary
 //
-function table_normalize($table) {
+function table_normalize_display($table) {
 
     const DM = new DataManager();
     $table.data('DM', DM)
@@ -464,28 +494,18 @@ function table_normalize($table) {
         set_contenteditable_cols($row);
 
         // for name cell, set data[prev-val]
-        let name = $row.find('.name').text()
-        $row.find('.name').data('prev-val', name);
-
-        // for result cell, set alt val in data
-        $row.find('.result').first().data('alt', 0)
+        let $name_cell = $row.find('.name')
+        let name = $name_cell.text()
+        $name_cell.data('prev-val', name)
 
         let $form_cell = $row.find('.formula')
-        $form_cell.data('value', $form_cell.text())
-        $form_cell.text(formula_formatter($form_cell.text()))
+        let formula = $form_cell.data('value') || ''
+        write_formula_cell($form_cell, formula)
+
+        if (name) {
+            DM.add_row(name, $row)
+        }
     })
-
-    update_alts($table)
-
-    // push values from initial sheet into VALUES[0] MapScope
-    $headers.each(function(i, th) {
-
-        let altnum = $(th).data('alt');
-        DM.populate_values_for_alt(altnum);
-    });
-
-    // push formulas from initial sheet into FORMULAS Map, and recalc
-    DM.populate_formulas_and_units();
 
     ensure_five_blank($table)
     apply_draggable_rows($table)
@@ -516,7 +536,7 @@ function tbody_handlers($table) {
         if (name) {
 
             let DM = $table.data('DM')
-            while (DM.VALUES[0].has(name)) 
+            while (DM.ROWS.has(name)) 
                 name = name+'_';
             add_row_to_sheet($table, $tr, descr, name, formula, res, unit)
             
@@ -573,6 +593,8 @@ function tbody_handlers($table) {
         let $tr = $td.closest('tr')
         let name = $td.text()
 
+        let DM = $table.data('DM')
+
         if (!name_valid(name)) {
             name = clean_name(name)
             $td.text(name)
@@ -590,8 +612,7 @@ function tbody_handlers($table) {
                 
             } else {
             
-                let DM = $table.data('DM')
-                while (DM.VALUES[0].has(name)) {
+                while (DM.ROWS.has(name)) {
                     name = name+'_';
                 }
             }
@@ -599,17 +620,18 @@ function tbody_handlers($table) {
             // if prev-val is defined, send a row:rename signal
             if ($td.data('prev-val') !== "" && $td.data('prev-val') !== undefined) {
 
-                $('table').trigger("row:rename", [$td.data("prev-val"), name]);
+                DM.rename_row($td.data("prev-val"), name)
             }
             // otherwise, if name defined, send a row:add signal
             else if (name) {
 
-                $('table').trigger("row:add", [name, $tr.find('.result'), $tr.find('.unit')])
+                DM.add_row(name, $tr)
             }
             $td.data("prev-val", name)      // store new name in data
             $td.text(name)
 
-            $('table').trigger('row:pad-end')
+            $table.trigger('row:pad-end')
+            $table.trigger('table:global-recalc')  
         } 
     });
 
@@ -635,15 +657,11 @@ function tbody_handlers($table) {
 
         if (formula !== ($td.data("prev-val") || '')) {            // is formula diff from stored?
 
-            $td.data("prev-val", formula).data('value', formula);  // store new formula in data
-
-            let name = $tr.find('td.name').text();
-            $table.trigger("row:formula-change", [name, $td]);       
+            write_formula_cell($td, formula)
+            $table.trigger('table:global-recalc')  
         } 
 
         set_contenteditable_cols($tr)
-        //if ($td.attr('contenteditable') == 'false') 
-        //    return 
 
     })
 
@@ -685,17 +703,18 @@ function tbody_handlers($table) {
 
         let name = $tr.find('.name').text() 
         let DM = $table.data('DM')
-        let scope = DM.VALUES[$t.data('alt')] 
+        let scope = DM.column($t.data('alt'))
         if (!scope) debugger
 
         if (input_val === "") {
 
-            scope.set(name, "")
+            write_result_cell(scope.get(name), "")
         }
         else {
 
             let res = DM.math.data_input_evaluater(input_val, scope)
-            scope.set(name, res)
+            // scope.set(name, res)
+            write_result_cell(scope.get(name), res)
         }
         $table.trigger('table:global-recalc')  // TODO: change to column recalc
     })
@@ -767,6 +786,6 @@ function tbody_handlers($table) {
 
 }
 
-export { initialize, table_normalize, tbody_handlers, set_contenteditable_cols, update_alts, add_alt_column,
+export { initialize, tbody_handlers, set_contenteditable_cols, update_alts, add_alt_column,
          load_sheet, ensure_five_blank, row_is_blank, 
          apply_draggable_columns, remove_draggable_columns, apply_draggable_rows, remove_draggable_rows }

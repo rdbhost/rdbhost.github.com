@@ -1,0 +1,57 @@
+
+this code will be js/sheet_loader.js
+
+refer to js/samples.js
+
+the data object used here 
+   data has a title, a header, and a rows element
+   the header is a list of result column names
+   rows is a list of rows, where each row is either null for a blank row,
+     or has 4 elements
+     description, name, unit, other
+     other is either a text formula, or a list of result inputs
+
+
+function loadSheet(table, data)
+  table is an HTMLElement for table#main-sheet
+  data is the form described above
+
+  clears all table rows, corrects the column count to match data
+  and adds rows based on data
+
+function loadSample(table, sample-data, name)
+   sample-data is a dictionary of sample sheets 
+   name is the name of the sheet to load
+
+   fetches data from sample-data, if found, or localStorage
+   uses loadSheet to load it into table
+
+function scanSheet(table)
+   scans html table to extract header and row data, 
+   returns a data object with rows and header
+
+function saveSheet(name, object)
+   if not a sample, save to localStorage
+   if title not provided, add name to object as title
+   ensure that name matches sheet\d+ pattern
+
+function retrieveSheet(name)
+   retrieves data from samples or from localStorage
+   if title is missing, add name as title
+
+function allSheetNames()
+   retrieves consolidated dictionary of sample keys and title fields for localStorage
+   ignore localStorage keys that do not match sheet\d+
+   if the object does not have a title field, use the key for the title
+
+function removeStoredSheet(name)
+   removes the named sheet from localStorage
+   name must resemble 'sheet\d+'
+
+
+===============
+
+provide jsDoc comments
+for single line blocks, indent but omit brackets
+
+

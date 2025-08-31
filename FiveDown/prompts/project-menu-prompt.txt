@@ -1,0 +1,47 @@
+
+New javascript will be in file js/project_menu.js
+
+Provide click handlers and related functionality for the project menu, in index.html
+
+
+onDOMLoad:
+   remove all (and save one) span elements with class="sheet-selecter". save one as data-orig on div.project-menu
+   read allSheetNames from sheet_loader.js
+   add a span to div.project-menu for each of allSheetNames. use the saved span as a source of the correct html.
+        use the key as the tag id, and the value in the inner span textContent.
+   if there are none, provide a 'sheet_00' span, labeled 'Sheet 00'
+
+   retrieve value of 'current-sheet' from localStorage, and load that sheet.
+   move the corresponding span to leftmost (first) position, and give only it 'active' class
+   pubsub publish recalc request
+
+for each span.sheet-selector, add a click handler that:
+  1) saves current sheet using saveSheet, and span id is the save name
+  2) loads new sheet using span id as the retrieval name.
+  3) save this sheet name as 'current-sheet'
+  4) pubsub publish recalc request
+  
+for each span.sheet-selector > button.sheet-delete, add click handler that :
+  1) clears the sheet
+  2) remove the sheet from localStorage, 
+  3) remove the span from project-menu
+  4) chooses the first remaining span in list, and loads that sheet
+  5) save this sheet name as 'current-sheet'
+  6) pubsub publish recalc request
+
+for span#new-sheet, create a new item in project-menu, naming it the first unused name in the
+  series sheet-00, sheet-01, sheet-02, etc
+
+a handler on visibilityChange will save the current sheet to localStorage whenever
+visibility is gained or lost
+  1) saving the sheet involves using scanSheet to create a data object, JSON.stringify the data object, and 
+    store it in localStorage
+
+for click delegation, remember to use event.target, rather than event.currentTarget
+for single line blocks, indent but do not use brackets
+
+every handler function longer than 5 lines should have its own name, exported
+provide jsdoc comments
+
+
+

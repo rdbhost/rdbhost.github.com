@@ -1,0 +1,18 @@
+
+Provide a Javascript module, called evaluator.Javascript
+
+It will use js/pubsub.js, js/parser/formula_evaluator.js, and js/parser/formula_parser.js, and js/row_collection.js .
+
+Set everything up in a single function, and call it from an onDOMLoad handler.  Export that function
+  for testing purposes.
+
+in pubsub, subscribe to topic 'recalculation', and respond to any message by:
+
+  for each column: 
+    1. get a columnProxy from row_collection
+    2. for each row in row_collection:
+       a: create a parse tree with Parser(formula).parse()
+       b: evaluate the parse tree using the columnProxy, saving the value in the row
+
+       
+

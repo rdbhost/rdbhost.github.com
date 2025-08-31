@@ -5,7 +5,7 @@ import { ensure_five_blank, initialize, load_sheet, tbody_handlers,
 import { menu_initialize } from './menu.js';
 
 
-function events_initialize($table) {    
+function table_events_initialize($table) {    
 
     // table events to keep calculations current
     //
@@ -16,12 +16,12 @@ function events_initialize($table) {
             DM.rename_row(prev, now);
             $('table').trigger('table:global-recalc');
         }, 0)
-    }).on('row:add', function(event, name, $tdres, $tdunit) {
+/*    }).on('row:add', function(event, name, $tdres, $tdunit) {
         console.log('row add '+name);
         let DM = $table.data('DM')
         setTimeout(function() {
             DM.add_row(name, $tdres, $tdunit);
-        }, 0)
+        }, 0) */
     }).on('row:pad-end', function(event) {
         // console.log('add blanks')
         let DM = $table.data('DM')
@@ -34,7 +34,7 @@ function events_initialize($table) {
         console.log('row formula change '+$formulaTd.data('value'))
         let DM = $table.data('DM')
         setTimeout(function () {
-            DM.change_formula(name, $formulaTd)
+            //DM.change_formula(name, $formulaTd)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on('row:unit-change', function(event, name, unit) {
@@ -48,7 +48,7 @@ function events_initialize($table) {
         setTimeout(function () {
             let DM = $table.data('DM')
             let colnum = add_alt_column($table)
-            DM.populate_values_for_alt(colnum)
+            //DM.populate_values_for_alt(colnum)
             $('table').trigger('table:global-recalc')
         }, 0)
     }).on("table:alt-update", function() {
@@ -56,17 +56,17 @@ function events_initialize($table) {
         let DM = $table.data('DM')
         setTimeout(function () {
 
-            DM.VALUES.length = 0
+            // DM.VALUES.length = 0
             $('thead th.result').each(function(z,th) {
                 let i = $(th).data('alt')
-                DM.populate_values_for_alt(i)
+                // DM.populate_values_for_alt(i)
             })
         })
     }).on("table:global-recalc", function() {
         console.log('global-recalc requested');
         let DM = $table.data('DM')
         setTimeout(function () {
-            DM.update_calculated_units()
+            // DM.update_calculated_units()
             $('thead th.result').each(function(z,th) {
                 let i = $(th).data('alt')
                 DM.update_calculated_rows(i)
@@ -119,7 +119,7 @@ $().ready(function() {
     //
     initialize($table)
     menu_initialize(status['active_sheet'])
-    events_initialize($table)
+    table_events_initialize($table)
     tbody_handlers($table)
 
     // load the chosen sheet from localStorage

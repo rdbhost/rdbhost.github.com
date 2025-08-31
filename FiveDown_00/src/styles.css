@@ -102,7 +102,7 @@
   
   /* Specific column width settings */
   
-  th.handle, th.delete, th.add-result {
+  th.handle, th.delete, th.alt-add {
 	width: 3rem;
 	text-align: center;
   }
@@ -141,10 +141,13 @@
 	font-size: .8rem;
   }
   
-  th.add-result {
+  th.alt-add {
 	
 	border-top-left-radius: 1.2rem;
 	border-top-right-radius: 1.2rem;
+  }	
+
+  th.alt-add {
 	
 	text-align: center;
 	background-color: rgb(239 246 255 );
@@ -152,13 +155,13 @@
 	/* Subtle shadow effect */
   }
 
-  th.add-result button {
+  th.alt-add button {
 
     line-height: 1em;
 	border: none;
 	background-color: transparent;
   }
-  th.add-result button::before {
+  th.alt-add button::before {
 	content: "+";
 	font-size: 1.5rem;
   }
@@ -245,9 +248,4 @@
   
   td.fail {
 	color: yellowgreen;
-  }
-
-  td.unit.unit-empty::after {
-	 content: attr(data-computed-unit);
-	 color: blue;
   }

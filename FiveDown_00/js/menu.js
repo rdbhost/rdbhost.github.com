@@ -97,7 +97,7 @@ function menu_initialize(current) {
 
     // handler for delete-sheet buttons
     //
-    $('.project-menu').on('click', '.sheet-delete', function(event) {
+    $('.project-menu').on('click', '.sheet-delete', function(event) {  // TODO - add confirm box as alert
 
         let target_id = $(event.target).parent().attr('id')
         let $target = $(event.target).closest('span')
@@ -110,6 +110,9 @@ function menu_initialize(current) {
             $alt = $target.prev() 
         if (!$alt.length)    
             throw new Error('trying to delete last sheet')  
+
+        if (!confirm("Delete the sheet? Really?"))
+            return
 
         $target.remove()
         remove_sheet_from_storage(target_id)

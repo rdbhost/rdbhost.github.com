@@ -1,0 +1,62 @@
+<!-- test.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>QUnit Tests for Drag and Drop Functionality</title>
+  <link rel="stylesheet" href="https://code.jquery.com/qunit/qunit-2.20.0.css">
+  <style>
+    table, th, td {
+      border: 1px solid black;
+      border-collapse: collapse;
+    }
+    th, td {
+      width: 100px;
+      height: 20px;
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <table id="main-sheet">
+    <thead>
+      <tr>
+        <th>Description</th>
+        <th>Name</th>
+        <th>Formula</th>
+        <th class="result">Result0</th>
+        <th>Unit</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>desc1</td>
+        <td>name1</td>
+        <td>formula1</td>
+        <td>result01</td>
+        <td>unit1</td>
+      </tr>
+      <tr>
+        <td>desc2</td>
+        <td>name2</td>
+        <td>formula2</td>
+        <td>result02</td>
+        <td>unit2</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <script src="https://code.jquery.com/qunit/qunit-2.20.0.js"></script>
+  <script type="module" src="../table_setup_tests.js"></script>
+</body>
+</html>
+
