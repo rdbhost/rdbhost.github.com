@@ -122,7 +122,8 @@ function enforceRowRules(row) {
   const unitTd = row.querySelector('.unit');
   const unitText = unitTd.textContent.trim();
   const computedUnit = unitTd.getAttribute('data-computed-unit');
-  if (isFormulaNonBlank && computedUnit !== null && unitText.trim() !== '' && computedUnit.trim().toLowerCase() !== unitText.toLowerCase()) {
+  if (isFormulaNonBlank && computedUnit !== null && computedUnit !== '' && unitText.trim() !== '' 
+      && computedUnit.trim().toLowerCase() !== unitText.toLowerCase()) {
     formulaTd.classList.add('converted');
   } else {
     formulaTd.classList.remove('converted');

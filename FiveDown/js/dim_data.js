@@ -1,202 +1,56 @@
 // js/dim_data.js
 
-/**
- * Unit categories and conversion factors to base units.
- * @constant
- * @type {Object}
- */
-const units = {
-  length: {
-    base: 'm',
-    conversions: {
-      m: 1,
-      cm: 0.01,
-      mm: 0.001,
-      km: 1000,
-      nm: 1e-9,
-      um: 1e-6,
-      in: 0.0254,
-      ft: 0.3048,
-      yd: 0.9144,
-      mi: 1609.34,
-    }
-  },
-  area: {
-    base: 'm^2',
-    conversions: {
-      'm^2': 1,
-      'cm^2': 0.0001,
-      'mm^2': 1e-6,
-      'km^2': 1e6,
-      sqft: 0.092903,
-      sqyd: 0.836127,
-      sqmi: 2.58999e6,
-      acre: 4046.86,
-    }
-  },
-  volume: {
-    base: 'm^3',
-    conversions: {
-      'm^3': 1,
-      'cm^3': 1e-6,
-      'mm^3': 1e-9,
-      L: 0.001,
-      mL: 1e-6,
-      gal: 0.00378541,
-      qt: 0.000946353,
-      pt: 0.000473176,
-      cuft: 0.0283168,
-      cuyd: 0.764555,
-    }
-  },
-  mass: {
-    base: 'kg',
-    conversions: {
-      kg: 1,
-      g: 0.001,
-      mg: 1e-6,
-      t: 1000,
-      lb: 0.453592,
-      oz: 0.0283495,
-      st: 6.35029,
-      ton: 907.185,
-    }
-  },
-  force: {
-    base: 'N',
-    conversions: {
-      N: 1,
-      dyne: 1e-5,
-      lbf: 4.44822,
-      kgf: 9.80665,
-    }
-  },
-  power: {
-    base: 'W',
-    conversions: {
-      W: 1,
-      kW: 1000,
-      MW: 1e6,
-      hp: 745.7,
-      ftlbf_s: 1.35582,
-    }
-  },
-  velocity: {
-    base: 'm/s',
-    conversions: {
-      'm/s': 1,
-      'km/h': 1000 / 3600,
-      mph: 1609.34 / 3600,
-      fps: 0.3048,
-      knot: 0.514444,
-    }
-  },
-  acceleration: {
-    base: 'm/s^2',
-    conversions: {
-      'm/s^2': 1,
-      g: 9.80665,
-      'ft/s^2': 0.3048,
-    }
-  },
-  resistance: {
-    base: 'ohm',
-    conversions: {
-      'ohm': 1,
-      'kohm': 1000,
-      'Mohm': 1e6,
-      'mohm': 0.001,
-      'uohm': 1e-6,
-    }
-  },
-  capacitance: {
-    base: 'F',
-    conversions: {
-      F: 1,
-      uF: 1e-6,
-      nF: 1e-9,
-      pF: 1e-12,
-      mF: 0.001,
-    }
-  },
-  angle: {
-    base: 'rad',
-    conversions: {
-      rad: 1,
-      deg: Math.PI / 180,
-    }
-  },
-  time: {
-    base: 's',
-    conversions: {
-      s: 1,
-      ms: 0.001,
-      us: 1e-6,
-      min: 60,
-      h: 3600,
-      day: 86400,
-      week: 604800,
-      year: 31536000,
-    }
-  },
-  // Add more categories and units as needed
-};
+import { default as unit } from './lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
+
+// For browser UMD usage: const UnitMath = window.UnitMath;
+// For ES modules: import UnitMath from './unitmath.js';
 
 /**
- * 
- * @param {string} formula - the formula to format
- * @returns {string}
+ * Formats a formula by replacing operators for display.
+ * @param {string} formula - The formula to format.
+ * @returns {string} The formatted formula.
  */
 function formatFormula(formula) {
-      return formula.replace(/@/g, '•').replace(/\*/g, '×');
-}    
+  return formula.replace(/@/g, '•').replace(/\*/g, '×');
+}
 
 /**
- * 
- * @param {string} val - the value to format (number, boolean, text, vector)
- * @param {string} typ - the type of value (number, boolean, string, vector, unknown)
- * @returns {string}
+ * Formats a value for display based on its type.
+ * @param {string|number|boolean|Array} val - The value to format (number, boolean, text, vector).
+ * @param {string} [typ=null] - The type of value (number, boolean, string, vector, unknown).
+ * @returns {string} The formatted string.
  */
-function formatResult(val, typ=null) {
-
+function formatResult(val, typ = null) {
   function fmtNum(val) {
-    if (val == 0)
-      return '0.0'
-    const lg = Math.log10(Math.abs(val))
-    if (lg < 2)
-      return val.toFixed(3);
-    if (lg < 3)
-      return val.toFixed(2);
-    if (lg < 5)
-      return val.toFixed(1);
-    if (lg > 6)
-      return val.toExponential(3);
-    return val.toFixed(0)
-  }
-  function fmtNumV(val) {
-    if (val == 0)
-      return '0.0'
-    const lg = Math.log10(Math.abs(val))
-    if (lg < 2)
-      return val.toFixed(2);
-    if (lg < 3)
-      return val.toFixed(1);
-    if (lg > 6)
-      return val.toExponential(2);
-    return val.toFixed(0)
+    if (val === 0) return '0.0';
+    const lg = Math.log10(Math.abs(val));
+    if (lg < 2) return val.toFixed(3);
+    if (lg < 3) return val.toFixed(2);
+    if (lg < 5) return val.toFixed(1);
+    if (lg > 6) return val.toExponential(3);
+    return val.toFixed(0);
   }
 
+  function fmtNumV(val) {
+    if (val === 0) return '0.0';
+    const lg = Math.log10(Math.abs(val));
+    if (lg < 2) return val.toFixed(2);
+    if (lg < 3) return val.toFixed(1);
+    if (lg > 6) return val.toExponential(2);
+    return val.toFixed(0);
+  }
 
   let text = '';
   if (typ === null) {
     const DT = new Data(val);
-    typ = DT.type()
+    typ = DT.type();
+    val = DT.val();
   }
-    
+
   if (typ === 'number') {
-    text = fmtNum(val)
+    text = fmtNum(val);
   } else if (typ === 'vector') {
-    text = '['+val.map(x => fmtNumV(x)).join(',')+']';
+    text = '[' + val.map(x => fmtNumV(x)).join(',') + ']';
   } else if (typ === 'boolean') {
     text = val ? 'true' : 'false';
   } else if (typ === 'string') {
@@ -206,36 +60,14 @@ function formatResult(val, typ=null) {
 }
 
 /**
- * Represents a value with an associated unit, supporting various types and unit conversions.
- * Values can be numbers, booleans, strings, or 2/3-element numeric vectors.
- * Supports conversion to base units and specified units.
- * @class
+ * Represents a value with an associated unit, using UnitMath internally for conversions.
+ * Supports numbers, booleans, strings, or 2/3-element numeric vectors.
+ * Public interface uses plain JavaScript types, not UnitMath objects.
  */
 class Data {
   /**
-   * Mapping of units to their categories and conversion factors.
-   * @static
-   * @type {Object}
-   */
-  static unitInfo = {};
-
-  static {
-    for (const category in units) {
-      const conv = units[category].conversions;
-      for (const u in conv) {
-        Data.unitInfo[u] = {
-          category,
-          toBase: conv[u],
-          base: units[category].base,
-        };
-      }
-    }
-  }
-
-  /**
    * Creates a new Data instance.
-   * @constructor
-   * @param {*} value - The value to store (number, boolean, string, or array for vector).
+   * @param {number|boolean|string|Array} value - The value (number, boolean, string, or vector).
    * @param {string} [unit=''] - The unit associated with the value.
    */
   constructor(value, unit = '') {
@@ -245,8 +77,8 @@ class Data {
 
   /**
    * Getter/setter for the stored value.
-   * @param {*} [v] - If provided, sets the new value.
-   * @returns {*} The current value.
+   * @param {number|boolean|string|Array} [v] - If provided, sets the new value.
+   * @returns {number|boolean|string|Array} The current value.
    */
   val(v) {
     if (v !== undefined) {
@@ -281,7 +113,7 @@ class Data {
   }
 
   /**
-   * Converts the data to a string representation, including the unit if present.
+   * Converts the value to a string representation, including the unit if present.
    * @returns {string} The string form of the value and unit.
    */
   asString() {
@@ -295,7 +127,7 @@ class Data {
   }
 
   /**
-   * Converts the value to its base unit (SI equivalent).
+   * Converts the value to its base unit (SI equivalent) using UnitMath.
    * Returns a new Data instance. Only applies to numbers and vectors; others unchanged.
    * @returns {Data} A new Data instance in the base unit.
    */
@@ -303,26 +135,28 @@ class Data {
     if (!this._unit) {
       return new Data(this._value, this._unit);
     }
-    const info = Data.unitInfo[this._unit];
-    if (!info) {
-      return new Data(this._value, this._unit);
-    }
-    const factor = info.toBase;
-    const baseUnit = info.base;
-    let newValue;
     const typ = this.type();
     if (typ === 'number') {
-      newValue = this._value * factor;
+      try {
+        const unitVal = unit(this._value, this._unit).simplify();
+        return new Data(unitVal.getValue(), unitVal.getUnits().toString());
+      } catch (e) {
+        return new Data(this._value, this._unit); // Return unchanged if unit is invalid
+      }
     } else if (typ === 'vector') {
-      newValue = this._value.map(x => x * factor);
-    } else {
-      return new Data(this._value, this._unit);
+      try {
+        const unitVals = this._value.map(v => unit(v, this._unit).simplify());
+        const baseUnit = unitVals[0]?.getUnits().toString() || this._unit;
+        return new Data(unitVals.map(u => u.getValue()), baseUnit);
+      } catch (e) {
+        return new Data(this._value, this._unit); // Return unchanged if unit is invalid
+      }
     }
-    return new Data(newValue, baseUnit);
+    return new Data(this._value, this._unit);
   }
 
   /**
-   * Converts the value to a given unit.
+   * Converts the value to a given unit using UnitMath.
    * Returns a tuple [new Data instance, conversion factor].
    * Only supports numbers and vectors.
    * @param {string} targetUnit - The target unit for conversion.
@@ -330,26 +164,32 @@ class Data {
    * @throws {Error} If units are incompatible, unspecified, or type not supported.
    */
   asGivenUnit(targetUnit) {
-    if (this._unit == targetUnit)
+    if (!targetUnit) throw new Error('Target unit must be specified');
+    if (!this._unit) throw new Error('Source unit must be specified');
+    if (this._unit === targetUnit) {
       return [new Data(this._value, this._unit), 1];
-    if (!this._unit || !targetUnit) 
-      throw new Error('Units must be specified for conversion');
-    const infoOrig = Data.unitInfo[this._unit];
-    const infoTarget = Data.unitInfo[targetUnit];
-    if (!infoOrig || !infoTarget || infoOrig.category !== infoTarget.category) 
-      throw new Error('Incompatible units for conversion');
-    const factor = infoOrig.toBase / infoTarget.toBase;
-    let newValue;
+    }
     const typ = this.type();
     if (typ === 'number') {
-      newValue = this._value * factor;
+      try {
+        const unitVal = unit(this._value, this._unit);
+        const converted = unitVal.to(targetUnit);
+        const factor = converted.getValue() / unitVal.getValue();
+        return [new Data(converted.getValue(), targetUnit), factor];
+      } catch (e) {
+        throw new Error('Incompatible units for conversion');
+      }
     } else if (typ === 'vector') {
-      newValue = this._value.map(x => x * factor);
-    } else {
-      throw new Error('Conversion supported only for numbers and vectors');
+      try {
+        const unitVals = this._value.map(v => unit(v, this._unit));
+        const converted = unitVals.map(u => u.to(targetUnit));
+        const factor = converted[0].getValue() / unitVals[0].getValue();
+        return [new Data(converted.map(u => u.getValue()), targetUnit), factor];
+      } catch (e) {
+        throw new Error('Incompatible units for conversion');
+      }
     }
-    const newData = new Data(newValue, targetUnit);
-    return [newData, factor];
+    throw new Error('Conversion supported only for numbers and vectors');
   }
 }
 
