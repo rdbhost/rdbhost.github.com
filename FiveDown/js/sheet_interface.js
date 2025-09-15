@@ -243,8 +243,10 @@ function setupTableInterface(table) {
     } else if (td.classList.contains('unit')) {
       if (newRaw !== '')
         td.setAttribute('data-value', newRaw);
-      else
-        td.removeAttribute('data-value')
+      else {
+        td.removeAttribute('data-value');
+        td.textContent = ''; // clear <br> 
+      }
       if (newRaw !== oldRaw) 
         table.pubsub.publish('recalculation', 'go');
       ensureBlankFive(table);
