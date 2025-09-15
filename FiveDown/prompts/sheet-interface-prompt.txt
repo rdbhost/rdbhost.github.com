@@ -117,3 +117,12 @@ The function ensure_blank_five will look at the last rows in the table, and ensu
 extra blank lines, and insert blanks as necessary.  The blanks can be copied from the 'blank_row' attribute.
 
 Assume that a blank row is available, and throw exceptions if not, or if blank row data attribute is not available.
+
+
+========= modifications ================
+
+change sheet_interface.js so that when a computed unit is different from textContent in unit column (and textContent is not null), a class 
+'converted' is applied to the formula column in that row.
+
+the unit column has a data attribute 'data-computed-unit'. It will have a non-null value when a unit has been computed. Rely on this, 
+in combination with textContent, to set td.formula.converted
