@@ -105,4 +105,4 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-export { RowCollection };
+export { RowCollection, constants };
