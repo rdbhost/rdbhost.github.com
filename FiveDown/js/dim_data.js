@@ -138,14 +138,14 @@ class Data {
     const typ = this.type();
     if (typ === 'number') {
       try {
-        const unitVal = unit(this._value, this._unit).simplify();
+        const unitVal = unit(this._value, this._unit);
         return new Data(unitVal.getValue(), unitVal.getUnits().toString());
       } catch (e) {
         return new Data(this._value, this._unit); // Return unchanged if unit is invalid
       }
     } else if (typ === 'vector') {
       try {
-        const unitVals = this._value.map(v => unit(v, this._unit).simplify());
+        const unitVals = this._value.map(v => unit(v, this._unit));
         const baseUnit = unitVals[0]?.getUnits().toString() || this._unit;
         return new Data(unitVals.map(u => u.getValue()), baseUnit);
       } catch (e) {
