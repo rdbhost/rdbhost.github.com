@@ -1,7 +1,7 @@
 // js/sheet_interface.js
 
 import { formatResult, formatFormula } from './dim_data.js'
-import { RowCollection } from './row_collection.js';
+import { RowCollection, constants } from './row_collection.js';
 import { TableRow } from './table_row.js';
 
 /**
@@ -117,6 +117,17 @@ function enforceRowRules(row) {
       formulaTd.classList.remove('readonly');
     }
   }
+
+  // Check for unit conversion and apply 'converted' class
+  const unitTd = row.querySelector('.unit');
+  const unitText = unitTd.textContent.trim();
+  const computedUnit = unitTd.getAttribute('data-computed-unit');
+  if (isFormulaNonBlank && computedUnit !== null && computedUnit !== '' && unitText.trim() !== '' 
+      && computedUnit.trim().toLowerCase() !== unitText.toLowerCase()) {
+    formulaTd.classList.add('converted');
+  } else {
+    formulaTd.classList.remove('converted');
+  }
 }
 
 /**
@@ -199,6 +210,11 @@ function setupTableInterface(table) {
     const newRaw = currentText;
     if (td.classList.contains('name')) {
       let newName = currentText.trim();
+      // Replace invalid characters (including '.') with underscores
+      newName = newName.replace(/[^a-zA-Z0-9_]/g, '_');
+      // Remove leading digits and underscores
+      newName = newName.replace(/^[0-9_]+/, '');
+
       if (newName === '' && oldRaw !== '') {
         td.textContent = oldRaw;
         return;
@@ -207,8 +223,8 @@ function setupTableInterface(table) {
         if (oldRaw !== '') 
           table.row_collection.removeRow(oldRaw);
         let finalName = newName;
-        while (table.row_collection.getRow(finalName)) 
-          finalName = '_' + finalName;
+        while (table.row_collection.getRow(finalName) || finalName in constants) 
+          finalName = finalName + '_';
         td.setAttribute('data-value', finalName);
         td.textContent = finalName;
         if (finalName !== '') 
@@ -232,8 +248,10 @@ function setupTableInterface(table) {
     } else if (td.classList.contains('unit')) {
       if (newRaw !== '')
         td.setAttribute('data-value', newRaw);
-      else
-        td.removeAttribute('data-value')
+      else {
+        td.removeAttribute('data-value');
+        td.textContent = ''; // clear <br> 
+      }
       if (newRaw !== oldRaw) 
         table.pubsub.publish('recalculation', 'go');
       ensureBlankFive(table);

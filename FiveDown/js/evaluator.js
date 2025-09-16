@@ -2,6 +2,7 @@
 
 import { evaluate } from './parser/formula_evaluator.js';
 import { parseFormula } from './parser/formula_parser.js';
+import { enforceRowRules } from './sheet_interface.js';
 
 /**
  * Sets up the evaluator by subscribing to recalculation events.
@@ -30,8 +31,10 @@ function setupEvaluator() {
             const ast = parseFormula(formula);
             const value = evaluate(ast, proxy);
             row.result(idx, value);
+            enforceRowRules(row.row);
           } catch (e) {
             row.result(idx, e);
+            enforceRowRules(row.row);
           }
         }
       }

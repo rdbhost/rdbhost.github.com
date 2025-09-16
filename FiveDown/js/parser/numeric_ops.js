@@ -1,31 +1,63 @@
 // js/num_partial.js
 import { Data } from '../dim_data.js';
+import { default as unit } from '../lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
 
-function parseDims(unit) {
-  unit = unit.replace(/\s/g, '');
+
+/**
+ * Parses a unit string into a dimension map, handling space-separated unit products.
+ * @param {string} unit - The unit string (e.g., 'm N', 'm^2/s').
+ * @returns {Map<string, number>} A map of base units to their exponents.
+ */
+function parseDims(unt) {
+  unt = unt.replace(/\s+/g, ' ').trim(); // Normalize spaces
   const dims = new Map();
-  if (!unit) return dims;
-  const parts = unit.split('/');
+  if (!unt) return dims;
+
+  // Split on '/' for numerator and denominator
+  const parts = unt.split('/');
+  const numeratorParts = parts[0].split(' ').filter(p => p); // Split numerator on spaces
+  const denominatorParts = parts.slice(1).join('/').split(' ').filter(p => p); // Combine denominators
+
   const processPart = (part, sign) => {
+    if (!part) return;
     if (part.includes('^')) {
       const [base, expStr] = part.split('^');
       const exp = parseFloat(expStr) || 1;
-      dims.set(base, (dims.get(base) || 0) + sign * exp);
+      // Validate unit with UnitMath
+      try {
+        unit(1, base);
+        dims.set(base, (dims.get(base) || 0) + sign * exp);
+      } catch (e) {
+        throw new Error(`Invalid unit: ${base}`);
+      }
     } else {
       const match = part.match(/^([a-zA-Z]+)(\d*)$/);
       if (match) {
         const base = match[1];
         const exp = match[2] ? parseInt(match[2]) : 1;
-        dims.set(base, (dims.get(base) || 0) + sign * exp);
+        // Validate unit with UnitMath
+        try {
+          unit(1, base);
+          dims.set(base, (dims.get(base) || 0) + sign * exp);
+        } catch (e) {
+          throw new Error(`Invalid unit: ${base}`);
+        }
       } else {
-        dims.set(part, (dims.get(part) || 0) + sign * 1);
+        // Validate unit with UnitMath
+        try {
+          unit(1, part);
+          dims.set(part, (dims.get(part) || 0) + sign * 1);
+        } catch (e) {
+          throw new Error(`Invalid unit: ${part}`);
+        }
       }
     }
   };
-  processPart(parts[0], 1);
-  for (let i = 1; i < parts.length; i++) {
-    processPart(parts[i], -1);
-  }
+
+  // Process numerator and denominator parts
+  numeratorParts.forEach(part => processPart(part, 1));
+  denominatorParts.forEach(part => processPart(part, -1));
+
   return dims;
 }
 
