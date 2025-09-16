@@ -210,6 +210,11 @@ function setupTableInterface(table) {
     const newRaw = currentText;
     if (td.classList.contains('name')) {
       let newName = currentText.trim();
+      // Replace invalid characters (including '.') with underscores
+      newName = newName.replace(/[^a-zA-Z0-9_]/g, '_');
+      // Remove leading digits and underscores
+      newName = newName.replace(/^[0-9_]+/, '');
+
       if (newName === '' && oldRaw !== '') {
         td.textContent = oldRaw;
         return;
@@ -219,7 +224,7 @@ function setupTableInterface(table) {
           table.row_collection.removeRow(oldRaw);
         let finalName = newName;
         while (table.row_collection.getRow(finalName) || finalName in constants) 
-          finalName = '_' + finalName;
+          finalName = finalName + '_';
         td.setAttribute('data-value', finalName);
         td.textContent = finalName;
         if (finalName !== '') 
