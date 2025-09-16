@@ -16,3 +16,7 @@ in pubsub, subscribe to topic 'recalculation', and respond to any message by:
 
        
 
+========================
+
+Add a function evaluateNow(formula, dictionary, unit) that parses the text formula, evaluates it in the context of the 
+dictionary of named values, converts the result to given unit, and returns the value.
