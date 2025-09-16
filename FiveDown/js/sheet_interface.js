@@ -3,6 +3,7 @@
 import { formatResult, formatFormula } from './dim_data.js'
 import { RowCollection, constants } from './row_collection.js';
 import { TableRow } from './table_row.js';
+import { evaluateNow } from './evaluator.js';
 
 /**
  * Checks if a table row is blank by examining the content of specific cells.
@@ -237,12 +238,36 @@ function setupTableInterface(table) {
       td.textContent = formatted;
       if (newRaw !== oldRaw) 
          table.pubsub.publish('recalculation', 'go');
+
     } else if (td.classList.contains('result')) {
-      td.setAttribute('data-value', newRaw);
-      const formatted = formatResult(newRaw);
-      td.textContent = formatted;
-      if (newRaw !== oldRaw) 
+      if (newRaw === oldRaw) {
+        // td.setAttribute('data-value', newRaw);
+        let d;
+        try {
+          d = JSON.parse(oldRaw);
+        }
+        catch(e) {
+          d = oldRaw;
+        }
+        td.textContent = formatResult(d);
+      }
+      else {
+        const unitTd = row.querySelector('.unit');
+        const unit = unitTd.textContent.trim() || unitTd.getAttribute('data-value') || '';
+        const resultTds = Array.from(row.querySelectorAll('.result'));
+        const colIdx = resultTds.indexOf(td);
+        if (colIdx === -1) throw new Error('Result column index not found');
+        const proxy = table.row_collection.getColumnProxy(colIdx);
+        try {
+          const data = evaluateNow(newRaw, proxy, unit);
+          td.setAttribute('data-value', data.val());
+          td.textContent = formatResult(data.val());
+        } catch (e) {
+          td.setAttribute('data-value', newRaw);
+          td.textContent = newRaw;
+        }
         table.pubsub.publish('recalculation', 'go');
+      }
     } else if (td.classList.contains('description')) {
         ensureBlankFive(table);
     } else if (td.classList.contains('unit')) {
