@@ -3,6 +3,7 @@
 import { evaluate } from './parser/formula_evaluator.js';
 import { parseFormula } from './parser/formula_parser.js';
 import { enforceRowRules } from './sheet_interface.js';
+import { Data } from './dim_data.js';
 
 /**
  * Sets up the evaluator by subscribing to recalculation events.
@@ -44,4 +45,22 @@ function setupEvaluator() {
 
 document.addEventListener('DOMContentLoaded', setupEvaluator);
 
-export { setupEvaluator };
+
+/**
+ * Parses and evaluates a formula using a dictionary of named values, converts the result to the specified unit, and returns a Data instance.
+ * @param {string} formula - The formula to parse and evaluate.
+ * @param {Object} dictionary - An object mapping names to Data instances.
+ * @param {string} unit - The target unit to convert the result to.
+ * @returns {Data} The result of the evaluation as a Data instance, converted to the specified unit.
+ */
+function evaluateNow(formula, dictionary, unit) {
+  try {
+    const ast = parseFormula(formula);
+    const data = evaluate(ast, dictionary);
+    return unit ? data.asGivenUnit(unit) : data;
+  } catch (e) {
+    return new Data(e);
+  }
+}
+
+export { setupEvaluator, evaluateNow };
