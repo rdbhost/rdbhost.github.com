@@ -324,7 +324,7 @@ function invTrigFunction(mathFunc, a) {
   if (a.type() !== 'number') throw new Error(`${mathFunc.name} for numbers only`);
   const resultVal = mathFunc(a.val());
   if (Number.isNaN(resultVal)) throw new Error(`invalid input to ${mathFunc.name}`);
-  return new Data(resultVal);
+  return new Data(resultVal, 'rad');
 }
 
 function hyperbolicFunction(mathFunc, a) {

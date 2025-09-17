@@ -1,7 +1,7 @@
 // js/project_menu.js
 
-import { allSheetNames, loadSheet, saveSheet, retrieveSheet, removeStoredSheet,
-scanSheet } from './sheet_loader.js';
+import { allSheetNames, loadSheet, scanSheet, saveSheet, 
+            retrieveSheet, removeStoredSheet } from './sheet_loader.js';
 
 /**
  * Sets up the project menu by populating sheet selectors and loading the

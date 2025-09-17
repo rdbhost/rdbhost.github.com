@@ -174,13 +174,11 @@ function scanSheet(table) {
       results.push(value);
     });
 
-    const isBlank = !description && !name && !unit && !formula && results.every(
-r => r === '' || r === null);
+    const isBlank = !description && !name && !unit && !formula && results.every(r => r === '' || r === null);
     if (isBlank)
       rows.push(null);
     else {
-      const other = formula ? formula : (results.length === 1 ? results[0] :
-results);
+      const other = formula ? formula : results;
       rows.push([description || null, name || null, unit || null, other]);
     }
   }
@@ -254,5 +252,4 @@ function removeStoredSheet(name) {
   localStorage.removeItem(name);
 }
 
-export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet,
-allSheetNames, removeStoredSheet };
+export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, removeStoredSheet };

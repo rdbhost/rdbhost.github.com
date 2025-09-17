@@ -97,7 +97,8 @@ function convertToTitle(row) {
   const numResults = resultThs.length;
 
   // Calculate colspan: name (1) + formula (1) + result columns + add-result (1)
-  const colspan = 2 + numResults + 1;
+  // Fix: add 1 more to colspan to match the number of columns
+  const colspan = 2 + numResults + 2;
 
   // Get existing cells
   const handleTd = row.querySelector('.handle');
@@ -352,6 +353,19 @@ function setupTableInterface(table) {
       } else if (/^=+$/.test(trimmed)) {
         valid = true;
         td.setAttribute('data-value', trimmed);
+        // Convert to title row and set description class
+        convertToTitle(row);
+        const descTd = row.querySelector('.description');
+        descTd.classList.remove('title', 'subtitle', 'subsubtitle', 'title_c', 'subtitle_c', 'subsubtitle_c', 'title_l', 'subtitle_l', 'subsubtitle_l');
+        let className = '';
+        const n = trimmed.length;
+        if (n === 1) className = 'title_l';
+        else if (n === 2) className = 'title_c';
+        else if (n === 3) className = 'subtitle_l';
+        else if (n === 4) className = 'subtitle_c';
+        else if (n === 5) className = 'subsubtitle_l';
+        else if (n >= 6) className = 'subsubtitle_c';
+        if (className) descTd.classList.add(className);
       } else {
         try {
           unit(1, trimmed); // throws if not valid
@@ -464,4 +478,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTableInterface(table);
 });
 
-export { enforceRowRules, setupTableInterface, ensureBlankFive, convertToTitle };
+export { enforceRowRules, setupTableInterface, ensureBlankFive };
