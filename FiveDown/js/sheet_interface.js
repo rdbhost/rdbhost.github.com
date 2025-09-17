@@ -2,6 +2,8 @@ import { formatResult, formatFormula } from './dim_data.js';
 import { RowCollection, constants } from './row_collection.js';
 import { TableRow } from './table_row.js';
 import { evaluateNow } from './evaluator.js';
+import { default as unit } from './lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
+
 
 /**
  * Checks if a table row is blank by examining the content of specific cells.
@@ -340,11 +342,35 @@ function setupTableInterface(table) {
     } else if (td.classList.contains('description')) {
         ensureBlankFive(table);
     } else if (td.classList.contains('unit')) {
-      if (newRaw !== '')
-        td.setAttribute('data-value', newRaw);
-      else {
+      // Validation: blank, one or more '=', or valid UnitMath unit
+      const trimmed = newRaw.trim();
+      let valid = false;
+      if (trimmed === '') {
+        valid = true;
         td.removeAttribute('data-value');
-        td.textContent = ''; // clear <br> 
+        td.textContent = '';
+      } else if (/^=+$/.test(trimmed)) {
+        valid = true;
+        td.setAttribute('data-value', trimmed);
+      } else {
+        try {
+          unit(1, trimmed); // throws if not valid
+          valid = true;
+          td.setAttribute('data-value', trimmed);
+        } catch (e) {
+          valid = false;
+        }
+      }
+      if (!valid) {
+        // Show error, keep bad value, then revert after timeout
+        td.classList.add('input-error');
+        const badValue = td.textContent;
+        setTimeout(() => {
+          td.textContent = oldRaw;
+          td.setAttribute('data-value', oldRaw);
+          td.classList.remove('input-error');
+        }, 1500);
+        return;
       }
       if (newRaw !== oldRaw) 
         table.pubsub.publish('recalculation', 'go');

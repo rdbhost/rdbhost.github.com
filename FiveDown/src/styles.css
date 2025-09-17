@@ -1,3 +1,9 @@
+/* Error highlight for invalid input */
+.input-error {
+	background-color: pink !important;
+	color: red;
+	transition: background 0.2s;
+}
 /* Show data-computed-unit as tooltip on hover for td.unit, only if not empty */
 td.unit[data-computed-unit]:not(:empty):hover::after {
 	content: attr(data-computed-unit);
