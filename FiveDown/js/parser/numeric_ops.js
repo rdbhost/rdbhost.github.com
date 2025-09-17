@@ -132,6 +132,11 @@ const binaryOps = {
     const bTyp = b.type();
     if (aTyp !== bTyp) throw new Error('Type mismatch in +');
     if (aTyp !== 'number' && aTyp !== 'vector') throw new Error('Invalid type for +');
+    // Allow unitless addition
+    if (!a.unit() && !b.unit()) {
+      const resultVal = addVal(a.val(), b.val());
+      return new Data(resultVal, '');
+    }
     const bConv = b.asGivenUnit(a.unit())[0];
     const resultVal = addVal(a.val(), bConv.val());
     return new Data(resultVal, a.unit());
@@ -141,6 +146,11 @@ const binaryOps = {
     const bTyp = b.type();
     if (aTyp !== bTyp) throw new Error('Type mismatch in -');
     if (aTyp !== 'number' && aTyp !== 'vector') throw new Error('Invalid type for -');
+    // Allow unitless subtraction
+    if (!a.unit() && !b.unit()) {
+      const resultVal = subtractVal(a.val(), b.val());
+      return new Data(resultVal, '');
+    }
     const bConv = b.asGivenUnit(a.unit())[0];
     const resultVal = subtractVal(a.val(), bConv.val());
     return new Data(resultVal, a.unit());
@@ -148,14 +158,20 @@ const binaryOps = {
   '*': (a, b) => {
     const aBase = a.asBaseUnit();
     const bBase = b.asBaseUnit();
-    const siA = aBase.val();
-    const siB = bBase.val();
+    const aType = aBase.type();
+    const bType = bBase.type();
     let siResult;
-    if (typeof siA === 'number' && typeof siB === 'number') siResult = siA * siB;
-    else if (typeof siA === 'number' && Array.isArray(siB)) siResult = siB.map(x => siA * x);
-    else if (Array.isArray(siA) && typeof siB === 'number') siResult = siA.map(x => x * siB);
-    else if (Array.isArray(siA) && Array.isArray(siB) && siA.length === 3 && siB.length === 3) siResult = crossProduct(siA, siB);
-    else throw new Error('Invalid types for *');
+    if (aType === 'number' && bType === 'number') {
+      siResult = aBase.val() * bBase.val();
+    } else if (aType === 'number' && bType === 'vector') {
+      siResult = bBase.val().map(x => aBase.val() * x);
+    } else if (aType === 'vector' && bType === 'number') {
+      siResult = aBase.val().map(x => x * bBase.val());
+    } else if (aType === 'vector' && bType === 'vector' && aBase.val().length === 3 && bBase.val().length === 3) {
+      siResult = crossProduct(aBase.val(), bBase.val());
+    } else {
+      throw new Error('Invalid types for *');
+    }
     let dims = parseDims(aBase.unit());
     const bDims = parseDims(bBase.unit());
     for (let [k, v] of bDims) dims.set(k, (dims.get(k) || 0) + v);
@@ -165,12 +181,16 @@ const binaryOps = {
   '/': (a, b) => {
     const aBase = a.asBaseUnit();
     const bBase = b.asBaseUnit();
-    const siA = aBase.val();
-    const siB = bBase.val();
+    const aType = aBase.type();
+    const bType = bBase.type();
     let siResult;
-    if (typeof siA === 'number' && typeof siB === 'number') siResult = siA / siB;
-    else if (Array.isArray(siA) && typeof siB === 'number') siResult = siA.map(x => x / siB);
-    else throw new Error('Invalid types for /');
+    if (aType === 'number' && bType === 'number') {
+      siResult = aBase.val() / bBase.val();
+    } else if (aType === 'vector' && bType === 'number') {
+      siResult = aBase.val().map(x => x / bBase.val());
+    } else {
+      throw new Error('Invalid types for /');
+    }
     let dims = parseDims(aBase.unit());
     const bDims = parseDims(bBase.unit());
     for (let [k, v] of bDims) dims.set(k, (dims.get(k) || 0) - v);
@@ -285,10 +305,16 @@ const binaryOps = {
 
 function trigFunction(mathFunc, a) {
   const baseA = a.asBaseUnit();
-  const u = baseA.unit();
-  if (u !== '' && u !== 'rad') throw new Error(`${mathFunc.name} expects unitless or rad`);
+  let u = baseA.unit();
+  let val = baseA.val();
+  if (u === 'deg' || u === 'degree' || u === 'degrees') {
+    // Convert degrees to radians
+    val = val * (Math.PI / 180);
+    u = 'rad';
+  }
+  if (u !== '' && u !== 'rad') throw new Error(`${mathFunc.name} expects unitless, rad, or degree`);
   if (baseA.type() !== 'number') throw new Error(`${mathFunc.name} for numbers only`);
-  const resultVal = mathFunc(baseA.val());
+  const resultVal = mathFunc(val);
   if (Number.isNaN(resultVal)) throw new Error(`invalid input to ${mathFunc.name}`);
   return new Data(resultVal);
 }

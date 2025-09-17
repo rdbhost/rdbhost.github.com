@@ -178,7 +178,10 @@ class TableRow {
         const typ = new_value.type();
         if (typ === 'unknown')
           throw new Error('Invalid value type: must be number, boolean, vector of numbers, or text');
-        unitTd.setAttribute('data-computed-unit', new_value.unit());
+        if (new_value.unit() != '')
+          unitTd.setAttribute('data-computed-unit', new_value.unit());
+        else
+          unitTd.removeAttribute('data-computed-unit');
         let targetUnit;
         if (unitTd.hasAttribute('data-value')) {
           targetUnit = unitTd.getAttribute('data-value');
