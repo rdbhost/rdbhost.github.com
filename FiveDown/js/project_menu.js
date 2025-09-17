@@ -102,9 +102,8 @@ export function deleteSheetButtonHandler() {
   removeStoredSheet(key);
 
   // Remove the span from the project menu
-  if (span) {
+  if (span) 
     span.parentElement.removeChild(span);
-  }
 
   // Choose first remaining
   const remainingSpans = projectMenu.querySelectorAll('.sheet-selecter');
