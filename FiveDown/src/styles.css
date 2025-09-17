@@ -1,4 +1,25 @@
-
+/* Show data-computed-unit as tooltip on hover for td.unit, only if not empty */
+td.unit[data-computed-unit]:not(:empty):hover::after {
+	content: attr(data-computed-unit);
+	position: absolute;
+	left: 0;
+	top: 100%;
+	transform: translateX(-80%) translateY(8px);
+				background: #888;
+				color: #fff;
+	color: #fff;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.9em;
+	white-space: nowrap;
+	z-index: 1000;
+	pointer-events: none;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+td.unit {
+	position: relative;
+}
+  
   .outer-box {
 	margin-left: auto;
 	margin-right: auto;
@@ -9,7 +30,7 @@
   .outer-box .project-menu .sheet-delete{
 	border: none;
 	background-color: transparent;
-  }
+  }	
   
   /* Project menu styling */
   .project-menu {
@@ -215,6 +236,28 @@
   /* when dragging a UI element, styling to keep it ontop */
   .ui-draggable-dragging{
 	z-index: 999;
+  }
+
+  /* Show data-value attribute as tooltip on hover for td.result */
+  td.result {
+    position: relative;
+  }
+
+  td.result[data-value]:hover::after {
+    content: attr(data-value);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    transform: translateX(-80%) translateY(8px);
+	background: #008000;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   }
 
   /* Non-editable cells */
