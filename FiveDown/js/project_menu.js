@@ -1,3 +1,4 @@
+
 // js/project_menu.js
 
 import { allSheetNames, loadSheet, scanSheet, saveSheet, 
@@ -87,27 +88,27 @@ function handleSheetSelectClick(event) {
 }
 
 /**
- * Handles click on sheet delete button.
- * @param {Event} event - The click event.
+ * Handler for the delete-sheet button click event.
  */
-function handleSheetDeleteClick(event) {
-  event.stopPropagation(); // Prevent triggering sheet select
-  const span = event.target.closest('.sheet-selecter');
-  const key = span.id.replace(/_/g, ' '); // Restore key from id
+export function deleteSheetButtonHandler() {
+  // Get current sheet identity from localStorage (assume a key like 'currentSheet' or similar is used)
+  let key = localStorage.getItem('current-sheet');
   const table = document.querySelector('table#main-sheet');
   const pubsub = table.pubsub;
   const projectMenu = document.querySelector('.project-menu');
-
-  // Remove from storage
+  const span = document.querySelector('#'+key)
+  
+  // Remove from localStorage
   removeStoredSheet(key);
 
-  // Remove span
-  span.remove();
+  // Remove the span from the project menu
+  if (span) {
+    span.parentElement.removeChild(span);
+  }
 
   // Choose first remaining
   const remainingSpans = projectMenu.querySelectorAll('.sheet-selecter');
-  let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id.replace(
-/_/g, ' ') : 'sheet_00';
+  let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
 
   // Load new current
   const newData = retrieveSheet(newCurrent);
@@ -118,12 +119,14 @@ function handleSheetDeleteClick(event) {
   localStorage.setItem('current-sheet', newCurrent);
 
   // Activate the new current span
-  const newSpan = projectMenu.querySelector(`#${newCurrent.replace(/\s+/g, '_')}`);
+  const newSpan = projectMenu.querySelector(`#${newCurrent}`);
   activateSheetSpan(newSpan);
 
   // Publish recalc
   pubsub.publish('recalculation', 'go');
+
 }
+
 
 /**
  * Handles visibility change to save current sheet.
@@ -199,14 +202,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = e.target;
     if (target.closest('.sheet-selecter') && !target.closest('.sheet-delete'))
       handleSheetSelectClick(e);
-    if (target.closest('.sheet-delete'))
-      handleSheetDeleteClick(e);
     if (target.closest('#new-sheet'))
       handleNewSheetClick(e);
   });
 
+  const deleteButton = document.querySelector('#delete-sheet');
+  deleteButton.addEventListener('click', deleteSheetButtonHandler);
+
+
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
-export { setupProjectMenu, handleSheetSelectClick, handleSheetDeleteClick,
-handleVisibilityChange, handleNewSheetClick };
+export { setupProjectMenu, handleSheetSelectClick, handleVisibilityChange, handleNewSheetClick };

@@ -1,3 +1,4 @@
+
 import { formatResult, formatFormula } from './dim_data.js';
 import { RowCollection, constants } from './row_collection.js';
 import { TableRow } from './table_row.js';
@@ -248,6 +249,7 @@ function addResultColumn(table) {
  * @param {HTMLTableElement} table - The table to set up.
  */
 function setupTableInterface(table) {
+
   let blankRow = null;
   for (let tr of table.tBodies[0].rows) {
     if (isBlankRow(tr) && !isFourColumnRow(tr)) {
