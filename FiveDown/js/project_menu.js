@@ -24,7 +24,7 @@ function setupProjectMenu() {
   // Get all sheet names as dictionary
   let sheetDict = allSheetNames();
   if (Object.keys(sheetDict).length === 0)
-    sheetDict = { 'sheet_00': 'Sheet 00' };
+    sheetDict = { 'sheet00': 'Sheet 00' };
 
   // Add spans for each sheet entry
   Object.entries(sheetDict).forEach(([key, title]) => {
@@ -35,7 +35,7 @@ function setupProjectMenu() {
   });
 
   // Retrieve current-sheet from localStorage
-  let currentSheet = localStorage.getItem('current-sheet') || 'sheet_00';
+  let currentSheet = localStorage.getItem('current-sheet') || 'sheet00';
   if (!Object.keys(sheetDict).includes(currentSheet))
     currentSheet = Object.keys(sheetDict)[0];
 
@@ -44,11 +44,11 @@ function setupProjectMenu() {
   if (sheetData)
     loadSheet(table, sheetData);
 
-  // Move current span to leftmost and add active class
-  const currentSpan = projectMenu.querySelector(`#${currentSheet.replace(/\s+/g, '_')}`);
+  // Move current span to leftmost and activate
+  const currentSpan = projectMenu.querySelector(`#${currentSheet}`);
   if (currentSpan) {
     projectMenu.insertBefore(currentSpan, projectMenu.firstChild);
-    currentSpan.classList.add('active');
+    activateSheetSpan(currentSpan);
   }
 
   // Publish recalc
@@ -69,6 +69,10 @@ function handleSheetSelectClick(event) {
   const current = localStorage.getItem('current-sheet');
   if (current) {
     const currentData = scanSheet(table);
+    // Fetch the title from the active span.sheet-selecter
+    const activeSpan = document.querySelector('.sheet-selecter.active span');
+    if (activeSpan) 
+      currentData.title = activeSpan.textContent.trim();
     saveSheet(current, currentData);
   }
 
@@ -135,6 +139,10 @@ function handleVisibilityChange() {
   const current = localStorage.getItem('current-sheet');
   if (current) {
     const currentData = scanSheet(table);
+    // Fetch the title from the active span.sheet-selecter
+    const activeSpan = document.querySelector('.sheet-selecter.active span');
+    if (activeSpan) 
+      currentData.title = activeSpan.textContent.trim();
     saveSheet(current, currentData);
   }
 }
@@ -172,11 +180,9 @@ function handleNewSheetClick(event) {
 
   // Create new span
   const origHTML = projectMenu.getAttribute('data-orig');
-  const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body
-.firstChild;
+  const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body.firstChild;
   const newSpan = origSpan.cloneNode(true);
-  newSpan.querySelector('span').textContent = `Sheet ${newNum.toString()
-.padStart(2, '0')}`;
+  newSpan.querySelector('span').textContent = `Sheet ${newNum.toString().padStart(2, '0')}`;
   newSpan.id = newKey.replace(/\s+/g, '_');
   projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
 
@@ -191,6 +197,28 @@ function handleNewSheetClick(event) {
 
   // Publish recalc
   pubsub.publish('recalculation', 'go');
+}
+
+// Enable contenteditable on double-click for project-menu spans
+function tabEditHandler(e) {
+  const selecter = e.target.closest('.sheet-selecter');
+  if (selecter) {
+    // Find the child span (the label span inside .sheet-selecter)
+    const labelSpan = selecter.querySelector('span');
+    if (labelSpan) {
+      labelSpan.contentEditable = 'true';
+      labelSpan.focus();
+      const removeEditable = () => {
+        // Remove <br> tags and excess whitespace
+        let text = labelSpan.innerText.replace(/\n/g, ' ');
+        text = text.replace(/\s+/g, ' ').trim();
+        labelSpan.textContent = text;
+        labelSpan.contentEditable = 'false';
+        labelSpan.removeEventListener('focusout', removeEditable);
+      };
+      labelSpan.addEventListener('focusout', removeEditable);
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -208,8 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const deleteButton = document.querySelector('#delete-sheet');
   deleteButton.addEventListener('click', deleteSheetButtonHandler);
 
+  const projectSpans = document.querySelector('div.project-menu');
+  projectSpans.addEventListener('dblclick', tabEditHandler);
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
-export { setupProjectMenu, handleSheetSelectClick, handleVisibilityChange, handleNewSheetClick };
+export { setupProjectMenu, handleSheetSelectClick, handleVisibilityChange, handleNewSheetClick, tabEditHandler };
