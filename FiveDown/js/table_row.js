@@ -1,3 +1,4 @@
+
 // js/table_row.js
 
 import { Data, formatResult } from './dim_data.js';
@@ -207,4 +208,57 @@ class TableRow {
   }
 }
 
-export { TableRow };
+/**
+ * Converts a regular row to a 4-column title row with description spanning name, formula, result, and add-result columns.
+ * @param {HTMLTableRowElement} row - The table row to convert.
+ */
+function convertToTitle(row) {
+  if (row.cells.length === 4 && row.querySelector('.description') && row.querySelector('.description').hasAttribute('colspan')) {
+    return; // Already a 4-column row, no changes needed
+  }
+
+  const table = row.closest('table');
+  const resultThs = table.tHead.rows[0].querySelectorAll('.result');
+  const numResults = resultThs.length;
+
+  // Calculate colspan: name (1) + formula (1) + result columns + add-result (1)
+  // Fix: add 1 more to colspan to match the number of columns
+  const colspan = 2 + numResults + 2;
+
+  // Get existing cells
+  const handleTd = row.querySelector('.handle');
+  const descriptionTd = row.querySelector('.description');
+  const unitTd = row.querySelector('.unit');
+  const deleteTd = row.querySelector('.delete');
+
+  // Remove all cells
+  while (row.cells.length > 0) {
+    row.deleteCell(0);
+  }
+
+  // Rebuild row with 4 columns: handle, description (with colspan), unit, delete
+  row.appendChild(handleTd);
+  descriptionTd.setAttribute('colspan', colspan);
+  row.appendChild(descriptionTd);
+  row.appendChild(unitTd);
+  row.appendChild(deleteTd);
+
+  // Remove from row_collection if it had a name
+  const nameTd = row.querySelector('.name');
+  if (nameTd) {
+    const name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
+    if (name !== '') {
+      table.row_collection.removeRow(name);
+    }
+  }
+
+  // Apply rules for title row
+  if (typeof enforceRowRules === 'function') {
+    enforceRowRules(row);
+  }
+  if (table && table.pubsub && typeof table.pubsub.publish === 'function') {
+    table.pubsub.publish('recalculation', 'go');
+  }
+}
+
+export { TableRow, convertToTitle };

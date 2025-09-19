@@ -1,7 +1,8 @@
 
+
 import { formatResult, formatFormula } from './dim_data.js';
 import { RowCollection, constants } from './row_collection.js';
-import { TableRow } from './table_row.js';
+import { TableRow, convertToTitle } from './table_row.js';
 import { evaluateNow } from './evaluator.js';
 import { default as unit } from './lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
 
@@ -85,52 +86,26 @@ function isBooleanString(str) {
 }
 
 /**
- * Converts a regular row to a 4-column title row with description spanning name, formula, result, and add-result columns.
- * @param {HTMLTableRowElement} row - The table row to convert.
+ * Applies title/subtitle/subsubtitle classes to the description cell based on '=' count in the unit column.
+ * @param {HTMLTableRowElement} row - The table row to update.
  */
-function convertToTitle(row) {
-  if (isFourColumnRow(row)) {
-    return; // Already a 4-column row, no changes needed
-  }
-
-  const table = row.closest('table');
-  const resultThs = table.tHead.rows[0].querySelectorAll('.result');
-  const numResults = resultThs.length;
-
-  // Calculate colspan: name (1) + formula (1) + result columns + add-result (1)
-  // Fix: add 1 more to colspan to match the number of columns
-  const colspan = 2 + numResults + 2;
-
-  // Get existing cells
-  const handleTd = row.querySelector('.handle');
-  const descriptionTd = row.querySelector('.description');
+function setFourColumnClasses(row) {
   const unitTd = row.querySelector('.unit');
-  const deleteTd = row.querySelector('.delete');
-
-  // Remove all cells
-  while (row.cells.length > 0) {
-    row.deleteCell(0);
+  const descTd = row.querySelector('.description');
+  if (!unitTd || !descTd) return;
+  descTd.classList.remove('title', 'subtitle', 'subsubtitle', 'title_c', 'subtitle_c', 'subsubtitle_c', 'title_l', 'subtitle_l', 'subsubtitle_l');
+  const trimmed = unitTd.textContent.trim();
+  if (/^=+$/.test(trimmed)) {
+    let className = '';
+    const n = trimmed.length;
+    if (n === 1) className = 'title_l';
+    else if (n === 2) className = 'title_c';
+    else if (n === 3) className = 'subtitle_l';
+    else if (n === 4) className = 'subtitle_c';
+    else if (n === 5) className = 'subsubtitle_l';
+    else if (n >= 6) className = 'subsubtitle_c';
+    if (className) descTd.classList.add(className);
   }
-
-  // Rebuild row with 4 columns: handle, description (with colspan), unit, delete
-  row.appendChild(handleTd);
-  descriptionTd.setAttribute('colspan', colspan);
-  row.appendChild(descriptionTd);
-  row.appendChild(unitTd);
-  row.appendChild(deleteTd);
-
-  // Remove from row_collection if it had a name
-  const nameTd = row.querySelector('.name');
-  if (nameTd) {
-    const name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
-    if (name !== '') {
-      table.row_collection.removeRow(name);
-    }
-  }
-
-  // Apply rules for title row
-  enforceRowRules(row);
-  table.pubsub.publish('recalculation', 'go');
 }
 
 /**
@@ -147,6 +122,7 @@ function enforceRowRules(row) {
     unitTd.contentEditable = 'true';
     unitTd.tabIndex = 0;
     unitTd.classList.remove('readonly');
+    setFourColumnClasses(row);
     return;
   }
 
@@ -355,19 +331,9 @@ function setupTableInterface(table) {
       } else if (/^=+$/.test(trimmed)) {
         valid = true;
         td.setAttribute('data-value', trimmed);
-        // Convert to title row and set description class
-        convertToTitle(row);
-        const descTd = row.querySelector('.description');
-        descTd.classList.remove('title', 'subtitle', 'subsubtitle', 'title_c', 'subtitle_c', 'subsubtitle_c', 'title_l', 'subtitle_l', 'subsubtitle_l');
-        let className = '';
-        const n = trimmed.length;
-        if (n === 1) className = 'title_l';
-        else if (n === 2) className = 'title_c';
-        else if (n === 3) className = 'subtitle_l';
-        else if (n === 4) className = 'subtitle_c';
-        else if (n === 5) className = 'subsubtitle_l';
-        else if (n >= 6) className = 'subsubtitle_c';
-        if (className) descTd.classList.add(className);
+  // Convert to title row and set description class
+  convertToTitle(row);
+  setFourColumnClasses(row);
       } else {
         try {
           unit(1, trimmed); // throws if not valid
