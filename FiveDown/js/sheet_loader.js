@@ -1,7 +1,7 @@
 // js/sheet_loader.js
 
 import { samples } from './samples.js';
-import { TableRow } from './table_row.js';
+import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { enforceRowRules, ensureBlankFive } from './sheet_interface.js'
 import { formatResult, formatFormula, Data } from './dim_data.js'
@@ -43,18 +43,15 @@ function loadSheet(table, data) {
     let numResults = resultThsTemp.length;
     let newN = numResults;
 
-    if (numResults === 1 && resultThsTemp[0].querySelector('span')
-.textContent.trim() === 'Result')
+    if (numResults === 1 && resultThsTemp[0].querySelector('span').textContent.trim() === 'Result')
       resultThsTemp[0].querySelector('span').textContent = 'Result 0';
 
-    const templateTh = resultThsTemp[0] ? resultThsTemp[0].cloneNode(true) :
-null;
+    const templateTh = resultThsTemp[0] ? resultThsTemp[0].cloneNode(true) : null;
     if (!templateTh) throw new Error('No result column to clone from');
     templateTh.querySelector('span').textContent = 'Result ' + newN;
     theadRow.insertBefore(templateTh, addTh);
 
-    const templateTd = table.blank_row.querySelector('.result').cloneNode(
-true);
+    const templateTd = table.blank_row.querySelector('.result').cloneNode(true);
     templateTd.textContent = '';
     templateTd.setAttribute('data-value', '');
 
@@ -75,6 +72,7 @@ true);
   // Populate rows
   data.rows.forEach(rowData => {
     let newRow = table.blank_row.cloneNode(true);
+    let needsConvertToTitle = false;
     if (rowData !== null) {
       const descriptionTd = newRow.querySelector('.description');
       const nameTd = newRow.querySelector('.name');
@@ -89,33 +87,59 @@ true);
         unitTd.setAttribute('data-value', rowData[2].trim())
 
       const other = rowData[3];
-      if (typeof other === 'string') {
-        // Formula
-        formulaTd.textContent = other;
-        formulaTd.setAttribute('data-value', other);
-        formulaTd.textContent = formatFormula(other);
-      } else if (Array.isArray(other)) {
-        // Results
-        other.forEach((val, idx) => {
-          if (idx < resultTds.length) {
-            const raw = JSON.stringify(val);
-            resultTds[idx].setAttribute('data-value', raw);
-            resultTds[idx].textContent = formatResult(val); 
-          }
+      // Recognize 4-column (title/subtitle) rows: [desc, null, unit, null]
+      if (!name && !other) {
+        // This is a title/subtitle row, convert to 4-column
+        // Set description and unit, then convert
+        descriptionTd.textContent = rowData[0] || '';
+        unitTd.textContent = rowData[2] || '';
+        // Remove any data-value from nameTd and formulaTd
+        if (nameTd) {
+          nameTd.textContent = '';
+          nameTd.removeAttribute('data-value');
+        }
+        if (formulaTd) {
+          formulaTd.textContent = '';
+          formulaTd.removeAttribute('data-value');
+        }
+        // Remove data-value from resultTds
+        resultTds.forEach(td => {
+          td.textContent = '';
+          td.removeAttribute('data-value');
         });
-      }
+        needsConvertToTitle = true;
+      } else {
+        if (typeof other === 'string') {
+          // Formula
+          formulaTd.textContent = other;
+          formulaTd.setAttribute('data-value', other);
+          formulaTd.textContent = formatFormula(other);
+        } else if (Array.isArray(other)) {
+          // Results
+          other.forEach((val, idx) => {
+            if (idx < resultTds.length) {
+              const raw = JSON.stringify(val);
+              resultTds[idx].setAttribute('data-value', raw);
+              resultTds[idx].textContent = formatResult(val); 
+            }
+          });
+        }
 
-      // Add to row_collection if name is present
-      if (name.trim() !== '') {
-        let finalName = name;
-        while (table.row_collection.getRow(finalName))
-          finalName = '_' + finalName;
-        nameTd.setAttribute('data-value', finalName);
-        nameTd.textContent = finalName;
-        table.row_collection.addRow(finalName, new TableRow(newRow));
+        // Add to row_collection if name is present
+        if (name && name.trim() !== '') {
+          let finalName = name;
+          while (table.row_collection.getRow(finalName))
+            finalName = finalName + '_';
+          nameTd.setAttribute('data-value', finalName);
+          nameTd.textContent = finalName;
+          table.row_collection.addRow(finalName, new TableRow(newRow));
+        }
       }
     }
     tbody.appendChild(newRow);
+    if (needsConvertToTitle) {
+      convertToTitle(newRow);
+    }
     enforceRowRules(newRow);
   });
   ensureBlankFive(table)
@@ -152,35 +176,46 @@ function scanSheet(table) {
   const tbodyRows = table.tBodies[0].rows;
   for (let i = 0; i < tbodyRows.length; i++) {
     const tr = tbodyRows[i];
+    // Check if this is a 4-column row (title/subtitle row)
+    const isTitleRow = tr.cells.length === 4 && tr.querySelector('.description') && tr.querySelector('.description').hasAttribute('colspan');
     const description = tr.querySelector('.description').textContent.trim();
-    const name = tr.querySelector('.name').textContent.trim();
-    const unit = tr.querySelector('.unit').getAttribute('data-value');
-    const formulaTd = tr.querySelector('.formula');
-    const formulaData = formulaTd.getAttribute('data-value');
-    const formulaText = formulaTd.textContent.trim();
-    const formula = formulaData !== null ? formulaData : formulaText;
+    const name = tr.querySelector('.name') ? tr.querySelector('.name').textContent.trim() : '';
+    const unit = tr.querySelector('.unit') ? tr.querySelector('.unit').getAttribute('data-value') : '';
+    let formula = '';
+    let results = [];
+    if (isTitleRow) {
+      // Title/subtitle row: no formula or results, just description and unit
+      formula = null;
+      results = null;
+    } else {
+      const formulaTd = tr.querySelector('.formula');
+      const formulaData = formulaTd ? formulaTd.getAttribute('data-value') : null;
+      const formulaText = formulaTd ? formulaTd.textContent.trim() : '';
+      formula = formulaData !== null ? formulaData : formulaText;
+      const resultTds = tr.querySelectorAll('.result');
+      results = [];
+      resultTds.forEach(td => {
+        const dataValue = td.getAttribute('data-value');
+        const textValue = td.textContent.trim();
+        let value = dataValue !== null ? dataValue : textValue;
+        try {
+          value = JSON.parse(value);
+        } catch (e) {
+          // If not parsable, keep as string
+        }
+        results.push(value);
+      });
+    }
 
-    const resultTds = tr.querySelectorAll('.result');
-    const results = [];
-    resultTds.forEach(td => {
-      const dataValue = td.getAttribute('data-value');
-      const textValue = td.textContent.trim();
-      let value = dataValue !== null ? dataValue : textValue;
-      try {
-        value = JSON.parse(value);
-      } catch (e) {
-        // If not parsable, keep as string
-      }
-      results.push(value);
-    });
-
-    const isBlank = !description && !name && !unit && !formula && results.every(
-r => r === '' || r === null);
-    if (isBlank)
+    // For blank rows, keep as null
+    const isBlank = !description && !name && !unit && (!formula || formula === null) && (!results || results.every(r => r === '' || r === null));
+    if (isBlank) {
       rows.push(null);
-    else {
-      const other = formula ? formula : (results.length === 1 ? results[0] :
-results);
+    } else if (isTitleRow) {
+      // For title/subtitle rows, store only description and unit
+      rows.push([description || null, null, unit || null, null]);
+    } else {
+      const other = formula ? formula : results;
       rows.push([description || null, name || null, unit || null, other]);
     }
   }
@@ -254,5 +289,4 @@ function removeStoredSheet(name) {
   localStorage.removeItem(name);
 }
 
-export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet,
-allSheetNames, removeStoredSheet };
+export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, removeStoredSheet };

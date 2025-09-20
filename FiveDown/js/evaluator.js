@@ -57,7 +57,7 @@ function evaluateNow(formula, dictionary, unit) {
   try {
     const ast = parseFormula(formula);
     const data = evaluate(ast, dictionary);
-    return unit ? data.asGivenUnit(unit) : data;
+    return (unit && data._unit) ? data.asGivenUnit(unit) : data;
   } catch (e) {
     return new Data(e);
   }

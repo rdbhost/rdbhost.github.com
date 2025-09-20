@@ -1,4 +1,33 @@
+/* Topbox layout for project menu and delete button */
+.topbox {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+}
+/* Delete sheet button styling */
+#delete-sheet {
+	margin-left: 1em;
+	align-self: flex-start;
+	padding: 0.4em 1.2em;
+	font-size: 1em;
+	background: #f44336;
+	color: #fff;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+#delete-sheet:hover {
+	background: #c62828;
+}
 
+
+/* Error highlight for invalid input */
+.input-error {
+	background-color: pink !important;
+	color: red;
+	transition: background 0.2s;
+}
   .outer-box {
 	margin-left: auto;
 	margin-right: auto;
@@ -9,7 +38,7 @@
   .outer-box .project-menu .sheet-delete{
 	border: none;
 	background-color: transparent;
-  }
+  }	
   
   /* Project menu styling */
   .project-menu {
@@ -217,6 +246,28 @@
 	z-index: 999;
   }
 
+  /* Show data-value attribute as tooltip on hover for td.result */
+  td.result {
+    position: relative;
+  }
+
+  td.result[data-value]:not(:empty):hover::after {
+    content: attr(data-value);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    transform: translateX(-80%) translateY(8px);
+	background: #008000;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+
   /* Non-editable cells */
   
   td.readonly {
@@ -256,6 +307,61 @@
 
 	 content: ' (*unit-conv)';
 	 color: blue;
-	 font-size: smaller;
+	font-size: smaller;
   }
+
+/* Show data-computed-unit as tooltip on hover for td.unit, only if not empty */
+td.unit[data-computed-unit]:not(:empty):hover::after {
+	content: attr(data-computed-unit);
+	position: absolute;
+	left: 0;
+	top: 100%;
+	transform: translateX(-80%) translateY(8px);
+				background: #888;
+				color: #fff;
+	color: #fff;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.9em;
+	white-space: nowrap;
+	z-index: 1000;
+	pointer-events: none;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+td.unit {
+	position: relative;
+}
   
+
+  
+ /* Title/subtitle/subsubtitle styles for description cells, up to 6 levels */
+.title_c {
+	font-size: 1.5em;
+	font-weight: bold;
+	text-align: center;
+}
+.subtitle_c {
+	font-size: 1.25em;
+	font-weight: 600;
+	text-align: center;
+}
+.subsubtitle_c {
+	font-size: 1.1em;
+	font-weight: 500;
+	text-align: center;
+}
+.title_l {
+	font-size: 1.5em;
+	font-weight: bold;
+	text-align: left;
+}
+.subtitle_l {
+	font-size: 1.25em;
+	font-weight: 600;
+	text-align: left;
+}
+.subsubtitle_l {
+	font-size: 1.1em;
+	font-weight: 500;
+	text-align: left;
+}

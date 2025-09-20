@@ -1,7 +1,8 @@
+
 // js/project_menu.js
 
-import { allSheetNames, loadSheet, saveSheet, retrieveSheet, removeStoredSheet,
-scanSheet } from './sheet_loader.js';
+import { allSheetNames, loadSheet, scanSheet, saveSheet, 
+            retrieveSheet, removeStoredSheet } from './sheet_loader.js';
 
 /**
  * Sets up the project menu by populating sheet selectors and loading the
@@ -23,7 +24,7 @@ function setupProjectMenu() {
   // Get all sheet names as dictionary
   let sheetDict = allSheetNames();
   if (Object.keys(sheetDict).length === 0)
-    sheetDict = { 'sheet_00': 'Sheet 00' };
+    sheetDict = { 'sheet00': 'Sheet 00' };
 
   // Add spans for each sheet entry
   Object.entries(sheetDict).forEach(([key, title]) => {
@@ -34,7 +35,7 @@ function setupProjectMenu() {
   });
 
   // Retrieve current-sheet from localStorage
-  let currentSheet = localStorage.getItem('current-sheet') || 'sheet_00';
+  let currentSheet = localStorage.getItem('current-sheet') || 'sheet00';
   if (!Object.keys(sheetDict).includes(currentSheet))
     currentSheet = Object.keys(sheetDict)[0];
 
@@ -43,11 +44,11 @@ function setupProjectMenu() {
   if (sheetData)
     loadSheet(table, sheetData);
 
-  // Move current span to leftmost and add active class
-  const currentSpan = projectMenu.querySelector(`#${currentSheet.replace(/\s+/g, '_')}`);
+  // Move current span to leftmost and activate
+  const currentSpan = projectMenu.querySelector(`#${currentSheet}`);
   if (currentSpan) {
     projectMenu.insertBefore(currentSpan, projectMenu.firstChild);
-    currentSpan.classList.add('active');
+    activateSheetSpan(currentSpan);
   }
 
   // Publish recalc
@@ -68,6 +69,10 @@ function handleSheetSelectClick(event) {
   const current = localStorage.getItem('current-sheet');
   if (current) {
     const currentData = scanSheet(table);
+    // Fetch the title from the active span.sheet-selecter
+    const activeSpan = document.querySelector('.sheet-selecter.active span');
+    if (activeSpan) 
+      currentData.title = activeSpan.textContent.trim();
     saveSheet(current, currentData);
   }
 
@@ -87,27 +92,26 @@ function handleSheetSelectClick(event) {
 }
 
 /**
- * Handles click on sheet delete button.
- * @param {Event} event - The click event.
+ * Handler for the delete-sheet button click event.
  */
-function handleSheetDeleteClick(event) {
-  event.stopPropagation(); // Prevent triggering sheet select
-  const span = event.target.closest('.sheet-selecter');
-  const key = span.id.replace(/_/g, ' '); // Restore key from id
+export function deleteSheetButtonHandler() {
+  // Get current sheet identity from localStorage (assume a key like 'currentSheet' or similar is used)
+  let key = localStorage.getItem('current-sheet');
   const table = document.querySelector('table#main-sheet');
   const pubsub = table.pubsub;
   const projectMenu = document.querySelector('.project-menu');
-
-  // Remove from storage
+  const span = document.querySelector('#'+key)
+  
+  // Remove from localStorage
   removeStoredSheet(key);
 
-  // Remove span
-  span.remove();
+  // Remove the span from the project menu
+  if (span) 
+    span.parentElement.removeChild(span);
 
   // Choose first remaining
   const remainingSpans = projectMenu.querySelectorAll('.sheet-selecter');
-  let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id.replace(
-/_/g, ' ') : 'sheet_00';
+  let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
 
   // Load new current
   const newData = retrieveSheet(newCurrent);
@@ -118,12 +122,14 @@ function handleSheetDeleteClick(event) {
   localStorage.setItem('current-sheet', newCurrent);
 
   // Activate the new current span
-  const newSpan = projectMenu.querySelector(`#${newCurrent.replace(/\s+/g, '_')}`);
+  const newSpan = projectMenu.querySelector(`#${newCurrent}`);
   activateSheetSpan(newSpan);
 
   // Publish recalc
   pubsub.publish('recalculation', 'go');
+
 }
+
 
 /**
  * Handles visibility change to save current sheet.
@@ -133,6 +139,10 @@ function handleVisibilityChange() {
   const current = localStorage.getItem('current-sheet');
   if (current) {
     const currentData = scanSheet(table);
+    // Fetch the title from the active span.sheet-selecter
+    const activeSpan = document.querySelector('.sheet-selecter.active span');
+    if (activeSpan) 
+      currentData.title = activeSpan.textContent.trim();
     saveSheet(current, currentData);
   }
 }
@@ -170,11 +180,9 @@ function handleNewSheetClick(event) {
 
   // Create new span
   const origHTML = projectMenu.getAttribute('data-orig');
-  const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body
-.firstChild;
+  const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body.firstChild;
   const newSpan = origSpan.cloneNode(true);
-  newSpan.querySelector('span').textContent = `Sheet ${newNum.toString()
-.padStart(2, '0')}`;
+  newSpan.querySelector('span').textContent = `Sheet ${newNum.toString().padStart(2, '0')}`;
   newSpan.id = newKey.replace(/\s+/g, '_');
   projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
 
@@ -191,6 +199,28 @@ function handleNewSheetClick(event) {
   pubsub.publish('recalculation', 'go');
 }
 
+// Enable contenteditable on double-click for project-menu spans
+function tabEditHandler(e) {
+  const selecter = e.target.closest('.sheet-selecter');
+  if (selecter) {
+    // Find the child span (the label span inside .sheet-selecter)
+    const labelSpan = selecter.querySelector('span');
+    if (labelSpan) {
+      labelSpan.contentEditable = 'true';
+      labelSpan.focus();
+      const removeEditable = () => {
+        // Remove <br> tags and excess whitespace
+        let text = labelSpan.innerText.replace(/\n/g, ' ');
+        text = text.replace(/\s+/g, ' ').trim();
+        labelSpan.textContent = text;
+        labelSpan.contentEditable = 'false';
+        labelSpan.removeEventListener('focusout', removeEditable);
+      };
+      labelSpan.addEventListener('focusout', removeEditable);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   setupProjectMenu();
 
@@ -199,14 +229,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = e.target;
     if (target.closest('.sheet-selecter') && !target.closest('.sheet-delete'))
       handleSheetSelectClick(e);
-    if (target.closest('.sheet-delete'))
-      handleSheetDeleteClick(e);
     if (target.closest('#new-sheet'))
       handleNewSheetClick(e);
   });
 
+  const deleteButton = document.querySelector('#delete-sheet');
+  deleteButton.addEventListener('click', deleteSheetButtonHandler);
+
+  const projectSpans = document.querySelector('div.project-menu');
+  projectSpans.addEventListener('dblclick', tabEditHandler);
+
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
-export { setupProjectMenu, handleSheetSelectClick, handleSheetDeleteClick,
-handleVisibilityChange, handleNewSheetClick };
+export { setupProjectMenu, handleSheetSelectClick, handleVisibilityChange, handleNewSheetClick, tabEditHandler };

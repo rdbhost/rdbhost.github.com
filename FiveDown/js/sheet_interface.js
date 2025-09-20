@@ -1,9 +1,11 @@
-// js/sheet_interface.js
 
-import { formatResult, formatFormula } from './dim_data.js'
+
+import { formatResult, formatFormula } from './dim_data.js';
 import { RowCollection, constants } from './row_collection.js';
-import { TableRow } from './table_row.js';
+import { TableRow, convertToTitle } from './table_row.js';
 import { evaluateNow } from './evaluator.js';
+import { default as unit } from './lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
+
 
 /**
  * Checks if a table row is blank by examining the content of specific cells.
@@ -17,13 +19,22 @@ function isBlankRow(tr) {
   const unitTd = tr.querySelector('.unit');
   const resultTds = tr.querySelectorAll('.result');
   if (descriptionTd.textContent.trim() !== '') return false;
-  if (nameTd.textContent.trim() !== '') return false;
-  if (formulaTd.textContent.trim() !== '') return false;
+  if (nameTd && nameTd.textContent.trim() !== '') return false;
+  if (formulaTd && formulaTd.textContent.trim() !== '') return false;
   if (unitTd.textContent.trim() !== '') return false;
   for (let td of resultTds) {
     if (td.textContent.trim() !== '') return false;
   }
   return true;
+}
+
+/**
+ * Checks if a row is a 4-column row (handle, description with colspan, unit, delete).
+ * @param {HTMLTableRowElement} row - The table row to check.
+ * @returns {boolean} True if the row has 4 columns, false otherwise.
+ */
+function isFourColumnRow(row) {
+  return row.cells.length === 4 && row.querySelector('.description').hasAttribute('colspan');
 }
 
 /**
@@ -75,11 +86,46 @@ function isBooleanString(str) {
 }
 
 /**
+ * Applies title/subtitle/subsubtitle classes to the description cell based on '=' count in the unit column.
+ * @param {HTMLTableRowElement} row - The table row to update.
+ */
+function setFourColumnClasses(row) {
+  const unitTd = row.querySelector('.unit');
+  const descTd = row.querySelector('.description');
+  if (!unitTd || !descTd) return;
+  descTd.classList.remove('title', 'subtitle', 'subsubtitle', 'title_c', 'subtitle_c', 'subsubtitle_c', 'title_l', 'subtitle_l', 'subsubtitle_l');
+  const trimmed = unitTd.textContent.trim();
+  if (/^=+$/.test(trimmed)) {
+    let className = '';
+    const n = trimmed.length;
+    if (n === 1) className = 'title_l';
+    else if (n === 2) className = 'title_c';
+    else if (n === 3) className = 'subtitle_l';
+    else if (n === 4) className = 'subtitle_c';
+    else if (n === 5) className = 'subsubtitle_l';
+    else if (n >= 6) className = 'subsubtitle_c';
+    if (className) descTd.classList.add(className);
+  }
+}
+
+/**
  * Enforces editing rules on a table row based on the content of formula and result cells.
  * @param {HTMLTableRowElement} row - The table row to enforce rules on.
  */
-// Paste the enforceRowRules function here for testing
 function enforceRowRules(row) {
+  if (isFourColumnRow(row)) {
+    const descriptionTd = row.querySelector('.description');
+    const unitTd = row.querySelector('.unit');
+    descriptionTd.contentEditable = 'true';
+    descriptionTd.tabIndex = 0;
+    descriptionTd.classList.remove('readonly');
+    unitTd.contentEditable = 'true';
+    unitTd.tabIndex = 0;
+    unitTd.classList.remove('readonly');
+    setFourColumnClasses(row);
+    return;
+  }
+
   const formulaTd = row.querySelector('.formula');
   const formulaData = formulaTd.getAttribute('data-value');
   const formulaText = formulaTd.textContent.trim();
@@ -157,13 +203,19 @@ function addResultColumn(table) {
   templateTd.setAttribute('data-value', '');
 
   for (let row of table.tBodies[0].rows) {
-    const addTd = row.querySelector('.add-result');
-    const newTd = templateTd.cloneNode(true);
-    row.insertBefore(newTd, addTd);
-    enforceRowRules(row);
+    if (isFourColumnRow(row)) {
+      const descriptionTd = row.querySelector('.description');
+      const currentColspan = parseInt(descriptionTd.getAttribute('colspan') || '1');
+      descriptionTd.setAttribute('colspan', currentColspan + 1);
+    } else {
+      const addTd = row.querySelector('.add-result');
+      const newTd = templateTd.cloneNode(true);
+      row.insertBefore(newTd, addTd);
+      enforceRowRules(row);
+    }
   }
 
-  const blankAddTd = table.blank_row.querySelector('.add-result');
+  const blankAddTd = table.blank_row.querySelector('.result');
   const blankNewTd = templateTd.cloneNode(true);
   table.blank_row.insertBefore(blankNewTd, blankAddTd);
 }
@@ -173,9 +225,10 @@ function addResultColumn(table) {
  * @param {HTMLTableElement} table - The table to set up.
  */
 function setupTableInterface(table) {
+
   let blankRow = null;
   for (let tr of table.tBodies[0].rows) {
-    if (isBlankRow(tr)) {
+    if (isBlankRow(tr) && !isFourColumnRow(tr)) {
       blankRow = tr.cloneNode(true);
       break;
     }
@@ -211,7 +264,7 @@ function setupTableInterface(table) {
     const newRaw = currentText;
     if (td.classList.contains('name')) {
       let newName = currentText.trim();
-      // Replace invalid characters (including '.') with underscores
+      // Replace invalid characters with underscores
       newName = newName.replace(/[^a-zA-Z0-9_]/g, '_');
       // Remove leading digits and underscores
       newName = newName.replace(/^[0-9_]+/, '');
@@ -231,6 +284,7 @@ function setupTableInterface(table) {
         if (finalName !== '') 
           table.row_collection.addRow(finalName, new TableRow(row));
         ensureBlankFive(table);
+        table.pubsub.publish('recalculation', 'go');
       }
     } else if (td.classList.contains('formula')) {
       td.setAttribute('data-value', newRaw);
@@ -238,20 +292,16 @@ function setupTableInterface(table) {
       td.textContent = formatted;
       if (newRaw !== oldRaw) 
          table.pubsub.publish('recalculation', 'go');
-
     } else if (td.classList.contains('result')) {
       if (newRaw === oldRaw) {
-        // td.setAttribute('data-value', newRaw);
         let d;
         try {
           d = JSON.parse(oldRaw);
-        }
-        catch(e) {
+        } catch (e) {
           d = oldRaw;
         }
         td.textContent = formatResult(d);
-      }
-      else {
+      } else {
         const unitTd = row.querySelector('.unit');
         const unit = unitTd.textContent.trim() || unitTd.getAttribute('data-value') || '';
         const resultTds = Array.from(row.querySelectorAll('.result'));
@@ -271,11 +321,38 @@ function setupTableInterface(table) {
     } else if (td.classList.contains('description')) {
         ensureBlankFive(table);
     } else if (td.classList.contains('unit')) {
-      if (newRaw !== '')
-        td.setAttribute('data-value', newRaw);
-      else {
+      // Validation: blank, one or more '=', or valid UnitMath unit
+      const trimmed = newRaw.trim();
+      let valid = false;
+      if (trimmed === '') {
+        valid = true;
         td.removeAttribute('data-value');
-        td.textContent = ''; // clear <br> 
+        td.textContent = '';
+      } else if (/^=+$/.test(trimmed)) {
+        valid = true;
+        td.setAttribute('data-value', trimmed);
+  // Convert to title row and set description class
+  convertToTitle(row);
+  setFourColumnClasses(row);
+      } else {
+        try {
+          unit(1, trimmed); // throws if not valid
+          valid = true;
+          td.setAttribute('data-value', trimmed);
+        } catch (e) {
+          valid = false;
+        }
+      }
+      if (!valid) {
+        // Show error, keep bad value, then revert after timeout
+        td.classList.add('input-error');
+        const badValue = td.textContent;
+        setTimeout(() => {
+          td.textContent = oldRaw;
+          td.setAttribute('data-value', oldRaw);
+          td.classList.remove('input-error');
+        }, 1500);
+        return;
       }
       if (newRaw !== oldRaw) 
         table.pubsub.publish('recalculation', 'go');
@@ -292,14 +369,17 @@ function setupTableInterface(table) {
     const copyRow = originalRow.cloneNode(true);
     originalRow.after(copyRow);
     const nameTd = copyRow.querySelector('.name');
-    let name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
-    let newName = name;
-    while (table.row_collection.getRow(newName)) 
-      newName = '_' + newName;
-    nameTd.setAttribute('data-value', newName);
-    nameTd.textContent = newName;
-    if (newName !== '') 
-      table.row_collection.addRow(newName, new TableRow(copyRow));
+    if (nameTd) {
+      let name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
+      let newName = name;
+      while (table.row_collection.getRow(newName)) 
+        newName = newName + '_';
+      nameTd.setAttribute('data-value', newName);
+      nameTd.textContent = newName;
+      if (newName !== '') 
+        table.row_collection.addRow(newName, new TableRow(copyRow));
+      table.pubsub.publish('recalculation', 'go');
+    }
     enforceRowRules(copyRow);
     ensureBlankFive(table);
   });
@@ -310,7 +390,7 @@ function setupTableInterface(table) {
     if (!td.classList.contains('delete')) return;
     const row = td.parentNode;
     const nameTd = row.querySelector('.name');
-    const name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
+    const name = nameTd ? (nameTd.getAttribute('data-value') || nameTd.textContent.trim()) : '';
     if (name !== '') 
       table.row_collection.removeRow(name);
     row.parentNode.removeChild(row);
@@ -329,7 +409,15 @@ function setupTableInterface(table) {
       const theadRow = th.parentNode;
       theadRow.removeChild(th);
       for (let row of table.tBodies[0].rows) {
-        row.deleteCell(colIdx);
+        if (isFourColumnRow(row)) {
+          const descriptionTd = row.querySelector('.description');
+          const currentColspan = parseInt(descriptionTd.getAttribute('colspan') || '1');
+          if (currentColspan > 3) { // Ensure at least name, formula, and add-result are spanned
+            descriptionTd.setAttribute('colspan', currentColspan - 1);
+          }
+        } else {
+          row.deleteCell(colIdx);
+        }
       }
       table.blank_row.deleteCell(colIdx);
     }

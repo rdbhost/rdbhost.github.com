@@ -20,7 +20,7 @@ const samples = {
     operators: {
         "header": ["scalar, scalar", "vector, vector", "scalar, vector", "vector, scalar", "boolean"],
         "rows":   [null,
-                  ["======= This sheet can be modified, but not resaved.  Fiddle away", "", "", ""],
+                  ["This sheet can be modified, but not resaved.  Fiddle away", "", "==", ""],
                   null,
                   ["First value",             "a",          "cm",     [2, [2,3,4], 3, [1,2,3], true] ],
                   ["Second value",            "b",          "cm",   [3.0, [1.0,-1,-2], [5.0,6.1,1], 2, false] ],
