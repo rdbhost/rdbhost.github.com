@@ -2,7 +2,7 @@
 
 import { formatResult, formatFormula } from './dim_data.js';
 import { RowCollection, constants } from './row_collection.js';
-import { TableRow, convertToTitle } from './table_row.js';
+import { TableRow, convertToTitle, convertFromTitle } from './table_row.js';
 import { evaluateNow } from './evaluator.js';
 import { default as unit } from './lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
 
@@ -324,16 +324,18 @@ function setupTableInterface(table) {
       // Validation: blank, one or more '=', or valid UnitMath unit
       const trimmed = newRaw.trim();
       let valid = false;
+      const wasEquals = /^=+$/.test(oldRaw.trim());
+      const isEquals = /^=+$/.test(trimmed);
       if (trimmed === '') {
         valid = true;
         td.removeAttribute('data-value');
         td.textContent = '';
-      } else if (/^=+$/.test(trimmed)) {
+      } else if (isEquals) {
         valid = true;
         td.setAttribute('data-value', trimmed);
-  // Convert to title row and set description class
-  convertToTitle(row);
-  setFourColumnClasses(row);
+        // Convert to title row and set description class
+        convertToTitle(row);
+        setFourColumnClasses(row);
       } else {
         try {
           unit(1, trimmed); // throws if not valid
@@ -342,6 +344,10 @@ function setupTableInterface(table) {
         } catch (e) {
           valid = false;
         }
+      }
+      // If it was a title row and is no longer, convert back
+      if (wasEquals && !isEquals) {
+        convertFromTitle(row);
       }
       if (!valid) {
         // Show error, keep bad value, then revert after timeout
