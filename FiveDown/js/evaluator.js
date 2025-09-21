@@ -54,6 +54,8 @@ document.addEventListener('DOMContentLoaded', setupEvaluator);
  * @returns {Data} The result of the evaluation as a Data instance, converted to the specified unit.
  */
 function evaluateNow(formula, dictionary, unit) {
+  if (formula === null || formula.trim() === '') 
+    return new Data('');
   try {
     const ast = parseFormula(formula);
     const data = evaluate(ast, dictionary);
