@@ -248,15 +248,8 @@ function convertToTitle(row) {
     const name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
     if (name !== '') {
       table.row_collection.removeRow(name);
+      table.pubsub.publish('recalculation', 'go');
     }
-  }
-
-  // Apply rules for title row
-  if (typeof enforceRowRules === 'function') {
-    enforceRowRules(row);
-  }
-  if (table && table.pubsub && typeof table.pubsub.publish === 'function') {
-    table.pubsub.publish('recalculation', 'go');
   }
 }
 
