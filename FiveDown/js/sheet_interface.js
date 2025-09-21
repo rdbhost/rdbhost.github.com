@@ -210,6 +210,16 @@ function addResultColumn(table) {
     } else {
       const addTd = row.querySelector('.add-result');
       const newTd = templateTd.cloneNode(true);
+      // Copy nonblank value from rightmost existing result column
+      const resultTds = row.querySelectorAll('.result');
+      if (resultTds.length > 0) {
+        const rightmost = resultTds[resultTds.length - 1];
+        const val = rightmost.getAttribute('data-value');
+        if (val && val.trim() !== '') {
+          newTd.setAttribute('data-value', val);
+          newTd.textContent = rightmost.textContent;
+        }
+      }
       row.insertBefore(newTd, addTd);
       enforceRowRules(row);
     }
@@ -218,6 +228,11 @@ function addResultColumn(table) {
   const blankAddTd = table.blank_row.querySelector('.result');
   const blankNewTd = templateTd.cloneNode(true);
   table.blank_row.insertBefore(blankNewTd, blankAddTd);
+
+  // Publish recalculation after adding the column
+  if (table.pubsub && typeof table.pubsub.publish === 'function') {
+    table.pubsub.publish('recalculation', 'go');
+  }
 }
 
 /**
