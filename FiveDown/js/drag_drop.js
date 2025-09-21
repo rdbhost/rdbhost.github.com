@@ -80,6 +80,10 @@ function setupDragDrop(table) {
 
       // Move cells in tbody rows
       for (let r of tbody.rows) {
+        // If row is a 4-column (title/subtitle) row, skip moving result columns
+        if (r.cells.length === 4 && r.querySelector('.description') && r.querySelector('.description').hasAttribute('colspan')) {
+          continue;
+        }
         const cell = r.cells[oldIndex];
         if (oldIndex < newIndex) {
           r.insertBefore(cell, r.cells[newIndex + 1]);
