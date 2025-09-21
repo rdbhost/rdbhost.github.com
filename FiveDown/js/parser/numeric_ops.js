@@ -133,13 +133,16 @@ const binaryOps = {
     if (aTyp !== bTyp) throw new Error('Type mismatch in +');
     if (aTyp !== 'number' && aTyp !== 'vector') throw new Error('Invalid type for +');
     // Allow unitless addition
-    if (!a.unit() && !b.unit()) {
+    if ((!a.unit() || a.unit() === '') && (!b.unit() || b.unit() === '')) {
       const resultVal = addVal(a.val(), b.val());
       return new Data(resultVal, '');
     }
-    const bConv = b.asGivenUnit(a.unit())[0];
-    const resultVal = addVal(a.val(), bConv.val());
-    return new Data(resultVal, a.unit());
+    // If one is unitless, treat as the other's unit
+    let unitToUse = a.unit() || b.unit();
+    const bConv = b.asGivenUnit(unitToUse)[0];
+    const aConv = a.asGivenUnit(unitToUse)[0];
+    const resultVal = addVal(aConv.val(), bConv.val());
+    return new Data(resultVal, unitToUse);
   },
   '-': (a, b) => {
     const aTyp = a.type();
@@ -147,13 +150,16 @@ const binaryOps = {
     if (aTyp !== bTyp) throw new Error('Type mismatch in -');
     if (aTyp !== 'number' && aTyp !== 'vector') throw new Error('Invalid type for -');
     // Allow unitless subtraction
-    if (!a.unit() && !b.unit()) {
+    if ((!a.unit() || a.unit() === '') && (!b.unit() || b.unit() === '')) {
       const resultVal = subtractVal(a.val(), b.val());
       return new Data(resultVal, '');
     }
-    const bConv = b.asGivenUnit(a.unit())[0];
-    const resultVal = subtractVal(a.val(), bConv.val());
-    return new Data(resultVal, a.unit());
+    // If one is unitless, treat as the other's unit
+    let unitToUse = a.unit() || b.unit();
+    const bConv = b.asGivenUnit(unitToUse)[0];
+    const aConv = a.asGivenUnit(unitToUse)[0];
+    const resultVal = subtractVal(aConv.val(), bConv.val());
+    return new Data(resultVal, unitToUse);
   },
   '*': (a, b) => {
     const aBase = a.asBaseUnit();
@@ -171,6 +177,10 @@ const binaryOps = {
       siResult = crossProduct(aBase.val(), bBase.val());
     } else {
       throw new Error('Invalid types for *');
+    }
+    // If both are unitless, result is unitless
+    if ((!aBase.unit()) && (!bBase.unit())) {
+      return new Data(siResult, '');
     }
     let dims = parseDims(aBase.unit());
     const bDims = parseDims(bBase.unit());
@@ -191,6 +201,10 @@ const binaryOps = {
     } else {
       throw new Error('Invalid types for /');
     }
+    // If both are unitless, result is unitless
+    if ((!aBase.unit()) && (!bBase.unit())) {
+      return new Data(siResult, '');
+    }
     let dims = parseDims(aBase.unit());
     const bDims = parseDims(bBase.unit());
     for (let [k, v] of bDims) dims.set(k, (dims.get(k) || 0) - v);
@@ -201,9 +215,16 @@ const binaryOps = {
     const aTyp = a.type();
     const bTyp = b.type();
     if (aTyp !== 'number' || bTyp !== 'number') throw new Error('% for numbers only');
-    const bConv = b.asGivenUnit(a.unit())[0];
-    const resultVal = a.val() % bConv.val();
-    return new Data(resultVal, a.unit());
+    // If both are unitless, result is unitless
+    if ((!a.unit() || a.unit() === '') && (!b.unit() || b.unit() === '')) {
+      const resultVal = a.val() % b.val();
+      return new Data(resultVal, '');
+    }
+    const unitToUse = a.unit() || b.unit();
+    const bConv = b.asGivenUnit(unitToUse)[0];
+    const aConv = a.asGivenUnit(unitToUse)[0];
+    const resultVal = aConv.val() % bConv.val();
+    return new Data(resultVal, unitToUse);
   },
   '^': (a, b) => {
     const aTyp = a.type();
@@ -213,6 +234,10 @@ const binaryOps = {
     const siA = aBase.val();
     const power = b.val();
     const siResult = Math.pow(siA, power);
+    // If base is unitless, result is unitless
+    if (!aBase.unit()) {
+      return new Data(siResult, '');
+    }
     let dims = parseDims(aBase.unit());
     for (let [k, v] of dims) dims.set(k, v * power);
     const newUnit = unitToString(dims);
@@ -351,9 +376,32 @@ const functions = {
   acos: (a) => invTrigFunction(Math.acos, a),
   atan: (a) => invTrigFunction(Math.atan, a),
   atan2: (y, x) => {
-    if (y.unit() || x.unit()) throw new Error('atan2 expects unitless arguments');
+    // Accept unitless, rad, or degree for both arguments
+    const allowedUnits = ['', 'rad', 'deg', 'degree', 'degrees'];
     if (y.type() !== 'number' || x.type() !== 'number') throw new Error('atan2 for numbers only');
-    const resultVal = Math.atan2(y.val(), x.val());
+    let yUnit = y.unit() || '';
+    let xUnit = x.unit() || '';
+    if (!allowedUnits.includes(yUnit) || !allowedUnits.includes(xUnit)) {
+      throw new Error('atan2 expects unitless, rad, or degree arguments');
+    }
+    // Convert degrees to radians if needed
+    let yVal = y.val();
+    let xVal = x.val();
+    if (yUnit === 'deg' || yUnit === 'degree' || yUnit === 'degrees') {
+      yVal = yVal * (Math.PI / 180);
+      yUnit = 'rad';
+    }
+    if (xUnit === 'deg' || xUnit === 'degree' || xUnit === 'degrees') {
+      xVal = xVal * (Math.PI / 180);
+      xUnit = 'rad';
+    }
+    // If one is rad and the other is unitless, treat as rad
+    // If both are rad, fine; if both are unitless, fine
+    // If one is rad and one is unitless, that's fine
+    // If one is rad and one is deg, both are now rad
+    // If one is deg and one is unitless, treat as deg (convert unitless to deg? No, treat as rad)
+    // For simplicity, after conversion, both are numbers in radians
+    const resultVal = Math.atan2(yVal, xVal);
     if (Number.isNaN(resultVal)) throw new Error('invalid inputs to atan2');
     return new Data(resultVal);
   },
@@ -403,6 +451,12 @@ const functions = {
   min: (...args) => {
     if (args.length < 2) throw new Error('min requires at least 2 arguments');
     args.forEach(arg => { if (arg.type() !== 'number') throw new Error('min for numbers only'); });
+    // If all are unitless, result is unitless
+    if (args.every(arg => !arg.unit())) {
+      const vals = args.map(arg => arg.val());
+      const resultVal = Math.min(...vals);
+      return new Data(resultVal, '');
+    }
     const unit = args[0].unit();
     const vals = args.map(arg => arg.asGivenUnit(unit)[0].val());
     const resultVal = Math.min(...vals);
@@ -411,7 +465,14 @@ const functions = {
   max: (...args) => {
     if (args.length < 2) throw new Error('max requires at least 2 arguments');
     args.forEach(arg => { if (arg.type() !== 'number') throw new Error('max for numbers only'); });
-    const unit = args[0].unit();
+    // If all are unitless, result is unitless
+    if (args.every(arg => !arg.unit() || arg.unit() === '')) {
+      const vals = args.map(arg => arg.val());
+      const resultVal = Math.max(...vals);
+      return new Data(resultVal, '');
+    }
+    // Use the first non-empty unit
+    const unit = args.find(arg => arg.unit() && arg.unit() !== '').unit() || '';
     const vals = args.map(arg => arg.asGivenUnit(unit)[0].val());
     const resultVal = Math.max(...vals);
     return new Data(resultVal, unit);
