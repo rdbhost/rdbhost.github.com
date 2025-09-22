@@ -225,6 +225,8 @@ class TableRow {
       checkbox.style.display = 'inline';
     } else if (a === 'hidden') {
       checkbox.style.display = 'none';
+    } else if (a === 'show') {
+      checkbox.style.display = 'inline';
     } else if (a == null) {
       // do not change state, just return
     }
