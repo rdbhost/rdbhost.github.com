@@ -1,4 +1,4 @@
-import { buildDependencyTree, dependencyOrder } from '../js/row_collection.js';
+import { buildDependencyTree, dependencyOrder } from '../js/evaluator.js';
 import { TableRow } from '../js/table_row.js';
 
 // Helper: create a TableRow from name and formula
