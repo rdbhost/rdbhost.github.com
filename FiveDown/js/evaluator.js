@@ -278,4 +278,51 @@ function dependencyOrder(tree) {
   return result;
 }
 
-export { setupEvaluator, evaluateNow, recalculateRows, recalculateColumn, buildDependencyTree, dependencyOrder };
+// Returns a list of leaf node names (depends on nothing)
+function getLeafNodes(tree) {
+  // Traverse the tree and collect names of nodes with no dependencies
+  const leafs = [];
+  function visit(node) {
+    if (!node) return;
+    if (node.type === 'group' && node.dependencies) {
+      for (const child of node.dependencies) visit(child);
+    } else if (node.type && node.dependencies !== undefined) {
+      if (!node.dependencies || node.dependencies.length === 0) {
+        leafs.push(node.name);
+      }
+      if (Array.isArray(node.dependencies)) {
+        for (const child of node.dependencies) visit(child);
+      }
+    }
+  }
+  visit(tree);
+  // Remove duplicates
+  return Array.from(new Set(leafs));
+}
+
+// Returns a list of root node names (nobody depends on them)
+function getRootNodes(tree) {
+  // First, collect all nodes and their children
+  const allNodes = new Set();
+  const childNodes = new Set();
+  function visit(node) {
+    if (!node) return;
+    if (node.type === 'group' && node.dependencies) {
+      for (const child of node.dependencies) visit(child);
+    } else if (node.type && node.dependencies !== undefined) {
+      allNodes.add(node.name);
+      if (Array.isArray(node.dependencies)) {
+        for (const child of node.dependencies) {
+          childNodes.add(child.name);
+          visit(child);
+        }
+      }
+    }
+  }
+  visit(tree);
+  // Roots are nodes that are never a dependency of another
+  const roots = Array.from(allNodes).filter(name => !childNodes.has(name));
+  return roots;
+}
+
+export { setupEvaluator, evaluateNow, recalculateRows, recalculateColumn, buildDependencyTree, dependencyOrder, getRootNodes, getLeafNodes };

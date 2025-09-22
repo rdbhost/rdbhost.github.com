@@ -1,4 +1,4 @@
-import { buildDependencyTree, dependencyOrder } from '../js/evaluator.js';
+import { buildDependencyTree, dependencyOrder, getRootNodes, getLeafNodes } from '../js/evaluator.js';
 import { TableRow } from '../js/table_row.js';
 
 // Helper: create a TableRow from name and formula
@@ -94,4 +94,37 @@ QUnit.module('Dependency Tree and Order', hooks => {
     assert.ok(order.includes('D'), 'D is included');
     assert.ok(order.indexOf('C') > order.indexOf('A'), 'C after A');
   });
+});
+
+// Test getRootNodes and getLeafNodes using QUnit
+QUnit.module('Dependency Roots and Leafs');
+
+QUnit.test('getRootNodes returns correct root nodes', function(assert) {
+  const rows = {
+    A: { name: () => 'A', formula: () => '' },
+    B: { name: () => 'B', formula: () => 'A' },
+    C: { name: () => 'C', formula: () => 'B' },
+    D: { name: () => 'D', formula: () => 'B' },
+    E: { name: () => 'E', formula: () => 'A' },
+    F: { name: () => 'F', formula: () => 'D + E' }
+  };
+  const tree = buildDependencyTree(rows);
+  const roots = getRootNodes(tree);
+  // Roots: nobody depends on them (C and F)
+  assert.deepEqual(roots.sort(), ['C', 'F'].sort(), 'C and F are root nodes (nobody depends on them)');
+});
+
+QUnit.test('getLeafNodes returns correct leaf nodes', function(assert) {
+  const rows = {
+    A: { name: () => 'A', formula: () => '' },
+    B: { name: () => 'B', formula: () => 'A' },
+    C: { name: () => 'C', formula: () => 'B' },
+    D: { name: () => 'D', formula: () => 'B' },
+    E: { name: () => 'E', formula: () => 'A' },
+    F: { name: () => 'F', formula: () => 'D + E' }
+  };
+  const tree = buildDependencyTree(rows);
+  const leafs = getLeafNodes(tree);
+  // Leafs: depend on nothing (A)
+  assert.deepEqual(leafs.sort(), ['A'].sort(), 'A is a leaf node (depends on nothing)');
 });
