@@ -429,6 +429,10 @@ const functions = {
     return new Data(r);
   },
   min: (...args) => {
+    // If a single vector argument, call min with its elements
+    if (args.length === 1 && args[0].type && args[0].type() === 'vector') {
+      return functions.min(...args[0].val().map(v => new Data(v, args[0].unit())));
+    }
     if (args.length < 2) throw new Error('min requires at least 2 arguments');
     args.forEach(arg => { if (arg.type() !== 'number') throw new Error('min for numbers only'); });
     // If all are unitless, result is unitless
@@ -443,6 +447,10 @@ const functions = {
     return new Data(resultVal, unit);
   },
   max: (...args) => {
+    // If a single vector argument, call max with its elements
+    if (args.length === 1 && args[0].type && args[0].type() === 'vector') {
+      return functions.max(...args[0].val().map(v => new Data(v, args[0].unit())));
+    }
     if (args.length < 2) throw new Error('max requires at least 2 arguments');
     args.forEach(arg => { if (arg.type() !== 'number') throw new Error('max for numbers only'); });
     // If all are unitless, result is unitless
