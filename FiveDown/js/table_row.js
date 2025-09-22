@@ -1,4 +1,3 @@
-
 // js/table_row.js
 
 import { Data, formatResult } from './dim_data.js';
@@ -249,16 +248,83 @@ function convertToTitle(row) {
     const name = nameTd.getAttribute('data-value') || nameTd.textContent.trim();
     if (name !== '') {
       table.row_collection.removeRow(name);
+      table.pubsub.publish('recalculation', 'go');
     }
-  }
-
-  // Apply rules for title row
-  if (typeof enforceRowRules === 'function') {
-    enforceRowRules(row);
-  }
-  if (table && table.pubsub && typeof table.pubsub.publish === 'function') {
-    table.pubsub.publish('recalculation', 'go');
   }
 }
 
-export { TableRow, convertToTitle };
+
+/**
+ * Reverses a 4-column title row back to a normal row with name, formula, and result columns.
+ * @param {HTMLTableRowElement} row - The table row to convert back.
+ */
+function convertFromTitle(row) {
+  if (!(row.cells.length === 4 && row.querySelector('.description') && row.querySelector('.description').hasAttribute('colspan'))) {
+    return; // Not a 4-column title row
+  }
+
+  const table = row.closest('table');
+  const resultThs = table.tHead.rows[0].querySelectorAll('.result');
+  const numResults = resultThs.length;
+
+  // Save references to existing cells
+  const handleTd = row.querySelector('.handle');
+  const descriptionTd = row.querySelector('.description');
+  const unitTd = row.querySelector('.unit');
+  const deleteTd = row.querySelector('.delete');
+
+  // Remove all cells
+  while (row.cells.length > 0) {
+    row.deleteCell(0);
+  }
+
+  // Rebuild row: handle, description, name, formula, result(s), add-result, unit, delete
+  row.appendChild(handleTd);
+
+  // Description cell (restore as normal cell, not spanning)
+  descriptionTd.removeAttribute('colspan');
+  descriptionTd.classList.remove(
+    'title', 'subtitle', 'subsubtitle',
+    'title_c', 'subtitle_c', 'subsubtitle_c',
+    'title_l', 'subtitle_l', 'subsubtitle_l'
+  );
+  descriptionTd.contentEditable = 'true';
+  descriptionTd.tabIndex = 0;
+  row.appendChild(descriptionTd);
+
+  // Name cell
+  const nameTd = document.createElement('td');
+  nameTd.className = 'name';
+  nameTd.contentEditable = 'true';
+  nameTd.tabIndex = 0;
+  row.appendChild(nameTd);
+
+  // Formula cell
+  const formulaTd = document.createElement('td');
+  formulaTd.className = 'formula';
+  formulaTd.contentEditable = 'true';
+  formulaTd.tabIndex = 0;
+  row.appendChild(formulaTd);
+
+  // Result cells
+  for (let i = 0; i < numResults; i++) {
+    const resultTd = document.createElement('td');
+    resultTd.className = 'result';
+    resultTd.contentEditable = 'true';
+    resultTd.tabIndex = 0;
+    row.appendChild(resultTd);
+  }
+
+  // Add-result cell
+  const addResultTd = document.createElement('td');
+  addResultTd.className = 'add-result';
+  row.appendChild(addResultTd);
+
+  // Unit cell (reuse existing)
+  row.appendChild(unitTd);
+
+  // Delete cell (reuse existing)
+  row.appendChild(deleteTd);
+}
+
+export { TableRow, convertToTitle, convertFromTitle };

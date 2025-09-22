@@ -112,3 +112,6 @@ Each will
 3) do calculation, get result in computed base unit
 
 in derived units, represent powers with ^, and product with ' ' 
+
+
+ensure that all operators and functions in numeric_ops work with unitless values
