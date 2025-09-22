@@ -376,34 +376,14 @@ const functions = {
   acos: (a) => invTrigFunction(Math.acos, a),
   atan: (a) => invTrigFunction(Math.atan, a),
   atan2: (y, x) => {
-    // Accept unitless, rad, or degree for both arguments
-    const allowedUnits = ['', 'rad', 'deg', 'degree', 'degrees'];
-    if (y.type() !== 'number' || x.type() !== 'number') throw new Error('atan2 for numbers only');
+    if (y.type() !== 'number' || x.type() !== 'number') throw new Error('atan2 expects number inputs');
     let yUnit = y.unit() || '';
     let xUnit = x.unit() || '';
-    if (!allowedUnits.includes(yUnit) || !allowedUnits.includes(xUnit)) {
-      throw new Error('atan2 expects unitless, rad, or degree arguments');
-    }
-    // Convert degrees to radians if needed
-    let yVal = y.val();
-    let xVal = x.val();
-    if (yUnit === 'deg' || yUnit === 'degree' || yUnit === 'degrees') {
-      yVal = yVal * (Math.PI / 180);
-      yUnit = 'rad';
-    }
-    if (xUnit === 'deg' || xUnit === 'degree' || xUnit === 'degrees') {
-      xVal = xVal * (Math.PI / 180);
-      xUnit = 'rad';
-    }
-    // If one is rad and the other is unitless, treat as rad
-    // If both are rad, fine; if both are unitless, fine
-    // If one is rad and one is unitless, that's fine
-    // If one is rad and one is deg, both are now rad
-    // If one is deg and one is unitless, treat as deg (convert unitless to deg? No, treat as rad)
-    // For simplicity, after conversion, both are numbers in radians
-    const resultVal = Math.atan2(yVal, xVal);
+    if (yUnit !== xUnit) 
+      throw new Error('atan2 expects both inputs to have the same unit');
+    const resultVal = Math.atan2(y.val(), x.val());
     if (Number.isNaN(resultVal)) throw new Error('invalid inputs to atan2');
-    return new Data(resultVal);
+    return new Data(resultVal, yUnit || 'rad');
   },
   sinh: (a) => hyperbolicFunction(Math.sinh, a),
   cosh: (a) => hyperbolicFunction(Math.cosh, a),
@@ -435,9 +415,9 @@ const functions = {
     return new Data(siResult, newUnit);
   },
   sign: (a) => {
-    if (a.unit()) throw new Error('sign expects unitless');
+    // if (a.unit()) throw new Error('sign expects unitless');
     const elSign = elementwise(Math.sign);
-    return new Data(elSign(a.val()));
+    return new Data(elSign(a.val()), a.unit());
   },
   random: () => new Data(Math.random()),
   fac: (a) => {
@@ -515,8 +495,17 @@ const functions = {
     const resultVal = elFloor(a.val());
     return new Data(resultVal, a.unit());
   },
-  hypot: (a) => {
-    if (a.type() !== 'vector') throw new Error('hypot for vectors only');
+  hypot: (a,b) => {
+    if (b === undefined) {
+      if (a.type() !== 'vector') throw new Error('hypot for vectors only');
+    } else {
+      if (b.type() !== 'number' || a.type() !== 'number')
+        throw new Error('dual inputs must be numbers')
+      const v = [a.val(), b.val()];
+      return functions.hypot(new Data(v, a.type()))
+    }
+      
+    if (b !== undefined && a.type() !== 'number') throw new Error('hypot for numbers only');
     const val = a.val();
     const resultVal = Math.hypot(...val);
     return new Data(resultVal, a.unit());
