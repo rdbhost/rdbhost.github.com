@@ -27,9 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         // Gather names of rows with plotCheckbox set
         let selected = [];
-        if (table && table.row_collection) {
-          for (const [name, row] of table.row_collection.rows.entries()) {
-            if (row.plotCheckbox()) {
+        if (table) {
+          // Iterate over table rows in display order
+          const trs = table.querySelectorAll('tr');
+          for (const tr of trs) {
+            const nameCell = tr.querySelector('td.name');
+            if (!nameCell) continue;
+            const name = nameCell.textContent.trim();
+            const row = table.row_collection.rows.get(name);
+            if (row && row.plotCheckbox()) {
               selected.push(name);
             }
           }
@@ -43,6 +49,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (selected.length >= 2) {
           const overlay = document.getElementById('plot-overlay');
           if (overlay) overlay.classList.add('active');
+          // Extract and log result column values for each selected row
+          if (table && table.row_collection) {
+            console.log(`Selected rows for plot: [${selected.join(', ')}]`);
+            for (const name of selected) {
+              const rowObj = table.row_collection.rows.get(name);
+              if (rowObj && rowObj.row) {
+                // Find all result columns in this row
+                const resultCells = rowObj.row.querySelectorAll('td.result');
+                const values = Array.from(resultCells).map(cell => cell.textContent.trim());
+                console.log(`Row ${name} result values: [${values.join(', ')}]`);
+              }
+            }
+          }
         }
         plotBtn.textContent = 'Plot';
         confirmMode = false;
