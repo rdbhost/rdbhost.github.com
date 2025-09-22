@@ -20,3 +20,18 @@ in pubsub, subscribe to topic 'recalculation', and respond to any message by:
 
 Add a function evaluateNow(formula, dictionary, unit) that parses the text formula, evaluates it in the context of the 
 dictionary of named values, converts the result to given unit, and returns the value.
+
+
+=========================
+
+add a function buildDependencyTree that creates a dependency tree, with input values as distant leaves, and formulas as 
+intermediate leaves. It might need a 'group' node to join subtrees that dont have formula interdependence.   
+provide a function dependencyOrder that generates a simple list of row names, in dependency order, where independent 
+items are first, and roots are last. Ensure that all code will tolerate cycles in the source data. 
+check that name is not in row_collection.constants, as constants will have no dependencies
+
+use TableRow class to access name and formula
+
+use parseFormula to create an AST for each formula and get dependent names from AST.
+
+
