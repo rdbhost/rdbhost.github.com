@@ -9,6 +9,7 @@
     <script type="module" src="js/sheet_interface.js"></script>
     <script type="module" src="js/project_menu.js"></script>
     <script type="module" src="js/evaluator.js"></script>
+    <script type="module" src="js/plot.js"></script>
 </head>
 <body>
     <div class="outer-box">
@@ -18,6 +19,7 @@
                     <span>Sheet 00</span></span>
                 <span id="new-sheet">[new sheet]</span>
             </div>
+            <button id="plot-btn" class="plot-btn-top">Plot</button>
             <button id="delete-sheet">Delete Sheet</button>
         </div>
         <table id="main-sheet">
@@ -40,7 +42,7 @@
                     <td class="name" contenteditable="true"></td>
                     <td class="formula" tabindex="0"></td>
                     <td class="result" tabindex="0"></td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true"></td>
                     <td class="delete"></td>
                 </tr>    
@@ -50,7 +52,7 @@
                     <td class="name" contenteditable="true">h</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">3.0</td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true">cm</td>
                     <td class="delete"></td>
                 </tr>    
@@ -60,7 +62,7 @@
                     <td class="name" contenteditable="true">rad</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">2.5</td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true">cm</td>
                     <td class="delete"></td>
                 </tr>    
@@ -70,7 +72,7 @@
                     <td class="name" contenteditable="true">vol</td>
                     <td class="formula" tabindex="0" contenteditable="true">h*3.14*rad*rad</td>
                     <td class="result" tabindex="-1"></td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true">cm</td>
                     <td class="delete"></td>
                 </tr>    
@@ -80,7 +82,7 @@
                     <td class="name" contenteditable="true"></td>
                     <td class="formula" tabindex="0"></td>
                     <td class="result" tabindex="0"></td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true"></td>
                     <td class="delete"></td>
                 </tr>    
@@ -90,7 +92,7 @@
                     <td class="name" contenteditable="true">x</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">[1,0,0]</td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true">cm</td>
                     <td class="delete"></td>
                 </tr>    
@@ -100,12 +102,30 @@
                     <td class="name" contenteditable="true">y</td>
                     <td class="formula" tabindex="-1"></td>
                     <td class="result" tabindex="0" contenteditable="true">[0,1,0]</td>
-                    <td class="add-result"></td>
+                    <td class="add-result"><input type="checkbox" class="plot-checkbox" style="display:none;"></td>
                     <td class="unit" contenteditable="true">cm</td>
                     <td class="delete"></td>
                 </tr>    
             </tbody>
         </table>
     </div>
+        <div id="plot-overlay" class="plot-overlay active">
+            <button id="plot-overlay-close" class="plot-overlay-close" title="Close">&#10005;</button>
+            <div class="plot-overlay-buttons">
+                <button class="plot-btn" id="bar-chart-btn" title="Bar Chart">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/bar-chart.svg" alt="Bar Chart" />
+                </button>
+                <button class="plot-btn" id="line-chart-btn" title="Line Chart">
+                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/graph-up.svg" alt="Line Chart" />
+                </button>
+                <button class="plot-btn" id="scatter-chart-btn" title="Scatter Chart">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-label="Scatter Chart">
+                                            <circle cx="7" cy="14" r="3"/>
+                                            <circle cx="11" cy="6" r="2"/>
+                                            <circle cx="16.6" cy="17.6" r="2.4"/>
+                                        </svg>
+                </button>
+            </div>
+        </div>
 </body>    
 </html>

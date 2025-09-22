@@ -332,8 +332,6 @@ td.unit {
 	position: relative;
 }
   
-
-  
  /* Title/subtitle/subsubtitle styles for description cells, up to 6 levels */
 .title_c {
 	font-size: 1.5em;
@@ -365,3 +363,82 @@ td.unit {
 	font-weight: 500;
 	text-align: left;
 }
+
+
+/* Plot overlay styles */
+.plot-overlay {
+	display: none;
+	position: fixed;
+	top: 10vh;
+	left: 10vw;
+	width: 80vw;
+	height: 80vh;
+	background: rgba(255,255,255,0.95);
+	z-index: 1000;
+	justify-content: center;
+	align-items: center;
+	overflow: auto;
+	border-radius: 12px;
+	box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+}
+.plot-overlay.active {
+	display: flex;
+}
+
+.plot-overlay-close {
+	position: absolute;
+	top: 18px;
+	right: 24px;
+	background: transparent;
+	border: none;
+	font-size: 1rem;
+	color: #333;
+	cursor: pointer;
+	z-index: 1100;
+	padding: 0 0.5em;
+	line-height: 1;
+	transition: color 0.2s;
+}
+.plot-overlay-close:hover {
+	color: #f44336;
+}
+/* Plot overlay chart type buttons */
+.plot-overlay-buttons {
+	position: absolute;
+	bottom: 24px;
+	left: 0;
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	gap: 2.5em;
+	z-index: 1100;
+}
+.plot-btn {
+	background: #f5f5f5;
+	border: none;
+	border-radius: 50%;
+	width: 56px;
+	height: 56px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+	cursor: pointer;
+	transition: background 0.2s, box-shadow 0.2s;
+	padding: 0;
+}
+.plot-btn:hover {
+	background: #e0e0e0;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+}
+.plot-btn img {
+	width: 21px;
+	height: 21px;
+	pointer-events: none;
+}
+
+/* Hide plot checkboxes by default */
+.plot-checkbox {
+  display: none;
+}
+

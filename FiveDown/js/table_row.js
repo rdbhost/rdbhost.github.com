@@ -9,6 +9,7 @@ import { Data, formatResult } from './dim_data.js';
  * @class
  */
 class TableRow {
+  
   /**
    * Creates a new TableRow instance from a <tr> HTMLElement.
    * @constructor
@@ -204,6 +205,30 @@ class TableRow {
       }
       return prior;
     }
+  }
+
+  /**
+   * Sets or queries the plot-checkbox in this row's add-result cell.
+   * @param {'checked'|'cleared'|null|'hidden'} a - Action to perform on the checkbox.
+   * @returns {boolean} The current checked state of the checkbox (true if checked, false otherwise).
+   */
+  plotCheckbox(a) {
+    const addResultTd = this.row.querySelector('td.add-result');
+    if (!addResultTd) return false;
+    const checkbox = addResultTd.querySelector('input.plot-checkbox');
+    if (!checkbox) return false;
+    if (a === 'checked') {
+      checkbox.checked = true;
+      checkbox.style.display = 'inline';
+    } else if (a === 'cleared') {
+      checkbox.checked = false;
+      checkbox.style.display = 'inline';
+    } else if (a === 'hidden') {
+      checkbox.style.display = 'none';
+    } else if (a == null) {
+      // do not change state, just return
+    }
+    return !!checkbox.checked;
   }
 }
 
