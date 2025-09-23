@@ -94,40 +94,67 @@ function handleSheetSelectClick(event) {
 /**
  * Handler for the delete-sheet button click event.
  */
-export function deleteSheetButtonHandler() {
-  // Get current sheet identity from localStorage (assume a key like 'currentSheet' or similar is used)
-  let key = localStorage.getItem('current-sheet');
-  const table = document.querySelector('table#main-sheet');
-  const pubsub = table.pubsub;
-  const projectMenu = document.querySelector('.project-menu');
-  const span = document.querySelector('#'+key)
-  
-  // Remove from localStorage
-  removeStoredSheet(key);
 
-  // Remove the span from the project menu
-  if (span) 
-    span.parentElement.removeChild(span);
+let deleteSheetConfirmTimeout = null;
 
-  // Choose first remaining
-  const remainingSpans = projectMenu.querySelectorAll('.sheet-selecter');
-  let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
+function deleteSheetButtonHandler() {
+  const deleteButton = document.querySelector('#delete-sheet');
+  if (deleteButton.dataset.confirmMode !== 'true') {
+    // First click: enter confirm mode
+    deleteButton.dataset.confirmMode = 'true';
+    deleteButton.textContent = 'Please Confirm';
+    deleteButton.classList.add('confirm');
+    // Set timeout to revert after 90 seconds
+    deleteSheetConfirmTimeout = setTimeout(() => {
+    deleteButton.dataset.confirmMode = 'false';
+    deleteButton.textContent = 'Delete Sheet';
+    deleteButton.classList.remove('confirm');
+    }, 1500);
 
-  // Load new current
-  const newData = retrieveSheet(newCurrent);
-  if (newData)
-    loadSheet(table, newData);
+  } else {
 
-  // Save as current-sheet
-  localStorage.setItem('current-sheet', newCurrent);
+    // Second click: actually delete
+    if (deleteSheetConfirmTimeout) {
+      clearTimeout(deleteSheetConfirmTimeout);
+      deleteSheetConfirmTimeout = null;
+    }
+    deleteButton.dataset.confirmMode = 'false';
+    deleteButton.textContent = 'Delete Sheet';
+    deleteButton.classList.remove('confirm');
 
-  // Activate the new current span
-  const newSpan = projectMenu.querySelector(`#${newCurrent}`);
-  activateSheetSpan(newSpan);
+    // Get current sheet identity from localStorage (assume a key like 'currentSheet' or similar is used)
+    let key = localStorage.getItem('current-sheet');
+    const table = document.querySelector('table#main-sheet');
+    const pubsub = table.pubsub;
+    const projectMenu = document.querySelector('.project-menu');
+    const span = document.querySelector('#'+key)
+    
+    // Remove from localStorage
+    removeStoredSheet(key);
 
-  // Publish recalc
-  pubsub.publish('recalculation', 'go');
+    // Remove the span from the project menu
+    if (span) 
+      span.parentElement.removeChild(span);
 
+    // Choose first remaining
+    const remainingSpans = projectMenu.querySelectorAll('.sheet-selecter');
+    let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
+
+    // Load new current
+    const newData = retrieveSheet(newCurrent);
+    if (newData)
+      loadSheet(table, newData);
+
+    // Save as current-sheet
+    localStorage.setItem('current-sheet', newCurrent);
+
+    // Activate the new current span
+    const newSpan = projectMenu.querySelector(`#${newCurrent}`);
+    activateSheetSpan(newSpan);
+
+    // Publish recalc
+    pubsub.publish('recalculation', 'go');
+  }
 }
 
 
@@ -217,7 +244,7 @@ function tabEditHandler(e) {
         labelSpan.removeEventListener('focusout', removeEditable);
       };
       labelSpan.addEventListener('focusout', removeEditable);
-    }
+  }
   }
 }
 

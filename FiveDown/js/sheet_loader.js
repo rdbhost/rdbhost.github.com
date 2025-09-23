@@ -287,6 +287,32 @@ function allSheetNames() {
  */
 function removeStoredSheet(name) {
   if (!name.match(/^sheet\d+$/)) return;
+  const sheetData = localStorage.getItem(name);
+  if (!sheetData) {
+    localStorage.removeItem(name);
+    return;
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(sheetData);
+  } catch (e) {
+    parsed = { raw: sheetData };
+  }
+  parsed['deleted-timestamp'] = new Date().toISOString();
+  // Shift deleted-sheet-09 to deleted-sheet-10, ..., deleted-sheet-01 to deleted-sheet-02
+  for (let i = 9; i >= 1; i--) {
+    const fromKey = `deleted-sheet-${String(i).padStart(2, '0')}`;
+    const toKey = `deleted-sheet-${String(i+1).padStart(2, '0')}`;
+    const val = localStorage.getItem(fromKey);
+    if (val !== null) {
+      localStorage.setItem(toKey, val);
+    } else {
+      localStorage.removeItem(toKey);
+    }
+  }
+  // Save the new deleted sheet to deleted-sheet-01
+  localStorage.setItem('deleted-sheet-01', JSON.stringify(parsed));
+  // Remove the original sheet
   localStorage.removeItem(name);
 }
 
