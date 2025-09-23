@@ -1,0 +1,42 @@
+
+
+when plot btn is clicked, change button text to 'Confirm rows'. keep visibility code
+
+when button is clicked in 'confirm rows' status, gather a list of names of rows with plotCheckbox set, and 
+return button text to 'Plot'.  also, on clicking in confirm status, rehide the checkboxes
+
+if there are 2 or more checkboxes selected, unhide the plotoverlay div.  if there are two or more rows selected, 
+extract the values from the results columns for each such row.  log each 
+
+instead of iterating over row_collection.rows, iterate over the table itself, so selected names are in display order
+
+with first two selected row, create an SVG bar chart on the plotoverlay div
+the value of a td.result is in its data-value attribute. can the chart size be sized as a fraction of the container
+
+adjust both chart functions to take a variable number of name, value-list pairs. also implement a 
+makeScatterchart function also.
+
+also, in the lineChart, use the first row as x coordinates. when the first row is used as x values, 
+it should not have its own display line or bar
+
+rewrite makeBarchart to use chart.js.  dynamically insert a canvas element into div.plot-svg-container chart.js 
+is at js/lib/chart.js
+
+make button.plot-btn buttons function as style selectors, rerendering chart as indicated style.
+
+move handlers into their own named functions, exported for testability
+
+move plotBtn click handler to its own function handlePlotBtn .  move confirmMode to a data-attribute 
+(or similar) attached to button.
+
+------
+
+content in lines 50-53 should be moved to RowCollection as method showCheckboxes(mode). mode is 'show', 'hide'
+
+in plotBtn initial response, get a list of leaf Nodes and a list of root nodes from evaluator.js, and 
+check the boxes that are in leaf nodes or root nodes
+
+add tests that use functions, like sin() also, add tests with simple values as formulas
+
+add function getInputNodes that finds leaf nodes without formulas
+
