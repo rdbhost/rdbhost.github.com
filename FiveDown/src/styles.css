@@ -431,6 +431,10 @@ td.unit {
 	background: #e0e0e0;
 	box-shadow: 0 4px 16px rgba(0,0,0,0.16);
 }
+.plot-btn.active {
+	background: #ccc;
+	box-shadow: 0 4px 16px rgba(0,0,0,0.16);
+}
 .plot-btn img {
 	width: 21px;
 	height: 21px;

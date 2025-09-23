@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Chart style button handlers
   const barBtn = document.getElementById('bar-chart-btn');
+  barBtn.classList.add('active'); // Default active
   const lineBtn = document.getElementById('line-chart-btn');
   const scatterBtn = document.getElementById('scatter-chart-btn');
   [barBtn, lineBtn, scatterBtn].forEach((btn, idx) => {
