@@ -1,5 +1,5 @@
 
-
+import { PubSub } from './pubsub.js';
 import { formatResult, formatFormula } from './dim_data.js';
 import { RowCollection, constants } from './row_collection.js';
 import { TableRow, convertToTitle, convertFromTitle } from './table_row.js';
@@ -459,7 +459,17 @@ function setupTableInterface(table) {
       span.addEventListener('focusout', onFocusOut);
     }
   });
-}
+
+  table.pubsub.subscribe('ensure-blank-five', () => {
+    ensureBlankFive(table);
+  })
+  table.pubsub.subscribe('enforce-table-rules', () => {
+    for (let row of table.tBodies[0].rows) {
+      enforceRowRules(row);
+    } 
+  })
+
+} 
 
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('table#main-sheet');

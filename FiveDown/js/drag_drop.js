@@ -33,7 +33,7 @@ function setupDragDrop(table) {
       } else {
         targetRow.after(draggedRow);
       }
-      ensureBlankFive(table); // Assuming ensureBlankFive is available or imported
+      table.pubsub.publish('ensure-blank-five');
     }
   });
 

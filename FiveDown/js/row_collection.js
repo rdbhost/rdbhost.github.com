@@ -14,6 +14,25 @@ const constants = {
  * @class
  */
 class RowCollection {
+
+  /**
+   * Show or hide plot checkboxes for all rows.
+   * @param {'show'|'hide'|'reset'|'auto'} mode
+   */
+  showCheckboxes(mode) {
+    if (mode == 'show') {
+    for (const row of this.rows.values()) 
+      row.plotCheckbox('show');
+    }
+    else if (mode == 'hide') {
+      for (const row of this.rows.values()) 
+        row.plotCheckbox('hidden');
+    }
+    else {
+      throw new Error('Invalid mode for showCheckboxes');
+    } 
+  }
+
   /**
    * Creates a new RowCollection.
    * @constructor

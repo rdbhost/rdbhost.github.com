@@ -1,53 +1,5 @@
 // js/table-drag.js
-
-// Function to check if a row is blank
-function isBlank(row, indices) {
-  const cells = row.cells;
-  if (indices.desc > -1 && cells[indices.desc].textContent.trim() !== '') return false;
-  if (indices.name > -1 && cells[indices.name].textContent.trim() !== '') return false;
-  if (indices.formula > -1 && cells[indices.formula].textContent.trim() !== '') return false;
-  if (indices.unit > -1 && cells[indices.unit].textContent.trim() !== '') return false;
-  for (let idx of indices.results) {
-    if (cells[idx] && cells[idx].textContent.trim() !== '') return false;
-  }
-  return true;
-}
-
-// Function to ensure exactly five blank rows at the end
-function ensureBlankFive(table) {
-  const tbody = table.tBodies[0];
-  const rows = Array.from(tbody.rows);
-  let blankCount = 0;
-  for (let i = rows.length - 1; i >= 0; i--) {
-    if (isBlank(rows[i], table.indices)) {
-      blankCount++;
-    } else {
-      break;
-    }
-  }
-
-  const blankHtml = table.getAttribute('data-blank-row');
-  if (!blankHtml) {
-    throw new Error("data-blank-row not available");
-  }
-
-  if (blankCount > 5) {
-    for (let i = 0; i < blankCount - 5; i++) {
-      tbody.removeChild(tbody.lastChild);
-    }
-  } else if (blankCount < 5) {
-    for (let i = 0; i < 5 - blankCount; i++) {
-      const tempTbody = document.createElement('tbody');
-      tempTbody.innerHTML = blankHtml;
-      const newRow = tempTbody.firstChild;
-      if (newRow) {
-        tbody.appendChild(newRow);
-        const handle = newRow.cells[0];
-        if (handle) handle.draggable = true;
-      }
-    }
-  }
-}
+import { PubSub } from './lib/pubsub.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const table = document.querySelector('#main-sheet');
@@ -68,21 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   table.indices = indices;
 
-  // 1. Find a blank row and save its HTML as data attribute
-  let blankRowHtml = null;
-  for (let i = 1; i < table.rows.length; i++) {
-    if (isBlank(table.rows[i], indices)) {
-      blankRowHtml = table.rows[i].outerHTML;
-      break;
-    }
-  }
-  if (!blankRowHtml) {
-    throw new Error("No blank row found");
-  }
-  table.setAttribute('data-blank-row', blankRowHtml);
-
   // 2. Setup drag handlers
-
   // Column dragging (only among .result columns)
   let draggedColIndex = -1;
   table.addEventListener('dragstart', e => {
@@ -173,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // 4. Run ensure_blank_five
-  ensureBlankFive(table);
+  table.pubsub.publish('ensure-blank-five');
 });
 
-export { ensureBlankFive, isBlank };

@@ -209,7 +209,7 @@ class TableRow {
 
   /**
    * Sets or queries the plot-checkbox in this row's add-result cell.
-   * @param {'checked'|'cleared'|null|'hidden'} a - Action to perform on the checkbox.
+   * @param {'checked'|'cleared'|null|'show'|'hidden'} a - Action to perform on the checkbox.
    * @returns {boolean} The current checked state of the checkbox (true if checked, false otherwise).
    */
   plotCheckbox(a) {
@@ -229,7 +229,8 @@ class TableRow {
       checkbox.style.display = 'inline';
     } else if (a == null) {
       // do not change state, just return
-    }
+    } else 
+      throw new Error('Invalid argument {a} for plotCheckbox');
     return !!checkbox.checked;
   }
 }

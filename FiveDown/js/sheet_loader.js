@@ -3,7 +3,6 @@
 import { samples } from './samples.js';
 import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
-import { enforceRowRules, ensureBlankFive } from './sheet_interface.js'
 import { formatResult, formatFormula, Data } from './dim_data.js'
 
 /**
@@ -140,9 +139,10 @@ function loadSheet(table, data) {
     if (needsConvertToTitle) {
       convertToTitle(newRow);
     }
-    enforceRowRules(newRow);
+    table.pubsub.publish('enforce-row-rules');
+    //enforceRowRules(newRow);
   });
-  ensureBlankFive(table)
+  table.pubsub.publish('ensure-blank-five');
 }
 
 /**

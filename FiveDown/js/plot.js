@@ -1,5 +1,9 @@
 // js/plot.js
 
+// Chart style state
+let chartStyle = 'bar'; // 'bar', 'line', or 'scatter'
+let lastSelectedRows = [];
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('plot-overlay');
@@ -9,10 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
       overlay.classList.remove('active');
     });
   }
-  // Chart style state
-  let chartStyle = 'bar'; // 'bar', 'line', or 'scatter'
-  let lastSelectedRows = [];
-
   // Chart style button handlers
   const barBtn = document.getElementById('bar-chart-btn');
   barBtn.classList.add('active'); // Default active
@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn) return;
     btn.addEventListener('click', () => {
       chartStyle = btn.id === 'bar-chart-btn' ? 'bar' : btn.id === 'line-chart-btn' ? 'line' : 'scatter';
+      const po = document.getElementById('plot-overlay');
+      if (po) po.dataset.chartStyle = chartStyle;
       renderCurrentChart();
       // Visually indicate selected
       [barBtn, lineBtn, scatterBtn].forEach(b => b.classList.remove('active'));
@@ -32,80 +34,65 @@ document.addEventListener('DOMContentLoaded', () => {
   // Plot button click handler
   const plotBtn = document.getElementById('plot-btn');
   if (plotBtn) {
-    let confirmMode = false;
-    plotBtn.addEventListener('click', () => {
-      const table = document.getElementById('main-sheet');
-      if (!confirmMode) {
-        plotBtn.textContent = 'Confirm Rows';
-        confirmMode = true;
-        // Only unhide checkboxes for rows in row_collection
-        if (table && table.row_collection) {
-          for (const row of table.row_collection.rows.values()) {
-            // Show and clear or check checkbox based on residual value
-            row.plotCheckbox('show');
-          }
-        }
-      } else {
-        // Gather names of rows with plotCheckbox set
-        let selected = [];
-        if (table) {
-          // Iterate over table rows in display order
-          const trs = table.querySelectorAll('tr');
-          for (const tr of trs) {
-            const nameCell = tr.querySelector('td.name');
-            if (!nameCell) continue;
-            const name = nameCell.textContent.trim();
-            const row = table.row_collection.rows.get(name);
-            if (row && row.plotCheckbox()) {
-              selected.push(name);
-            }
-          }
-          // Rehide all checkboxes
-          for (const row of table.row_collection.rows.values()) {
-            row.plotCheckbox('hidden');
-          }
-        }
-        // You can use 'selected' as needed here (e.g., pass to plot function)
-        console.log('Selected rows for plot:', selected);
-        if (selected.length >= 2) {
-          const overlay = document.getElementById('plot-overlay');
-          if (overlay) overlay.classList.add('active');
-          // Extract and log result column values for each selected row in display order
-          const selectedRows = [];
-          const trs = table.querySelectorAll('tr');
-          for (const tr of trs) {
-            const nameCell = tr.querySelector('td.name');
-            if (!nameCell) continue;
-            const name = nameCell.textContent.trim();
-            const row = table.row_collection.rows.get(name);
-            if (row && row.plotCheckbox()) {
-              selectedRows.push({ name, rowObj: row });
-            }
-          }
-          lastSelectedRows = selectedRows;
-          renderCurrentChart();
-        }
-        plotBtn.textContent = 'Plot';
-        confirmMode = false;
-      }
-    });
+    plotBtn.addEventListener('click', handlePlotBtn);
   }
+});// End of DOMContentLoaded listener
 
-  function renderCurrentChart() {
-    if (!lastSelectedRows || lastSelectedRows.length < 2) return;
-    const args = lastSelectedRows.flatMap(({ name, rowObj }) => {
-      const resultCells = rowObj.row.querySelectorAll('td.result');
-      const values = Array.from(resultCells).map(cell => Number(cell.getAttribute('data-value')));
-      return [name, values];
-    });
-    if (chartStyle === 'bar') {
-      makeBarChart(...args);
-    } else if (chartStyle === 'line') {
-      makeLineChart(...args);
-    } else if (chartStyle === 'scatter') {
-      makeScatterChart(...args);
+
+function handlePlotBtn(e) {
+  const plotBtn = e.currentTarget;
+  const table = document.getElementById('main-sheet');
+  let confirmMode = plotBtn.dataset.confirmMode === 'true';
+  if (!confirmMode) {
+    plotBtn.textContent = 'Confirm Rows';
+    plotBtn.dataset.confirmMode = 'true';
+    // Only unhide checkboxes for rows in row_collection
+    if (table && table.row_collection) {
+      table.row_collection.showCheckboxes('show');
     }
+  } else {
+    // Gather names of rows with plotCheckbox set
+    let selected = [];
+    if (table) 
+      table.row_collection.showCheckboxes('hide');
+
+    const overlay = document.getElementById('plot-overlay');
+    if (overlay) overlay.classList.add('active');
+    // Extract and log result column values for each selected row in display order
+    const selectedRows = [];
+    const trs = table.querySelectorAll('tr');
+    for (const tr of trs) {
+      const nameCell = tr.querySelector('td.name');
+      if (!nameCell) continue;
+      const name = nameCell.textContent.trim();
+      const row = table.row_collection.rows.get(name);
+      if (row && row.plotCheckbox()) {
+        selectedRows.push({ name, rowObj: row });
+      }
+    }
+    lastSelectedRows = selectedRows;
+    renderCurrentChart();
+  
+    plotBtn.textContent = 'Plot';
+    plotBtn.dataset.confirmMode = 'false';
   }
+}
+
+function renderCurrentChart() {
+  if (!lastSelectedRows || lastSelectedRows.length < 2) return;
+  const args = lastSelectedRows.flatMap(({ name, rowObj }) => {
+    const resultCells = rowObj.row.querySelectorAll('td.result');
+    const values = Array.from(resultCells).map(cell => Number(cell.getAttribute('data-value')));
+    return [name, values];
+  });
+  if (chartStyle === 'bar') {
+    makeBarChart(...args);
+  } else if (chartStyle === 'line') {
+    makeLineChart(...args);
+  } else if (chartStyle === 'scatter') {
+    makeScatterChart(...args);
+  }
+}
 
 // Helper to generate SVG bar chart for any number of series
 function makeBarChart(...series) {
@@ -282,5 +269,5 @@ function makeScatterChart(...series) {
   new window.Chart(canvas.getContext('2d'), config);
   return '';
 }
-});// End of DOMContentLoaded listener
 
+export { handlePlotBtn, makeBarChart, makeLineChart, makeScatterChart };
