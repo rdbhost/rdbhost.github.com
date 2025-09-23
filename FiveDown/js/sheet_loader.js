@@ -139,9 +139,10 @@ function loadSheet(table, data) {
     if (needsConvertToTitle) {
       convertToTitle(newRow);
     }
-    table.pubsub.publish('enforce-row-rules');
-    //enforceRowRules(newRow);
   });
+
+  table.pubsub.publish('enforce-row-rules');
+  table.pubsub.publish('column-count-changed', resultThs.length);
   table.pubsub.publish('ensure-blank-five');
 }
 

@@ -36,9 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Plot button click handler
   const plotBtn = document.getElementById('plot-btn');
-  if (plotBtn) {
+  if (plotBtn) 
     plotBtn.addEventListener('click', handlePlotBtn);
-  }
+  
+  const table = document.getElementById('main-sheet');
+  table.pubsub.subscribe('column-count-changed', (ct) => {
+    plotBtn.disabled = ct < 2;
+  });
+
 });// End of DOMContentLoaded listener
 
 

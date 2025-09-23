@@ -223,6 +223,8 @@ function addResultColumn(table) {
       row.insertBefore(newTd, addTd);
       enforceRowRules(row);
     }
+
+    table.pubsub.publish('column-count-changed', row.querySelectorAll('.result').length);
   }
 
   const blankAddTd = table.blank_row.querySelector('.result');
@@ -429,6 +431,8 @@ function setupTableInterface(table) {
       const colIdx = Array.from(thead.rows[0].cells).indexOf(th);
       const theadRow = th.parentNode;
       theadRow.removeChild(th);
+      const colct = thead.rows[0].querySelectorAll('.result').length;
+      table.pubsub.publish('column-count-changed', colct)
       for (let row of table.tBodies[0].rows) {
         if (isFourColumnRow(row)) {
           const descriptionTd = row.querySelector('.description');
