@@ -1,8 +1,8 @@
+
 // evaluator.js
 
 import { evaluate } from './parser/formula_evaluator.js';
 import { parseFormula } from './parser/formula_parser.js';
-import { enforceRowRules } from './sheet_interface.js';
 import { Data } from './dim_data.js';
 import { TableRow } from './table_row.js';
 
@@ -28,13 +28,13 @@ function recalculateColumn(rowCollection, idx) {
         const ast = parseFormula(formula);
         const value = evaluate(ast, proxy);
         row.result(idx, value);
-        enforceRowRules(row.row);
       } catch (e) {
         row.result(idx, e);
-        enforceRowRules(row.row);
       }
     }
   }
+  const table = document.querySelector('table#main-sheet');
+  table.pubsub.publish('enforce-row-rules');
 }
 
 /**
@@ -52,8 +52,9 @@ function recalculateRows() {
     return;
   }
   // Reorder rows in dependency order
-  const rowsObj = Object.fromEntries(Array.from(rowCollection.rows.entries()).map(([k, v]) => [k, v]));
-  const tree = buildDependencyTree(rowsObj);
+  //const rowsObj = Object.fromEntries(Array.from(rowCollection.rows.entries()).map(([k, v]) => [k, v]));
+  //const tree = buildDependencyTree(rowsObj);
+  const tree = buildDependencyTree(rowCollection.rows); 
   const order = dependencyOrder(tree);
   // Create a new Map in dependency order
   const newRows = new Map();
@@ -133,8 +134,8 @@ function buildDependencyTree(rows) {
         if (typeof node.type === 'string' && node.type.toLowerCase() === 'variable' && node.name !== row.name()) {
           deps.add(node.name);
         }
-        if (node.args && Array.isArray(node.args)) {
-          for (const arg of node.args) walk(arg);
+        if (node.arguments && Array.isArray(node.arguments)) {
+          for (const arg of node.arguments) walk(arg);
         }
         if (node.left) walk(node.left);
         if (node.right) walk(node.right);
@@ -149,8 +150,8 @@ function buildDependencyTree(rows) {
   }
 
   const nodes = {};
-  for (const name in rows) {
-    const row = rows[name];
+  for (const [name, row] of rows) {
+    // const row = rows[name];
     if (!row || typeof row.name !== 'function' || typeof row.formula !== 'function') continue;
     nodes[name] = {
       name: row.name(),
@@ -163,7 +164,7 @@ function buildDependencyTree(rows) {
   for (const name in nodes) {
     const node = nodes[name];
     if (node.type === 'formula') {
-      node.dependencies = getDependencies(rows[name]);
+      node.dependencies = getDependencies(rows.get(name));
     }
   }
 
@@ -188,6 +189,9 @@ function buildDependencyTree(rows) {
     }
     path.add(name);
     const node = nodes[name];
+    if (!node) {
+      return { name, type: 'unknown', dependencies: [] };
+    }
     const deps = node.dependencies.map(dep => buildSubtree(dep, new Set(path)));
     return {
       name: node.name,
@@ -282,16 +286,39 @@ function dependencyOrder(tree) {
 function getLeafNodes(tree) {
   // Traverse the tree and collect names of nodes with no dependencies
   const leafs = [];
-  function visit(node) {
+  function visit(node, top=true) {
     if (!node) return;
     if (node.type === 'group' && node.dependencies) {
       for (const child of node.dependencies) visit(child);
     } else if (node.type && node.dependencies !== undefined) {
-      if (!node.dependencies || node.dependencies.length === 0) {
+      if (!top && (!node.dependencies || node.dependencies.length === 0)) {
         leafs.push(node.name);
       }
       if (Array.isArray(node.dependencies)) {
-        for (const child of node.dependencies) visit(child);
+        for (const child of node.dependencies) visit(child, false);
+      }
+    }
+  }
+  visit(tree);
+  // Remove duplicates
+  return Array.from(new Set(leafs));
+}
+
+// Returns a list of input node names: leaf nodes with no formula (inputs)
+function getInputNodes(tree) {
+  // Traverse the tree and collect names of nodes with no dependencies
+  const leafs = [];
+  function visit(node, top=true) {
+    if (!node) return;
+    if (node.type === 'group' && node.dependencies) {
+      for (const child of node.dependencies) visit(child);
+    } else if (node.type && node.dependencies !== undefined) {
+      if (!top && (!node.dependencies || node.dependencies.length === 0)) {
+        if (!top && (node.type == 'input'))
+          leafs.push(node.name);
+      }
+      if (Array.isArray(node.dependencies)) {
+        for (const child of node.dependencies) visit(child, false);
       }
     }
   }
@@ -302,27 +329,25 @@ function getLeafNodes(tree) {
 
 // Returns a list of root node names (nobody depends on them)
 function getRootNodes(tree) {
-  // First, collect all nodes and their children
-  const allNodes = new Set();
-  const childNodes = new Set();
-  function visit(node) {
+  // Traverse the tree and collect names of nodes with no dependencies
+  const roots = [];
+  function visit(node, top=true) {
     if (!node) return;
     if (node.type === 'group' && node.dependencies) {
       for (const child of node.dependencies) visit(child);
     } else if (node.type && node.dependencies !== undefined) {
-      allNodes.add(node.name);
-      if (Array.isArray(node.dependencies)) {
-        for (const child of node.dependencies) {
-          childNodes.add(child.name);
-          visit(child);
-        }
+      if (top && node.dependencies.length > 0) {
+        roots.push(node.name);
       }
+      return;
+      //if (Array.isArray(node.dependencies)) {
+      //  for (const child of node.dependencies) visit(child, false);
+      //}
     }
   }
   visit(tree);
-  // Roots are nodes that are never a dependency of another
-  const roots = Array.from(allNodes).filter(name => !childNodes.has(name));
-  return roots;
+  // Remove duplicates
+  return Array.from(new Set(roots));
 }
 
-export { setupEvaluator, evaluateNow, recalculateRows, recalculateColumn, buildDependencyTree, dependencyOrder, getRootNodes, getLeafNodes };
+export { setupEvaluator, evaluateNow, recalculateRows, recalculateColumn, buildDependencyTree, dependencyOrder, getRootNodes, getLeafNodes, getInputNodes };
