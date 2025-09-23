@@ -201,7 +201,7 @@ class TableRow {
         const val = toSet.val();
         const text = formatResult(val, typ)
         td.textContent = text;
-        td.setAttribute('data-value', JSON.stringify(val));
+        td.setAttribute('data-value', val === '' ? '' : JSON.stringify(val));
       }
       return prior;
     }

@@ -463,7 +463,7 @@ function setupTableInterface(table) {
   table.pubsub.subscribe('ensure-blank-five', () => {
     ensureBlankFive(table);
   })
-  table.pubsub.subscribe('enforce-table-rules', () => {
+  table.pubsub.subscribe('enforce-row-rules', () => {
     for (let row of table.tBodies[0].rows) {
       enforceRowRules(row);
     } 

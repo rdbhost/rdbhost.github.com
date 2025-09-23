@@ -1,5 +1,8 @@
 // js/plot.js
 
+// Import dependency functions
+import { buildDependencyTree, getInputNodes, getRootNodes } from './evaluator.js';
+
 // Chart style state
 let chartStyle = 'bar'; // 'bar', 'line', or 'scatter'
 let lastSelectedRows = [];
@@ -48,16 +51,26 @@ function handlePlotBtn(e) {
     plotBtn.dataset.confirmMode = 'true';
     // Only unhide checkboxes for rows in row_collection
     if (table && table.row_collection) {
-      table.row_collection.showCheckboxes('show');
+      for (const row of table.row_collection.rows.values()) 
+        row.plotCheckbox('cleared');
+
+      // --- Check boxes for leaf and root nodes ---
+      // Build dependency tree from current rows
+      const tree = buildDependencyTree(table.row_collection.rows);
+      const leafs = getInputNodes(tree);
+      const roots = getRootNodes(tree);
+      // Check checkboxes for leafs and roots
+      for (const name of new Set([...leafs, ...roots])) {
+        const row = table.row_collection.rows.get(name);
+        if (row.plotCheckbox) row.plotCheckbox('checked');
+      }
     }
   } else {
     // Gather names of rows with plotCheckbox set
-    let selected = [];
     if (table) 
-      table.row_collection.showCheckboxes('hide');
+      for (const row of table.row_collection.rows.values()) 
+        row.plotCheckbox('hidden');
 
-    const overlay = document.getElementById('plot-overlay');
-    if (overlay) overlay.classList.add('active');
     // Extract and log result column values for each selected row in display order
     const selectedRows = [];
     const trs = table.querySelectorAll('tr');
@@ -70,9 +83,12 @@ function handlePlotBtn(e) {
         selectedRows.push({ name, rowObj: row });
       }
     }
-    lastSelectedRows = selectedRows;
-    renderCurrentChart();
-  
+    if (selectedRows.length >= 2) {
+      const overlay = document.getElementById('plot-overlay');
+      if (overlay) overlay.classList.add('active');
+      lastSelectedRows = selectedRows;
+      renderCurrentChart();
+    }
     plotBtn.textContent = 'Plot';
     plotBtn.dataset.confirmMode = 'false';
   }
