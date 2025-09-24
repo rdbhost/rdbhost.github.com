@@ -11,7 +11,7 @@ import { formatResult, formatFormula, Data } from './dim_data.js'
  * @param {object} data - The JSON data to test.
  * @returns {string|null} Null if valid, or an error message string if invalid.
  */
-export function testSheetJson(data) {
+function testSheetJson(data) {
   if (typeof data !== 'object' || data === null) return 'Data is not an object.';
   if (typeof data.title !== 'string') return 'Missing or invalid title (should be a string).';
   if (!Array.isArray(data.header)) return 'Missing or invalid header (should be an array).';
@@ -309,6 +309,14 @@ function allSheetNames() {
   return nameDict;
 }
 
+// Get the next available sheet name (e.g., sheet01, sheet02, etc.)
+function getNextSheetName() {
+  const sheets = allSheetNames();
+  let i = 1;
+  while (sheets[`sheet${String(i).padStart(2, '0')}`]) i++;
+  return `sheet${String(i).padStart(2, '0')}`;
+}
+
 /**
  * Removes the stored sheet from localStorage.
  * @param {string} name - The name of the sheet to remove.
@@ -345,4 +353,4 @@ function removeStoredSheet(name) {
 }
 
 
-export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, removeStoredSheet };
+export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };

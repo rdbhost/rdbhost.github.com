@@ -137,10 +137,14 @@
     <div id="import-overlay" class="import-overlay" style="display: none;">
         <button id="import-overlay-close" class="import-overlay-close" title="Close">&#10005;</button>
         <div class="import-overlay-content">
-            <h2>Import JSON File</h2>
-            <input type="file" id="import-file" accept=".json">
-            <button id="import-submit">Import and Save</button>
-            <div id="import-message"></div>
+            <p><h2>Import JSON File</h2>
+               <input type="file" id="import-file" accept=".json">
+               <button id="import-submit">Import and Save</button>
+            <div id="import-message"></div></p>
+            
+            <p><button id="export-data-url">Generate Data URL</button>
+               <button id="download-json">Download JSON</button>
+               <div id="data-url-display" style="margin-top: 10px; word-break: break-all;"></div></p>
         </div>
     </div>
 </body>    

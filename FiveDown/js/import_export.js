@@ -1,10 +1,11 @@
-import { loadSheet, saveSheet, allSheetNames } from './sheet_loader.js';
+import { loadSheet, saveSheet, allSheetNames, scanSheet, getNextSheetName } from './sheet_loader.js';
 
 // Show the import overlay
 function showImportOverlay() {
   const overlay = document.getElementById('import-overlay');
   overlay.style.display = 'block';
   document.getElementById('import-message').textContent = '';
+  document.getElementById('data-url-display').textContent = ''; // Clear data URL display
 }
 
 // Hide the import overlay
@@ -12,16 +13,7 @@ function hideImportOverlay() {
   document.getElementById('import-overlay').style.display = 'none';
   document.getElementById('import-file').value = '';
   document.getElementById('import-message').textContent = '';
-}
-
-// Get the next available sheet name (e.g., sheet01, sheet02, etc.)
-function getNextSheetName() {
-  const sheets = allSheetNames();
-  let i = 1;
-  while (sheets[`sheet${String(i).padStart(2, '0')}`]) {
-    i++;
-  }
-  return `sheet${String(i).padStart(2, '0')}`;
+  document.getElementById('data-url-display').textContent = ''; // Clear data URL display
 }
 
 // Load data into table and save to localStorage
@@ -80,14 +72,58 @@ function makeDataUrl(jsonData) {
   try {
     const jsonString = JSON.stringify(jsonData);
     const encodedData = btoa(jsonString); // Encode to Base64
-    const domain = window.location.origin || 'http://example.com'; // Use current domain or fallback
-    return `${domain}?in=${encodeURIComponent(encodedData)}`;
+    const baseUrl = window.location.origin + window.location.pathname || 'http://example.com/'; // Use origin + path or fallback
+    return `${baseUrl}?in=${encodeURIComponent(encodedData)}`;
   } catch (e) {
     console.error('Error creating data URL:', e);
     return null;
   }
 }
 
+// Generate and display data URL for the current sheet
+function generateDataUrl() {
+  const table = document.getElementById('main-sheet');
+  const messageDiv = document.getElementById('import-message');
+  const dataUrlDiv = document.getElementById('data-url-display');
+  
+  try {
+    const sheetData = scanSheet(table); // Get current sheet data
+    const dataUrl = makeDataUrl(sheetData);
+    if (dataUrl) {
+      dataUrlDiv.textContent = dataUrl;
+    } else {
+      messageDiv.textContent = 'Failed to generate data URL.';
+    }
+  } catch (e) {
+    messageDiv.textContent = 'Error generating data URL: ' + e.message;
+  }
+}
+
+
+// Generate and trigger download of current sheet as JSON file
+function downloadJson() {
+  const table = document.getElementById('main-sheet');
+  const messageDiv = document.getElementById('import-message');
+  
+  try {
+    const sheetData = scanSheet(table);
+    const activeSheet = document.querySelector('.project-menu .sheet-selecter.active > span');
+    const sheetTitle = activeSheet ? activeSheet.textContent.trim() : 'sheet';
+    const jsonString = JSON.stringify(sheetData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${sheetTitle}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  } catch (e) {
+    console.error('Error generating JSON download:', e);
+    messageDiv.textContent = 'Error generating JSON download: ' + e.message;
+  }
+}
 // Load sheet from URL parameter 'in'
 function loadSheetFromUrl() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -97,7 +133,11 @@ function loadSheetFromUrl() {
   try {
     const jsonString = atob(decodeURIComponent(encodedData)); // Decode Base64
     const data = JSON.parse(jsonString);
-    loadAndSaveData(data, 'URL');
+    const savedSheetName = loadAndSaveData(data, 'URL');
+    if (savedSheetName) {
+      // Remove the 'in' parameter from the URL after successful processing
+      window.history.replaceState(null, '', window.location.pathname);
+    }
   } catch (e) {
     console.error('Error loading sheet from URL:', e);
     document.getElementById('import-message').textContent = 'Error loading sheet from URL: ' + e.message;
@@ -109,7 +149,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('import-btn').addEventListener('click', showImportOverlay);
   document.getElementById('import-overlay-close').addEventListener('click', hideImportOverlay);
   document.getElementById('import-submit').addEventListener('click', importFile);
+  document.getElementById('export-data-url').addEventListener('click', generateDataUrl);
+  document.getElementById('download-json').addEventListener('click', downloadJson);
   loadSheetFromUrl(); // Check for 'in' parameter on load
 });
 
-export { showImportOverlay, hideImportOverlay, importFile, makeDataUrl, loadSheetFromUrl };
+export { showImportOverlay, hideImportOverlay, importFile, makeDataUrl, loadSheetFromUrl, generateDataUrl, downloadJson };

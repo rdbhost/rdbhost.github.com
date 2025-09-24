@@ -1,7 +1,8 @@
 
 // js/project_menu.js
 
-import { allSheetNames, loadSheet, scanSheet, saveSheet, retrieveSheet, removeStoredSheet } from './sheet_loader.js';
+import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet, 
+  retrieveSheet, removeStoredSheet } from './sheet_loader.js';
 
 /**
  * Sets up the project menu by populating sheet selectors and loading the
@@ -195,21 +196,15 @@ function handleNewSheetClick(event) {
   const table = document.querySelector('table#main-sheet');
   const pubsub = table.pubsub;
 
-  // Get current names
-  const sheetDict = allSheetNames();
-  let newNum = 0;
-  let newKey;
-  do {
-    newNum++;
-    newKey = `sheet${newNum.toString().padStart(2, '0')}`;
-  } while (Object.keys(sheetDict).includes(newKey));
+  // Get next id
+  let newKey = getNextSheetName();
 
   // Create new span
   const origHTML = projectMenu.getAttribute('data-orig');
   const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body.firstChild;
   const newSpan = origSpan.cloneNode(true);
   newSpan.querySelector('span').textContent = `Sheet ${newNum.toString().padStart(2, '0')}`;
-  newSpan.id = newKey.replace(/\s+/g, '_');
+  newSpan.id = newKey;
   projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
 
   // Clear sheet (load empty data)
