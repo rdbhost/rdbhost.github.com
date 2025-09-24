@@ -453,3 +453,37 @@ td.unit {
   display: none;
 }
 
+.import-overlay {
+  display: none;
+  position: fixed;
+  top: 10vh;
+  left: 10vw;
+  width: 80vw;
+  height: 80vh;
+  background: rgba(255,255,255,0.95);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.18);
+}
+.import-overlay-content {
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+.import-overlay-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+.import-btn-top {
+  padding: 8px 16px;
+  margin: 0 5px;
+}

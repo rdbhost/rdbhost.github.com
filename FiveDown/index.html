@@ -10,6 +10,7 @@
     <script type="module" src="js/project_menu.js"></script>
     <script type="module" src="js/evaluator.js"></script>
     <script type="module" src="js/plot.js"></script>
+    <script type="module" src="js/import_export.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
 </head>
@@ -22,20 +23,23 @@
                 <span id="new-sheet">[new sheet]</span>
             </div>
             <button id="plot-btn" class="plot-btn-top" disabled>Plot</button>
+            <button id="import-btn" class="import-btn-top">Import</button>
             <button id="delete-sheet">Delete Sheet</button>
         </div>
         <table id="main-sheet">
             <thead>
-                <th class="handle"></th>
-                <th class="description">Description</th>
-                <th class="name">Name</th>
-                <th class="formula">Formula</th>
-                <th class="result" draggable="true">
-                    <span>Result</span><button class="close-res"></button>
-                </th>
-                <th class="add-result"><button></button></th>
-                <th class="unit" contenteditable="true">Unit</th>
-                <th class="delete"></th>
+                <tr>
+                    <th class="handle"></th>
+                    <th class="description">Description</th>
+                    <th class="name">Name</th>
+                    <th class="formula">Formula</th>
+                    <th class="result" draggable="true">
+                        <span>Result</span><button class="close-res"></button>
+                    </th>
+                    <th class="add-result"><button></button></th>
+                    <th class="unit" contenteditable="true">Unit</th>
+                    <th class="delete"></th>
+                </tr>
             </thead>
             <tbody>
                 <tr>
@@ -111,24 +115,33 @@
             </tbody>
         </table>
     </div>
-        <div id="plot-overlay" class="plot-overlay">
-            <button id="plot-overlay-close" class="plot-overlay-close" title="Close">&#10005;</button>
-            <div class="plot-overlay-buttons">
-                <button class="plot-btn" id="bar-chart-btn" title="Bar Chart">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/bar-chart.svg" alt="Bar Chart" />
-                </button>
-                <button class="plot-btn" id="line-chart-btn" title="Line Chart">
-                    <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/graph-up.svg" alt="Line Chart" />
-                </button>
-                <button class="plot-btn" id="scatter-chart-btn" title="Scatter Chart">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-label="Scatter Chart">
-                                            <circle cx="7" cy="14" r="3"/>
-                                            <circle cx="11" cy="6" r="2"/>
-                                            <circle cx="16.6" cy="17.6" r="2.4"/>
-                                        </svg>
-                </button>
-            </div>
-            <div class="plot-svg-container"></div>
+    <div id="plot-overlay" class="plot-overlay">
+        <button id="plot-overlay-close" class="plot-overlay-close" title="Close">&#10005;</button>
+        <div class="plot-overlay-buttons">
+            <button class="plot-btn" id="bar-chart-btn" title="Bar Chart">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/bar-chart.svg" alt="Bar Chart" />
+            </button>
+            <button class="plot-btn" id="line-chart-btn" title="Line Chart">
+                <img src="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/icons/graph-up.svg" alt="Line Chart" />
+            </button>
+            <button class="plot-btn" id="scatter-chart-btn" title="Scatter Chart">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="32" height="32" aria-label="Scatter Chart">
+                    <circle cx="7" cy="14" r="3"/>
+                    <circle cx="11" cy="6" r="2"/>
+                    <circle cx="16.6" cy="17.6" r="2.4"/>
+                </svg>
+            </button>
         </div>
+        <div class="plot-svg-container"></div>
+    </div>
+    <div id="import-overlay" class="import-overlay" style="display: none;">
+        <button id="import-overlay-close" class="import-overlay-close" title="Close">&#10005;</button>
+        <div class="import-overlay-content">
+            <h2>Import JSON File</h2>
+            <input type="file" id="import-file" accept=".json">
+            <button id="import-submit">Import and Save</button>
+            <div id="import-message"></div>
+        </div>
+    </div>
 </body>    
 </html>
