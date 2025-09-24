@@ -2,6 +2,7 @@
 <head>
     <link rel="stylesheet" href="src/normalize.css">
     <link rel="stylesheet" href="src/styles.css">
+    <link rel="stylesheet" href="src/overlay-style.css">
 
     <script type="module" src="js/pubsub.js"></script>
     <script type="module" src="js/row_collection.js"></script>
@@ -12,7 +13,7 @@
     <script type="module" src="js/plot.js"></script>
     <script type="module" src="js/import_export.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+    <script src="js/lib/chart.umd.min.js"></script>
 </head>
 <body>
     <div class="outer-box">
@@ -134,7 +135,7 @@
         </div>
         <div class="plot-svg-container"></div>
     </div>
-    <div id="import-overlay" class="import-overlay" style="display: none;">
+    <div id="import-overlay" class="import-overlay">
         <button id="import-overlay-close" class="import-overlay-close" title="Close">&#10005;</button>
         <div class="import-overlay-content">
             <p><h2>Import JSON File</h2>
@@ -144,7 +145,7 @@
             
             <p><button id="export-data-url">Generate Data URL</button>
                <button id="download-json">Download JSON</button>
-               <div id="data-url-display" style="margin-top: 10px; word-break: break-all;"></div></p>
+               <div id="data-url-display" ></div></p>
         </div>
     </div>
 </body>    
