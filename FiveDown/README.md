@@ -28,6 +28,7 @@
   - `project_menu.js` (sheet/project management)
   - `evaluator.js` (formula evaluation)
   - `plot.js` (visualization logic)
+  - `UnitMath` (unit math)
 - `src/` – CSS styles and UI normalization.
 - `prompts/` – Likely contains prompt templates or configuration (specifics can be added).
 - `tests/` – Test scripts or files for the application.
