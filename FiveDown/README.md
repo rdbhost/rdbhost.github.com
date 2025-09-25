@@ -40,6 +40,7 @@
 - **Chart.js** for data visualization.
 - **Drag-and-drop API** for interactive row management.
 - **localStorage API** for persistent, client-side storage.
+- **UnitMath** for inferring units and doing automatic unit conversions
 
 ## Usage
 
