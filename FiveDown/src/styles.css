@@ -1,27 +1,30 @@
+.plot-btn-top {
+	margin-left: 1em;
+	align-self: flex-start;
+	padding: 0.3em 1.1em;
+	min-width: 6em;
+	font-size: 1em;
+	background: #f5f5f5;
+	color: #333;
+	border: solid #bbb;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: background 0.2s;
+	white-space: nowrap;
+	text-align: center;
+	box-sizing: border-box;
+}
+.plot-btn-top:hover {
+	background: #e0e0e0;
+}
 /* Topbox layout for project menu and delete button */
 .topbox {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
 }
-/* Delete sheet button styling */
-#delete-sheet {
-	margin-left: 1em;
-	align-self: flex-start;
-	padding: 0.4em 1.2em;
-	font-size: 1em;
-	background: #f44336;
-	color: #fff;
-	border: solid red;
-	border-radius: 4px;
-	cursor: pointer;
-	transition: background 0.2s;
-}
-#delete-sheet:hover {
-	background: #c62828;
-}
 #delete-sheet.confirm {
-	border: solid darkgreen;
+	border: solid darkgreen 2px;
 }
 
 
