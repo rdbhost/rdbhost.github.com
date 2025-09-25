@@ -2,7 +2,7 @@
 <head>
     <link rel="stylesheet" href="src/normalize.css">
     <link rel="stylesheet" href="src/styles.css">
-    <link rel="stylesheet" href="src/overlay-style.css">
+    <link rel="stylesheet" href="src/overlay-styles.css">
 
     <script type="module" src="js/pubsub.js"></script>
     <script type="module" src="js/row_collection.js"></script>
@@ -138,14 +138,14 @@
     <div id="import-overlay" class="import-overlay">
         <button id="import-overlay-close" class="import-overlay-close" title="Close">&#10005;</button>
         <div class="import-overlay-content">
-            <p><h2>Import JSON File</h2>
+            <p><h2>Import / Export</h2>
                <input type="file" id="import-file" accept=".json">
                <button id="import-submit">Import and Save</button>
             <div id="import-message"></div></p>
             
             <p><button id="export-data-url">Generate Data URL</button>
                <button id="download-json">Download JSON</button>
-               <div id="data-url-display" ></div></p>
+               <div id="data-url-display" class="data-url-display"></div></p>
         </div>
     </div>
 </body>    
