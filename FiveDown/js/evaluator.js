@@ -103,6 +103,8 @@ document.addEventListener('DOMContentLoaded', setupEvaluator);
 function evaluateNow(formula, dictionary, unit) {
   if (formula === null || formula.trim() === '') 
     return new Data('');
+  const spaceLikeRegex = /[\u00A0\u2000-\u200A\u202F\u205F\u3000\s]/g;
+  formula = formula.replace(spaceLikeRegex, ' ');
   try {
     const ast = parseFormula(formula);
     const data = evaluate(ast, dictionary);
