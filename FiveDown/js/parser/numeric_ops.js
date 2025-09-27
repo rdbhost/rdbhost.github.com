@@ -369,6 +369,41 @@ function logFunction(mathFunc, a) {
 }
 
 const functions = {
+  /**
+   * Converts degrees to radians. Accepts a Data object with unit 'deg', 'degree', 'degrees', or unitless.
+   * Returns a Data object with value in radians and unit 'rad'.
+   */
+  radians: (a) => {
+    const baseA = a.asBaseUnit();
+    let u = baseA.unit();
+    let val = baseA.val();
+    if (u === 'deg' || u === 'degree' || u === 'degrees') {
+      // Convert degrees to radians
+      val = val * (Math.PI / 180);
+      u = 'rad';
+    } else if (!u || u === '') {
+      // Treat as degrees if unitless
+      val = val * (Math.PI / 180);
+      u = 'rad';
+    } else if (u !== 'rad') {
+      throw new Error('radians expects unitless or degree input');
+    }
+    return new Data(val, 'rad');
+  },
+
+  /**
+   * Returns the index of item in vector (0-based). Returns -1 if not found.
+   * Both arguments must be Data objects, vector must be of type 'vector'.
+   */
+  index: (item, vector) => {
+    if (vector.type() !== 'vector') throw new Error('index expects a vector as second argument');
+    if (item.type() !== 'number') throw new Error('index expects a number as first argument');
+    const arr = vector.val();
+    const val = item.val();
+    // Use strict equality for numbers
+    const idx = arr.findIndex(x => x === val);
+    return new Data(idx);
+  },
   sin: (a) => trigFunction(Math.sin, a),
   cos: (a) => trigFunction(Math.cos, a),
   tan: (a) => trigFunction(Math.tan, a),
