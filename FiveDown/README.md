@@ -30,7 +30,7 @@
   - `plot.js` (visualization logic)
   - `UnitMath.js` (unit math)
 - `src/` – CSS styles and UI normalization.
-- `prompts/` – Likely contains prompt templates or configuration (specifics can be added).
+- `prompts/` – prompts for Grok (and a few for Copilot/GPT) 
 - `tests/` – Test scripts or files for the application.
 
 ## Technologies Used

@@ -5,6 +5,34 @@ import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { formatResult, formatFormula, Data } from './dim_data.js'
 
+
+/**
+ * Tests if the given data matches the expected JSON sheet structure.
+ * @param {object} data - The JSON data to test.
+ * @returns {string|null} Null if valid, or an error message string if invalid.
+ */
+function testSheetJson(data) {
+  if (typeof data !== 'object' || data === null) return 'Data is not an object.';
+  if (typeof data.title !== 'string') return 'Missing or invalid title (should be a string).';
+  if (!Array.isArray(data.header)) return 'Missing or invalid header (should be an array).';
+  if (!data.header.length) return 'Header must have length';
+  if (!Array.isArray(data.rows)) return 'Missing or invalid rows (should be an array).';
+  for (let i = 0; i < data.rows.length; i++) {
+    const row = data.rows[i];
+    if (row === null) continue;
+    if (!Array.isArray(row) || row.length !== 4) return `Row ${i} is not an array of length 4.`;
+    if (typeof row[0] !== 'string') return `Row ${i} description is not a string.`;
+    if (typeof row[1] !== 'string') return `Row ${i} name is not a string.`;
+    if (typeof row[2] !== 'string') return `Row ${i} unit is not a string.`;
+    const val = row[3];
+    if (!(val === null || typeof val === 'string' || Array.isArray(val))) 
+      return `Row ${i} fourth element is not null, string, or array.`;
+    if (val !== null && row[1] === '') 
+      return `Row ${i} name cannot be empty string if formula or input is.`;
+  }
+  return null;
+}
+
 /**
  * Loads the table with specified header and rows data.
  * Adjusts the number of result columns, sets header texts, clears and
@@ -155,8 +183,8 @@ function loadSheet(table, data) {
  */
 function loadSample(table, sampledata, name) {
   const sample = sampledata[name] || JSON.parse(localStorage.getItem(name));
-  if (!sample) return;
-  loadSheet(table, sample);
+  if (!sample) return 'sample not found in sample-data or localStorage';
+  return loadSheet(table, sample);
 }
 
 /**
@@ -281,6 +309,14 @@ function allSheetNames() {
   return nameDict;
 }
 
+// Get the next available sheet name (e.g., sheet01, sheet02, etc.)
+function getNextSheetName() {
+  const sheets = allSheetNames();
+  let i = 1;
+  while (sheets[`sheet${String(i).padStart(2, '0')}`]) i++;
+  return `sheet${String(i).padStart(2, '0')}`;
+}
+
 /**
  * Removes the stored sheet from localStorage.
  * @param {string} name - The name of the sheet to remove.
@@ -316,4 +352,5 @@ function removeStoredSheet(name) {
   localStorage.removeItem(name);
 }
 
-export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, removeStoredSheet };
+
+export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };

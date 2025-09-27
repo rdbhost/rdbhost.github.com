@@ -326,9 +326,20 @@ function setupTableInterface(table) {
         if (colIdx === -1) throw new Error('Result column index not found');
         const proxy = table.row_collection.getColumnProxy(colIdx);
         try {
+          td.classList.remove('error');
           const data = evaluateNow(newRaw, proxy, unit);
-          td.setAttribute('data-value', data.val());
-          td.textContent = formatResult(data.val());
+          if (data instanceof Error) {
+            if (data.stack.indexOf('a_parser') > -1)
+              td.textContent = 'Parse Error';
+            else
+              td.textContent = data.message;
+            td.removeAttribute('data-value');
+            td.classList.add('error');
+          }
+          else {
+            td.setAttribute('data-value', data.val());
+            td.textContent = formatResult(data.val());
+          }
         } catch (e) {
           td.setAttribute('data-value', newRaw);
           td.textContent = newRaw;

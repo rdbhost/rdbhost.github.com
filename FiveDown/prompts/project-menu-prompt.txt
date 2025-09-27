@@ -43,5 +43,9 @@ for single line blocks, indent but do not use brackets
 every handler function longer than 5 lines should have its own name, exported
 provide jsdoc comments
 
+====================
 
+make sheet delete a two-stage operation, similar to the plot button. on first click, the btn text 
+changes to 'Please Confirm', and a setTimeout for 90 seconds reverts to its default state.  a second 
+click while the button is in confirm mode will actually delete the sheet.
 

@@ -108,7 +108,7 @@ function evaluateNow(formula, dictionary, unit) {
     const data = evaluate(ast, dictionary);
     return (unit && data._unit) ? data.asGivenUnit(unit) : data;
   } catch (e) {
-    return new Data(e);
+    return e;
   }
 }
 
