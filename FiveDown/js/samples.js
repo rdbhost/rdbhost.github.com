@@ -68,7 +68,6 @@ const samples = {
                   ['ceiling',                 "ceil_",      "",   "ceil(a)"],
                   ['floor',                   "floor_",     "",   "floor(a)"],
                   ['truncate',                "trunc_",     "",   "trunc(a)"],
-//                  ['round (unary)',           "round_",     "",   "round(a)"],
                   ['plus',                    "plus_",      "",   "+a"],
                   ['minus',                   "minus_",     "",   "-a"],
                   null,
@@ -108,8 +107,6 @@ const samples = {
                   ["? : ",                    "t",          "",     "a ? b : a"],
                   null,
                   ["? : ",                    "t1",         "",     " not a ? b : a"],
-    //              null,
-    //              ["? : ",                    "t2",         "",     'true ? hi : bye'],
         ]
     },
     vectors: {
@@ -145,6 +142,21 @@ const samples = {
                   ["Maximum",                 "max_a",       "",    "max(a)"],
                   null,
                   ["? : ",                    "t2",         "",     "true ? b : a"],
+        ]
+    },
+    'text': {
+        "header": [null, null],
+        "rows":   [
+                null, 
+                ["This sheet can be modified, but not resaved.  Fiddle away", "", "==", ""],
+                null,
+                ["input text using single or double quotes \"\", or \'\'.", "inp", "", ['yes', 'no']],
+                null,
+                ['strings can be compared using ==', 'phrase', '', 'inp == "yes" ? "ok" : "not ok"'],
+                null, 
+                ['test whether one string is in another', 'isin', '', '"n" in phrase'],
+                null,
+                ['where in a string is another string', 'idx', '', "index('t',phrase)"],
         ]
     },
     help: {

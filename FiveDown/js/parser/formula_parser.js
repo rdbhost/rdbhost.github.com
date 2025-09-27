@@ -1,5 +1,6 @@
+
 // formula_parser.js
-// Parser for text formulas into a syntax tree, supporting variable names, function names, numbers, vectors, and booleans
+// Parser for text formulas into a syntax tree, supporting variable names, function names, numbers, vectors, booleans, and string literals
 
 import { unaryOps, binaryOps, functions } from './numeric_ops.js';
 
@@ -18,7 +19,7 @@ class AST {
 
 /**
  * Parser class for converting formula strings into abstract syntax trees (AST).
- * Supports operators, functions, variables, literals (numbers, booleans), vectors, and grouping.
+ * Supports operators, functions, variables, literals (numbers, booleans, strings), vectors, and grouping.
  */
 class Parser {
     /**
@@ -230,14 +231,19 @@ class Parser {
         return this.parsePrimary();
     }
 
-    // Parse primary expressions (literals, variables, functions, vectors, grouped expressions)
+    // Parse primary expressions (literals, variables, functions, vectors, grouped expressions, strings)
     /**
-     * Parses primary expressions such as literals, variables, function calls, vectors, or grouped expressions.
+     * Parses primary expressions such as literals (numbers, booleans, strings), variables, function calls, vectors, or grouped expressions.
      * @returns {Object} The AST node for the primary expression.
      * @throws {Error} If there's an unexpected token or mismatched brackets/parentheses.
      */
     parsePrimary() {
         this.skipWhitespace();
+
+        // String literals (single or double quotes)
+        if (this.peek() === '"' || this.peek() === "'") {
+            return this.parseString();
+        }
 
         // Numbers
         const peek = this.peek();
@@ -327,6 +333,26 @@ class Parser {
         }
 
         throw new Error(`Unexpected token at position ${this.index}: '${this.peek()}'`);
+    }
+
+    // Parse a string literal (single or double quoted)
+    /**
+     * Parses a string literal enclosed in single or double quotes.
+     * @returns {Object} A Literal AST node with the parsed string value.
+     * @throws {Error} If the string is not properly terminated.
+     */
+    parseString() {
+        const quote = this.peek(); // Either ' or "
+        this.index++; // Skip opening quote
+        let value = '';
+        while (this.index < this.length && this.formula[this.index] !== quote) {
+            value += this.formula[this.index++];
+        }
+        if (this.index >= this.length || this.formula[this.index] !== quote) {
+            throw new Error(`Unterminated string literal at position ${this.index}`);
+        }
+        this.index++; // Skip closing quote
+        return { type: 'Literal', value };
     }
 
     // Parse a number (integer, floating-point, scientific notation, with optional leading sign)
