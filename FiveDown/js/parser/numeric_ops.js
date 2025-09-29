@@ -369,6 +369,61 @@ function logFunction(mathFunc, a) {
 }
 
 const functions = {
+  /**
+   * Converts degrees to radians. Accepts a Data object with unit 'deg', 'degree', 'degrees', or unitless.
+   * Returns a Data object with value in radians and unit 'rad'.
+   */
+  radians: (a) => {
+    const baseA = a.asBaseUnit();
+    let u = baseA.unit();
+    let val = baseA.val();
+    if (u === 'deg' || u === 'degree' || u === 'degrees') {
+      // Convert degrees to radians
+      val = val * (Math.PI / 180);
+      u = 'rad';
+    } else if (!u || u === '') {
+      // Treat as degrees if unitless
+      val = val * (Math.PI / 180);
+      u = 'rad';
+    } else if (u !== 'rad') {
+      throw new Error('radians expects unitless or degree input');
+    }
+    return new Data(val, 'rad');
+  },
+
+   /**
+    * Returns the index of item in vector or string (0-based). Returns -1 if not found.
+    * First argument must be a Data object of type 'number' or 'string'.
+    * Second argument must be a Data object of type 'vector' or 'string'.
+    */
+  index: (item, vector) => {
+    // Validate item type
+    if (item.type() !== 'number' && item.type() !== 'string') {
+        throw new Error('index expects a number or string as first argument');
+    }
+
+    // Validate vector type
+    if (vector.type() !== 'vector' && vector.type() !== 'string') {
+        throw new Error('index expects a vector or string as second argument');
+    }
+
+    const itemVal = item.val();
+
+    if (vector.type() === 'vector') {
+        // Handle vector case (item must be a number)
+        if (item.type() !== 'number') {
+            throw new Error('index expects a number as first argument when second argument is a vector');
+        }
+        const arr = vector.val();
+        const idx = arr.findIndex(x => x === itemVal);
+        return new Data(idx);
+    } else {
+        // Handle string case
+        const str = vector.val();
+        const idx = str.indexOf(itemVal);
+        return new Data(idx);
+    }
+  },
   sin: (a) => trigFunction(Math.sin, a),
   cos: (a) => trigFunction(Math.cos, a),
   tan: (a) => trigFunction(Math.tan, a),

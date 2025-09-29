@@ -203,7 +203,7 @@ function handleNewSheetClick(event) {
   const origHTML = projectMenu.getAttribute('data-orig');
   const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body.firstChild;
   const newSpan = origSpan.cloneNode(true);
-  newSpan.querySelector('span').textContent = `Sheet ${newNum.toString().padStart(2, '0')}`;
+  newSpan.querySelector('span').textContent = `${newKey.charAt(0).toUpperCase() + newKey.slice(1)}`;
   newSpan.id = newKey;
   projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
 
