@@ -14,10 +14,26 @@ function saveSheet(name, object) {
   return Promise.resolve().then(() => {
     if (!name.match(/^sheet\d+$/)) return false;
     if (!object.title) object.title = name;
-    localStorage.setItem(name, JSON.stringify(object));
-    // Update top-level timestamps map in localStorage
-    try { updateTimestamp(name); } catch (e) { }
-    return true;
+    try {
+      localStorage.setItem(name, JSON.stringify(object));
+      // Update allSheets status object in localStorage
+      try { updateSheetStatus(name, object.title); } catch (e) { }
+      return true;
+    } catch (e) {
+      // If quota exceeded, try to delete oldest sheet and recurse
+      if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        const deleted = deleteOldestSheet(name);
+        if (deleted) {
+          // Recurse to retry the write after freeing space
+          return saveSheet(name, object);
+        }
+        console.error('Could not free storage space:', e);
+        return false;
+      }
+      // Non-quota error; return false
+      console.error('Error saving sheet:', e);
+      return false;
+    }
   });
 }
 
@@ -39,8 +55,8 @@ function retrieveSheet(name) {
         return null;
       }
       if (!object.title) object.title = name;
-      // Update only the top-level timestamps map for this read
-      try { updateTimestamp(name); } catch (e) { }
+      // Update allSheets status object for this read
+      try { updateSheetStatus(name, object.title); } catch (e) { }
       return object;
     }
     return null;
@@ -48,22 +64,72 @@ function retrieveSheet(name) {
 }
 
 /**
- * Update the top-level `timestamps` object in localStorage for `name`.
- * Non-exported helper to centralize timestamp handling.
- * @param {string} name
+ * Update the top-level `allSheets` object in localStorage for `name`.
+ * Creates or updates a status object with { ts: timestamp, title: title }.
+ * Non-exported helper to centralize sheet status handling.
+ * @param {string} name - Sheet name
+ * @param {string} title - Sheet title
  */
-function updateTimestamp(name) {
+function updateSheetStatus(name, title) {
   try {
-    const tsRaw = localStorage.getItem('timestamps');
-    let ts = {};
-    if (tsRaw) {
-      try { ts = JSON.parse(tsRaw) || {}; } catch (e) { ts = {}; }
+    const allSheetsRaw = localStorage.getItem('allSheets');
+    let allSheets = {};
+    if (allSheetsRaw) {
+      try { allSheets = JSON.parse(allSheetsRaw) || {}; } catch (e) { allSheets = {}; }
     }
-    ts[name] = new Date().toISOString();
-    localStorage.setItem('timestamps', JSON.stringify(ts));
+    allSheets[name] = {
+      ts: new Date().toISOString(),
+      title: title || name
+    };
+    localStorage.setItem('allSheets', JSON.stringify(allSheets));
   } catch (e) {
     // ignore storage errors
   }
+}
+
+/**
+ * Find and delete the oldest-timestamped sheet* (excluding the given name)
+ * that actually exists in localStorage. The allSheets entry is left as-is.
+ * Returns true if a sheet was deleted, false otherwise.
+ * Non-exported helper.
+ * @param {string} excludeName - Sheet name to exclude from deletion (the one we're trying to save).
+ * @returns {boolean}
+ */
+function deleteOldestSheet(excludeName) {
+  try {
+    const allSheetsRaw = localStorage.getItem('allSheets');
+    let allSheets = {};
+    if (allSheetsRaw) {
+      try { allSheets = JSON.parse(allSheetsRaw) || {}; } catch (e) { allSheets = {}; }
+    }
+
+    // Find the oldest timestamp among sheet* entries (excluding excludeName)
+    // that actually exist in localStorage
+    let oldest = null;
+    let oldestKey = null;
+    for (const key in allSheets) {
+      if (/^sheet\d+$/.test(key) && key !== excludeName) {
+        const status = allSheets[key];
+        // Only consider if the sheet actually exists in storage
+        if (localStorage.getItem(key) !== null) {
+          const ts = status && status.ts ? status.ts : null;
+          if (!oldest || (ts && ts < oldest)) {
+            oldest = ts;
+            oldestKey = key;
+          }
+        }
+      }
+    }
+
+    if (oldestKey) {
+      localStorage.removeItem(oldestKey);
+      console.log('Deleted oldest sheet to free space:', oldestKey);
+      return true;
+    }
+  } catch (e) {
+    console.error('Error deleting oldest sheet:', e);
+  }
+  return false;
 }
 
 /**
@@ -78,22 +144,20 @@ function updateTimestamp(name) {
  * @returns {Promise<Object>} Promise resolving to a dictionary with keys as sheet names and values as titles.
  */
 function getLocalStorageSheetNames() {
-  return Promise.resolve().then(() => {
-    const nameDict = {};
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (/^sheet\d+$/.test(key)) {
-        const stored = localStorage.getItem(key);
-        try {
-          const obj = JSON.parse(stored);
-          nameDict[key] = obj.title || key;
-        } catch (e) {
-          nameDict[key] = key;
-        }
+  const nameDict = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (/^sheet\d+$/.test(key)) {
+      const stored = localStorage.getItem(key);
+      try {
+        const obj = JSON.parse(stored);
+        nameDict[key] = obj.title || key;
+      } catch (e) {
+        nameDict[key] = key;
       }
     }
-    return nameDict;
-  });
+  }
+  return nameDict;
 }
 
 /**

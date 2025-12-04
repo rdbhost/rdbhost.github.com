@@ -14,3 +14,6 @@ Now change localstorage_db.js to return promises, as if localStorage access was 
 In project_menu.js, wherever retrieveSheet is used to get data for loadSheet, rewrite so that retrieveSheet gets loadSheet(data) as its handler
 
 in sheet_loader, retrieveSheet should wrap samples[name] in a promise when returning
+
+catch localStorage overflow exceptions on writing.  if exception caught, delete the sheet* with oldest timestamp, and retry writing.
+do not delete timestamp for deleted object. just scan for the oldest timestamp where the sheet* is in storage.
