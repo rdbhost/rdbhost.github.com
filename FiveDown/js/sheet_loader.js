@@ -43,7 +43,7 @@ function testSheetJson(data) {
  * @param {HTMLTableElement} table - The table element to load data into.
  * @param {Object} data - The data object with title, header and rows.
  */
-function loadSheet(table, data) {
+function loadSheetOnEvent(table, data) {
   const tbody = table.tBodies[0];
   const theadRow = table.tHead.rows[0];
   const addTh = theadRow.querySelector('.add-result');
@@ -289,4 +289,91 @@ function removeStoredSheet(name) {
   return removeStoredSheetLocal(name);
 }
 
-export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };
+/**
+ * Public loader wrapper.
+ * - If called as `loadSheet(table, data)` it will directly invoke the
+ *   internal loader (backwards-compatible).
+ * - If called as `loadSheet(data)` it will emit a 'load-sheet' event on
+ *   the main table's pubsub (preferred asynchronous path).
+ */
+function loadSheet(a, b) {
+  // Backwards-compatible: if first arg is a table element, call loader directly
+  //if (a && a.tagName && a.tagName.toLowerCase() === 'table') {
+  //  return loadSheetOnEvent(a, b);
+  //}
+
+  const data = b;
+  const table = document.querySelector('table#main-sheet');
+  if (!table) return;
+  const pubsub = table.pubsub;
+  if (pubsub && typeof pubsub.publish === 'function') {
+    pubsub.publish('load-sheet', data);
+    return;
+  }
+  if (pubsub && typeof pubsub.emit === 'function') {
+    pubsub.emit('load-sheet', data);
+    return;
+  }
+  // Try dispatching a DOM CustomEvent on the table as a fallback
+  if (table && typeof table.dispatchEvent === 'function') {
+    try {
+      table.dispatchEvent(new CustomEvent('load-sheet', { detail: data }));
+      return;
+    } catch (e) {
+      // ignore and fallback
+    }
+  }
+
+  // Last-resort: call internal loader directly if available
+  try {
+    loadSheetOnEvent(table, data);
+  } catch (e) {
+    console.error('Failed to load sheet via pubsub or direct call:', e);
+  }
+}
+
+/**
+ * Sets up a pubsub handler that listens for a 'load-sheet' event and
+ * invokes `loadSheet(table, data)` using the main sheet table.
+ * The handler is registered after DOMContentLoaded (or immediately if
+ * the document is already loaded).
+ */
+function setupLoadSheetPubsub() {
+  const register = () => {
+    const table = document.querySelector('table#main-sheet');
+    if (!table || !table.pubsub) return;
+    const pubsub = table.pubsub;
+    const handler = (data) => {
+      if (!data) return;
+      try {
+        loadSheetOnEvent(table, data);
+      } catch (e) {
+        console.error('Error in load-sheet pubsub handler:', e);
+      }
+    };
+
+    if (typeof pubsub.subscribe === 'function') {
+      pubsub.subscribe('load-sheet', handler);
+    } else if (typeof pubsub.on === 'function') {
+      pubsub.on('load-sheet', handler);
+    } else if (typeof pubsub.addEventListener === 'function') {
+      pubsub.addEventListener('load-sheet', handler);
+    } else {
+      // Last-resort: if pubsub exposes a generic `register`-style API
+      try {
+        if (typeof pubsub.register === 'function') pubsub.register('load-sheet', handler);
+      } catch (e) {
+        // Give up silently if no compatible API found
+      }
+    }
+  };
+
+  //if (document.readyState === 'loading')
+  document.addEventListener('DOMContentLoaded', register);
+  //else
+  //  register();
+}
+setupLoadSheetPubsub();
+
+
+export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, setupLoadSheetPubsub };
