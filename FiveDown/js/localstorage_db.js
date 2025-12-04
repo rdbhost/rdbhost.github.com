@@ -15,6 +15,8 @@ function saveSheet(name, object) {
     if (!name.match(/^sheet\d+$/)) return false;
     if (!object.title) object.title = name;
     localStorage.setItem(name, JSON.stringify(object));
+    // Update top-level timestamps map in localStorage
+    try { updateTimestamp(name); } catch (e) { }
     return true;
   });
 }
@@ -29,12 +31,39 @@ function retrieveSheet(name) {
   return Promise.resolve().then(() => {
     const stored = localStorage.getItem(name);
     if (stored) {
-      const object = JSON.parse(stored);
+      // If stored value is not valid JSON, ignore it
+      let object;
+      try {
+        object = JSON.parse(stored);
+      } catch (e) {
+        return null;
+      }
       if (!object.title) object.title = name;
+      // Update only the top-level timestamps map for this read
+      try { updateTimestamp(name); } catch (e) { }
       return object;
     }
     return null;
   });
+}
+
+/**
+ * Update the top-level `timestamps` object in localStorage for `name`.
+ * Non-exported helper to centralize timestamp handling.
+ * @param {string} name
+ */
+function updateTimestamp(name) {
+  try {
+    const tsRaw = localStorage.getItem('timestamps');
+    let ts = {};
+    if (tsRaw) {
+      try { ts = JSON.parse(tsRaw) || {}; } catch (e) { ts = {}; }
+    }
+    ts[name] = new Date().toISOString();
+    localStorage.setItem('timestamps', JSON.stringify(ts));
+  } catch (e) {
+    // ignore storage errors
+  }
 }
 
 /**

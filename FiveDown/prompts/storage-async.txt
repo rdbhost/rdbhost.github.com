@@ -1,0 +1,16 @@
+
+Move all the localStorage related functions from sheet_loader.js to a new file js/localstorage_db.js
+keep getNextSheetName and allSheetNames functions in sheet_loader.js. create a new function in localstorage_db that reads sheet names from localStorage.
+keep all references to samples in sheet_loader
+
+in sheet_loader, add a pubsub event handler to run loadSheet. the data parameter will be passed with the event. the table parameter can be obtained from document.querySelector('table#main-sheet')
+
+the data objects stored in localStorage should have timestamps, that update whenever it is read or written.
+
+rename loadSheet() to loadSheetOnEvent, and create a new loadSheet() that emits the load-sheet event.
+
+Now change localstorage_db.js to return promises, as if localStorage access was slow and asynchronous. This will allow us to use localstorage_db in combination with other data storage that is necessarily async. 
+
+In project_menu.js, wherever retrieveSheet is used to get data for loadSheet, rewrite so that retrieveSheet gets loadSheet(data) as its handler
+
+in sheet_loader, retrieveSheet should wrap samples[name] in a promise when returning
