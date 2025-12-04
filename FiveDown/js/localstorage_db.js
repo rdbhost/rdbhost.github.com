@@ -41,13 +41,13 @@ function retrieveSheet(name) {
  * uniquely.
  * @returns {Object} Dictionary with keys as sheet names and values as titles.
  */
-function allSheetNames() {
+/**
+ * Reads sheet names from localStorage and returns a mapping of name -> title.
+ * This isolates localStorage access so other modules can aggregate from multiple stores.
+ * @returns {Object} Dictionary with keys as sheet names and values as titles.
+ */
+function getLocalStorageSheetNames() {
   const nameDict = {};
-  Object.keys(samples).forEach(key => {
-    const obj = samples[key];
-    nameDict[key] = obj.title || key;
-  });
-
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (/^sheet\d+$/.test(key)) {
@@ -60,16 +60,7 @@ function allSheetNames() {
       }
     }
   }
-
   return nameDict;
-}
-
-// Get the next available sheet name (e.g., sheet01, sheet02, etc.)
-function getNextSheetName() {
-  const sheets = allSheetNames();
-  let i = 1;
-  while (sheets[`sheet${String(i).padStart(2, '0')}`]) i++;
-  return `sheet${String(i).padStart(2, '0')}`;
 }
 
 /**
@@ -108,4 +99,4 @@ function removeStoredSheet(name) {
   localStorage.removeItem(name);
 }
 
-export { saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };
+export { saveSheet, retrieveSheet, getLocalStorageSheetNames, removeStoredSheet };

@@ -4,8 +4,7 @@ import { samples } from './samples.js';
 import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { formatResult, formatFormula, Data } from './dim_data.js'
-import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, allSheetNames as allSheetNamesLocal, 
-  getNextSheetName as getNextSheetNameLocal, removeStoredSheet as removeStoredSheetLocal } from './localstorage_db.js';
+import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getLocalStorageSheetNames, removeStoredSheet as removeStoredSheetLocal } from './localstorage_db.js';
 
 
 /**
@@ -243,6 +242,34 @@ function scanSheet(table) {
   return { header, rows };
 }
 
+/**
+ * Retrieves all sheet names from samples and localStorage, consolidated
+ * uniquely.
+ * @returns {Object} Dictionary with keys as sheet names and values as titles.
+ */
+function allSheetNames() {
+  const nameDict = {};
+  Object.keys(samples).forEach(key => {
+    const obj = samples[key];
+    nameDict[key] = obj.title || key;
+  });
+
+  const localNames = getLocalStorageSheetNames();
+  for (const k in localNames) {
+    nameDict[k] = localNames[k];
+  }
+
+  return nameDict;
+}
+
+// Get the next available sheet name (e.g., sheet01, sheet02, etc.)
+function getNextSheetName() {
+  const sheets = allSheetNames();
+  let i = 1;
+  while (sheets[`sheet${String(i).padStart(2, '0')}`]) i++;
+  return `sheet${String(i).padStart(2, '0')}`;
+}
+
 // Delegate localStorage operations to `localstorage_db.js`
 function saveSheet(name, object) {
   return saveSheetLocal(name, object);
@@ -252,17 +279,8 @@ function retrieveSheet(name) {
   return retrieveSheetLocal(name);
 }
 
-function allSheetNames() {
-  return allSheetNamesLocal();
-}
-
-function getNextSheetName() {
-  return getNextSheetNameLocal();
-}
-
 function removeStoredSheet(name) {
   return removeStoredSheetLocal(name);
 }
-
 
 export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };
