@@ -272,10 +272,16 @@ function getNextSheetName() {
 
 // Delegate localStorage operations to `localstorage_db.js`
 function saveSheet(name, object) {
+  // Prefer built-in samples over writing to localStorage
+  if (samples[name]) return false;
+  if (!name.match(/^sheet\d+$/)) return false;
+  if (!object.title) object.title = name;
   return saveSheetLocal(name, object);
 }
 
 function retrieveSheet(name) {
+  // Return sample immediately if present
+  if (samples[name]) return samples[name];
   return retrieveSheetLocal(name);
 }
 

@@ -1,7 +1,7 @@
 // js/localstorage_db.js
 // LocalStorage-backed sheet operations (legacy / migration support)
 
-import { samples } from './samples.js';
+// localstorage_db.js intentionally does not reference `samples`.
 
 /**
  * Saves the sheet object to localStorage if the name is not already in
@@ -11,10 +11,8 @@ import { samples } from './samples.js';
  * @returns {boolean} True if saved, false if name exists in samples.
  */
 function saveSheet(name, object) {
-  if (samples[name]) return false;
   if (!name.match(/^sheet\d+$/)) return false;
-  if (!object.title)
-    object.title = name;
+  if (!object.title) object.title = name;
   localStorage.setItem(name, JSON.stringify(object));
   return true;
 }
@@ -25,12 +23,10 @@ function saveSheet(name, object) {
  * @returns {Object|null} The sheet object or null if not found.
  */
 function retrieveSheet(name) {
-  if (samples[name]) return samples[name];
   const stored = localStorage.getItem(name);
   if (stored) {
     const object = JSON.parse(stored);
-    if (!object.title)
-      object.title = name;
+    if (!object.title) object.title = name;
     return object;
   }
   return null;
