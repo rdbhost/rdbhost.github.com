@@ -4,6 +4,8 @@ import { samples } from './samples.js';
 import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { formatResult, formatFormula, Data } from './dim_data.js'
+import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, allSheetNames as allSheetNamesLocal, 
+  getNextSheetName as getNextSheetNameLocal, removeStoredSheet as removeStoredSheetLocal } from './localstorage_db.js';
 
 
 /**
@@ -174,18 +176,7 @@ function loadSheet(table, data) {
   table.pubsub.publish('ensure-blank-five');
 }
 
-/**
- * Loads a predefined sample into the table by retrieving from the sample-data
- * or localStorage and calling loadSheet.
- * @param {HTMLTableElement} table - The table element to load the sample into.
- * @param {Object} sampledata - The dictionary containing samples.
- * @param {string} name - The name of the sample to load.
- */
-function loadSample(table, sampledata, name) {
-  const sample = sampledata[name] || JSON.parse(localStorage.getItem(name));
-  if (!sample) return 'sample not found in sample-data or localStorage';
-  return loadSheet(table, sample);
-}
+// `loadSample` removed — use `loadSheet` with data from samples or retrieveSheetLocal()/retrieveSheet()/getSheetSync() as appropriate.
 
 /**
  * Scans the table and converts it into a samples-like structure.
@@ -252,105 +243,26 @@ function scanSheet(table) {
   return { header, rows };
 }
 
-/**
- * Saves the sheet object to localStorage if the name is not already in
- * samples.
- * @param {string} name - The name to save the sheet under.
- * @param {Object} object - The sheet object to save.
- * @returns {boolean} True if saved, false if name exists in samples.
- */
+// Delegate localStorage operations to `localstorage_db.js`
 function saveSheet(name, object) {
-  if (samples[name]) return false;
-  if (!name.match(/^sheet\d+$/)) return false;
-  if (!object.title)
-    object.title = name;
-  localStorage.setItem(name, JSON.stringify(object));
-  return true;
+  return saveSheetLocal(name, object);
 }
 
-/**
- * Retrieves the sheet object from samples or localStorage.
- * @param {string} name - The name of the sheet to retrieve.
- * @returns {Object|null} The sheet object or null if not found.
- */
 function retrieveSheet(name) {
-  if (samples[name]) return samples[name];
-  const stored = localStorage.getItem(name);
-  if (stored) {
-    const object = JSON.parse(stored);
-    if (!object.title)
-      object.title = name;
-    return object;
-  }
-  return null;
+  return retrieveSheetLocal(name);
 }
 
-/**
- * Retrieves all sheet names from samples and localStorage, consolidated
- * uniquely.
- * @returns {Object} Dictionary with keys as sheet names and values as titles.
- */
 function allSheetNames() {
-  const nameDict = {};
-  Object.keys(samples).forEach(key => {
-    const obj = samples[key];
-    nameDict[key] = obj.title || key;
-  });
-
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (/^sheet\d+$/.test(key)) {
-      const stored = localStorage.getItem(key);
-      const obj = JSON.parse(stored);
-      nameDict[key] = obj.title || key;
-    }
-  }
-
-  return nameDict;
+  return allSheetNamesLocal();
 }
 
-// Get the next available sheet name (e.g., sheet01, sheet02, etc.)
 function getNextSheetName() {
-  const sheets = allSheetNames();
-  let i = 1;
-  while (sheets[`sheet${String(i).padStart(2, '0')}`]) i++;
-  return `sheet${String(i).padStart(2, '0')}`;
+  return getNextSheetNameLocal();
 }
 
-/**
- * Removes the stored sheet from localStorage.
- * @param {string} name - The name of the sheet to remove.
- */
 function removeStoredSheet(name) {
-  if (!name.match(/^sheet\d+$/)) return;
-  const sheetData = localStorage.getItem(name);
-  if (!sheetData) {
-    localStorage.removeItem(name);
-    return;
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(sheetData);
-  } catch (e) {
-    parsed = { raw: sheetData };
-  }
-  parsed['deleted-timestamp'] = new Date().toISOString();
-  // Shift deleted-sheet-09 to deleted-sheet-10, ..., deleted-sheet-01 to deleted-sheet-02
-  for (let i = 9; i >= 1; i--) {
-    const fromKey = `deleted-sheet-${String(i).padStart(2, '0')}`;
-    const toKey = `deleted-sheet-${String(i+1).padStart(2, '0')}`;
-    const val = localStorage.getItem(fromKey);
-    if (val !== null) {
-      localStorage.setItem(toKey, val);
-    } else {
-      localStorage.removeItem(toKey);
-    }
-  }
-  // Save the new deleted sheet to deleted-sheet-01
-  localStorage.setItem('deleted-sheet-01', JSON.stringify(parsed));
-  // Remove the original sheet
-  localStorage.removeItem(name);
+  return removeStoredSheetLocal(name);
 }
 
 
-export { loadSheet, loadSample, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };
+export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet };
