@@ -40,9 +40,10 @@ function setupProjectMenu() {
     currentSheet = Object.keys(sheetDict)[0];
 
   // Load the current sheet
-  const sheetData = retrieveSheet(currentSheet);
-  if (sheetData)
-    loadSheet(table, sheetData);
+  retrieveSheet(currentSheet).then(sheetData => {
+    if (sheetData)
+      loadSheet(null, sheetData);
+  });
 
   // Move current span to leftmost and activate
   const currentSpan = projectMenu.querySelector(`#${currentSheet}`);
@@ -77,9 +78,10 @@ function handleSheetSelectClick(event) {
   }
 
   // Load new sheet
-  const newData = retrieveSheet(key);
-  if (newData)
-    loadSheet(table, newData);
+  retrieveSheet(key).then(newData => {
+    if (newData)
+      loadSheet(null, newData);
+  });
 
   // Save as current-sheet
   localStorage.setItem('current-sheet', key);
@@ -141,9 +143,10 @@ function deleteSheetButtonHandler() {
     let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
 
     // Load new current
-    const newData = retrieveSheet(newCurrent);
-    if (newData)
-      loadSheet(table, newData);
+    retrieveSheet(newCurrent).then(newData => {
+      if (newData)
+        loadSheet(null, newData);
+    });
 
     // Save as current-sheet
     localStorage.setItem('current-sheet', newCurrent);

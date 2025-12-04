@@ -280,8 +280,8 @@ function saveSheet(name, object) {
 }
 
 function retrieveSheet(name) {
-  // Return sample immediately if present
-  if (samples[name]) return samples[name];
+  // Return sample immediately if present, wrapped in a Promise for consistency
+  if (samples[name]) return Promise.resolve(samples[name]);
   return retrieveSheetLocal(name);
 }
 
@@ -297,39 +297,11 @@ function removeStoredSheet(name) {
  *   the main table's pubsub (preferred asynchronous path).
  */
 function loadSheet(a, b) {
-  // Backwards-compatible: if first arg is a table element, call loader directly
-  //if (a && a.tagName && a.tagName.toLowerCase() === 'table') {
-  //  return loadSheetOnEvent(a, b);
-  //}
-
   const data = b;
   const table = document.querySelector('table#main-sheet');
   if (!table) return;
   const pubsub = table.pubsub;
-  if (pubsub && typeof pubsub.publish === 'function') {
-    pubsub.publish('load-sheet', data);
-    return;
-  }
-  if (pubsub && typeof pubsub.emit === 'function') {
-    pubsub.emit('load-sheet', data);
-    return;
-  }
-  // Try dispatching a DOM CustomEvent on the table as a fallback
-  if (table && typeof table.dispatchEvent === 'function') {
-    try {
-      table.dispatchEvent(new CustomEvent('load-sheet', { detail: data }));
-      return;
-    } catch (e) {
-      // ignore and fallback
-    }
-  }
-
-  // Last-resort: call internal loader directly if available
-  try {
-    loadSheetOnEvent(table, data);
-  } catch (e) {
-    console.error('Failed to load sheet via pubsub or direct call:', e);
-  }
+  pubsub.publish('load-sheet', data);
 }
 
 /**
@@ -352,26 +324,10 @@ function setupLoadSheetPubsub() {
       }
     };
 
-    if (typeof pubsub.subscribe === 'function') {
-      pubsub.subscribe('load-sheet', handler);
-    } else if (typeof pubsub.on === 'function') {
-      pubsub.on('load-sheet', handler);
-    } else if (typeof pubsub.addEventListener === 'function') {
-      pubsub.addEventListener('load-sheet', handler);
-    } else {
-      // Last-resort: if pubsub exposes a generic `register`-style API
-      try {
-        if (typeof pubsub.register === 'function') pubsub.register('load-sheet', handler);
-      } catch (e) {
-        // Give up silently if no compatible API found
-      }
-    }
+    pubsub.subscribe('load-sheet', handler);
   };
 
-  //if (document.readyState === 'loading')
   document.addEventListener('DOMContentLoaded', register);
-  //else
-  //  register();
 }
 setupLoadSheetPubsub();
 
