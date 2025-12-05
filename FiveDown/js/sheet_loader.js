@@ -5,6 +5,7 @@ import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { formatResult, formatFormula, Data } from './dim_data.js'
 import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getLocalStorageSheetNames, removeStoredSheet as removeStoredSheetLocal } from './localstorage_db.js';
+import { saveSheet as saveSheetDb, retrieveSheet as retrieveSheetDb, removeSheet as removeSheetDb } from './indexeddb_db.js';
 
 
 /**
@@ -272,21 +273,35 @@ function getNextSheetName() {
 
 // Delegate localStorage operations to `localstorage_db.js`
 function saveSheet(name, object) {
-  // Prefer built-in samples over writing to localStorage
-  if (samples[name]) return false;
-  if (!name.match(/^sheet\d+$/)) return false;
+  // Prefer built-in samples over writing to stores
+  if (samples[name]) return Promise.resolve(false);
+  if (!name.match(/^sheet\d+$/)) return Promise.resolve(false);
   if (!object.title) object.title = name;
-  return saveSheetLocal(name, object);
+  // Write to both localStorage and IndexedDB. Return a Promise<boolean>
+  const pLocal = saveSheetLocal(name, object).catch(e => { console.error('local save failed', e); return false; });
+  const pDb = saveSheetDb(name, object).catch(e => { console.error('indexeddb save failed', e); return false; });
+  return Promise.allSettled([pLocal, pDb]).then(results => {
+    // Consider success if either store fulfilled with truthy value
+    const ok = results.some(r => r.status === 'fulfilled' && r.value);
+    return ok;
+  });
 }
 
 function retrieveSheet(name) {
   // Return sample immediately if present, wrapped in a Promise for consistency
   if (samples[name]) return Promise.resolve(samples[name]);
-  return retrieveSheetLocal(name);
+  // Try localStorage first, then fall back to IndexedDB
+  return retrieveSheetLocal(name).then(localRes => {
+    if (localRes) return localRes;
+    return retrieveSheetDb(name);
+  });
 }
 
 function removeStoredSheet(name) {
-  return removeStoredSheetLocal(name);
+  // Remove from both localStorage and IndexedDB
+  const pLocal = removeStoredSheetLocal(name).catch(e => { console.error('local remove failed', e); });
+  const pDb = removeSheetDb(name).catch(e => { console.error('indexeddb remove failed', e); });
+  return Promise.allSettled([pLocal, pDb]).then(() => true);
 }
 
 /**
