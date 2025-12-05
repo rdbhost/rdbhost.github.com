@@ -4,7 +4,7 @@ import { samples } from './samples.js';
 import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { formatResult, formatFormula, Data } from './dim_data.js'
-import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getLocalStorageSheetNames, removeStoredSheet as removeStoredSheetLocal } from './localstorage_db.js';
+import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getAllSheetNames, removeStoredSheet as removeStoredSheetLocal, touchSheetStatus } from './localstorage_db.js';
 import { saveSheet as saveSheetDb, retrieveSheet as retrieveSheetDb, removeSheet as removeSheetDb } from './indexeddb_db.js';
 
 
@@ -255,10 +255,11 @@ function allSheetNames() {
     nameDict[key] = obj.title || key;
   });
 
-  const localNames = getLocalStorageSheetNames();
-  for (const k in localNames) {
-    nameDict[k] = localNames[k];
-  }
+  const localNames = getAllSheetNames();
+  Object.keys(localNames).forEach(key => {
+    const nm = localNames[key].title || key;
+    nameDict[key] = nm;        // or null, or anything you want
+  });
 
   return nameDict;
 }
@@ -289,7 +290,11 @@ function saveSheet(name, object) {
 
 function retrieveSheet(name) {
   // Return sample immediately if present, wrapped in a Promise for consistency
-  if (samples[name]) return Promise.resolve(samples[name]);
+  if (samples[name]) {
+    // Record read timestamp for sample sheets in localStorage 'all-sheets'
+    try { touchSheetStatus(name, (samples[name] && samples[name].title) ? samples[name].title : name); } catch (e) { }
+    return Promise.resolve(samples[name]);
+  }
   // Try localStorage first, then fall back to IndexedDB
   return retrieveSheetLocal(name).then(localRes => {
     if (localRes) return localRes;
@@ -302,6 +307,53 @@ function removeStoredSheet(name) {
   const pLocal = removeStoredSheetLocal(name).catch(e => { console.error('local remove failed', e); });
   const pDb = removeSheetDb(name).catch(e => { console.error('indexeddb remove failed', e); });
   return Promise.allSettled([pLocal, pDb]).then(() => true);
+}
+
+/**
+ * Migrate sheets from localStorage into IndexedDB.
+ * Ensures every sheet present in localStorage is also stored in IndexedDB.
+ * - skips entries that match `samples`
+ * - returns an object with lists of migrated, skipped and error items
+ * @returns {Promise<{migrated: string[], skipped: string[], errors: Array<{name:string,error:any}>}>}
+ */
+async function migrateLocalToIndexedDB() {
+  const localNames = getLocalStorageSheetNames();
+  const migrated = [];
+  const skipped = [];
+  const errors = [];
+
+  for (const name of Object.keys(localNames)) {
+    // Never overwrite built-in samples
+    if (samples[name]) {
+      skipped.push(name);
+      continue;
+    }
+
+    try {
+      // If already present in IndexedDB, skip
+      const inDb = await retrieveSheetDb(name);
+      if (inDb) {
+        skipped.push(name);
+        continue;
+      }
+
+      // Load from localStorage (may be null if malformed)
+      const localData = await retrieveSheetLocal(name);
+      if (!localData) {
+        skipped.push(name);
+        continue;
+      }
+
+      // Save into IndexedDB
+      await saveSheetDb(name, localData);
+      migrated.push(name);
+    } catch (e) {
+      console.error('Error migrating sheet', name, e);
+      errors.push({ name, error: e });
+    }
+  }
+
+  return { migrated, skipped, errors };
 }
 
 /**
@@ -347,4 +399,4 @@ function setupLoadSheetPubsub() {
 setupLoadSheetPubsub();
 
 
-export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, setupLoadSheetPubsub };
+export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, setupLoadSheetPubsub, migrateLocalToIndexedDB };

@@ -16,7 +16,7 @@ function saveSheet(name, object) {
     if (!object.title) object.title = name;
     try {
       localStorage.setItem(name, JSON.stringify(object));
-      // Update allSheets status object in localStorage
+      // Update all-sheets status object in localStorage
       try { updateSheetStatus(name, object.title); } catch (e) { }
       return true;
     } catch (e) {
@@ -55,7 +55,7 @@ function retrieveSheet(name) {
         return null;
       }
       if (!object.title) object.title = name;
-      // Update allSheets status object for this read
+        // Update all-sheets status object for this read
       try { updateSheetStatus(name, object.title); } catch (e) { }
       return object;
     }
@@ -64,7 +64,7 @@ function retrieveSheet(name) {
 }
 
 /**
- * Update the top-level `allSheets` object in localStorage for `name`.
+ * Update the top-level `all-sheets` object in localStorage for `name`.
  * Creates or updates a status object with { ts: timestamp, title: title }.
  * Non-exported helper to centralize sheet status handling.
  * @param {string} name - Sheet name
@@ -72,7 +72,7 @@ function retrieveSheet(name) {
  */
 function updateSheetStatus(name, title) {
   try {
-    const allSheetsRaw = localStorage.getItem('allSheets');
+    const allSheetsRaw = localStorage.getItem('all-sheets');
     let allSheets = {};
     if (allSheetsRaw) {
       try { allSheets = JSON.parse(allSheetsRaw) || {}; } catch (e) { allSheets = {}; }
@@ -81,7 +81,7 @@ function updateSheetStatus(name, title) {
       ts: new Date().toISOString(),
       title: title || name
     };
-    localStorage.setItem('allSheets', JSON.stringify(allSheets));
+    localStorage.setItem('all-sheets', JSON.stringify(allSheets));
   } catch (e) {
     // ignore storage errors
   }
@@ -89,7 +89,7 @@ function updateSheetStatus(name, title) {
 
 /**
  * Find and delete the oldest-timestamped sheet* (excluding the given name)
- * that actually exists in localStorage. The allSheets entry is left as-is.
+ * that actually exists in localStorage. The all-sheets entry is left as-is.
  * Returns true if a sheet was deleted, false otherwise.
  * Non-exported helper.
  * @param {string} excludeName - Sheet name to exclude from deletion (the one we're trying to save).
@@ -97,7 +97,7 @@ function updateSheetStatus(name, title) {
  */
 function deleteOldestSheet(excludeName) {
   try {
-    const allSheetsRaw = localStorage.getItem('allSheets');
+    const allSheetsRaw = localStorage.getItem('all-sheets');
     let allSheets = {};
     if (allSheetsRaw) {
       try { allSheets = JSON.parse(allSheetsRaw) || {}; } catch (e) { allSheets = {}; }
@@ -132,32 +132,36 @@ function deleteOldestSheet(excludeName) {
   return false;
 }
 
+
 /**
- * Retrieves all sheet names from samples and localStorage, consolidated
- * uniquely.
- * @returns {Object} Dictionary with keys as sheet names and values as titles.
+ * Returns an object mapping every sheet name that appears in the
+ * top-level `all-sheets` index to its stored metadata (title + timestamp).
+ * If you only need the names, use Object.keys(getAllSheetNames()).
+ *
+ * This is the most reliable way to know “which sheets we think exist”
+ * because the `all-sheets` object is the single source of truth for the
+ * sheet list (it is kept in sync by updateSheetStatus() on every save/read).
+ *
+ * @returns {{ [name: string]: { ts: string, title: string } }}
+ *          An empty object if nothing is stored or on parse error.
  */
-/**
- * Reads sheet names from localStorage and returns a mapping of name -> title.
- * This isolates localStorage access so other modules can aggregate from multiple stores.
- * Returns a Promise for consistency with async storage backends.
- * @returns {Promise<Object>} Promise resolving to a dictionary with keys as sheet names and values as titles.
- */
-function getLocalStorageSheetNames() {
-  const nameDict = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (/^sheet\d+$/.test(key)) {
-      const stored = localStorage.getItem(key);
-      try {
-        const obj = JSON.parse(stored);
-        nameDict[key] = obj.title || key;
-      } catch (e) {
-        nameDict[key] = key;
-      }
-    }
+function getAllSheetNames() {
+  try {
+    const raw = localStorage.getItem('all-sheets');
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    // JSON.parse can return null or non-objects in edge cases – normalise to {}
+    return typeof parsed === 'object' && parsed !== null ? parsed : {};
+  } catch (e) {
+    console.error('Failed to read/parse all-sheets index:', e);
+    return {};
   }
-  return nameDict;
+}
+
+/* If you only want an array of the names (most callers do): */
+function getAllSheetNameList() {
+  return Object.keys(getAllSheetNames());
 }
 
 /**
@@ -174,6 +178,28 @@ function removeStoredSheet(name) {
     // Simply remove the sheet key from localStorage. Deleted-sheet
     // archival is handled by IndexedDB (indexeddb_db.js).
     localStorage.removeItem(name);
+
+    // Remove its entry from the 'all-sheets' index
+    try {
+      const allSheetsRaw = localStorage.getItem('all-sheets');
+      if (allSheetsRaw) {
+        let allSheets = {};
+        try {
+          allSheets = JSON.parse(allSheetsRaw) || {};
+        } catch (e) {
+          // corrupted → we'll just overwrite with empty
+          allSheets = {};
+        }
+
+        if (name in allSheets) {
+          delete allSheets[name];
+          localStorage.setItem('all-sheets', JSON.stringify(allSheets));
+          console.log(`Removed ${name} from all-sheets index`);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to update all-sheets index during removal:', e);
+    }
   });
 }
 
@@ -198,4 +224,109 @@ function setCurrentSheet(name) {
     localStorage.setItem('current-sheet', name);
   }
 }
-export { saveSheet, retrieveSheet, getLocalStorageSheetNames, removeStoredSheet, getCurrentSheet, setCurrentSheet };
+
+/**
+ * Touch the sheet status in `all-sheets` to update its read timestamp and title.
+ * This is exported so callers (e.g., when reading a sample) can record access.
+ * @param {string} name
+ * @param {string} title
+ */
+function touchSheetStatus(name, title) {
+  try { updateSheetStatus(name, title); } catch (e) { }
+}
+
+/**
+ * Comprehensive legacy storage cleanup – run once at app startup.
+ * Removes all historical garbage keys that are no longer used:
+ *   • Any key starting with 'deleted-sheet'
+ *   • The legacy 'allSheets' index (migrating valid sheets first)
+ *   • The obsolete 'timestamps' key
+ *
+ * Fully synchronous, safe, idempotent, and valid JavaScript.
+ */
+function cleanupLegacyStorage() {
+  let changes = 0;
+
+  // ------------------------------------------------------------
+  // 1. Remove all stray 'deleted-sheet*' keys (top-level)
+  // ------------------------------------------------------------
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('deleted-sheet')) {
+      localStorage.removeItem(key);
+      changes++;
+      console.log('Removed legacy deleted-sheet key:', key);
+    }
+  }
+
+  // ------------------------------------------------------------
+  // 2. Remove the obsolete 'timestamps' key
+  // ------------------------------------------------------------
+  if (localStorage.getItem('timestamps') !== null) {
+    localStorage.removeItem('timestamps');
+    changes++;
+    console.log('Removed obsolete timestamps key');
+  }
+
+  // ------------------------------------------------------------
+  // 3. Migrate legacy 'allSheets' → 'all-sheets' (if it exists)
+  // ------------------------------------------------------------
+  const legacyRaw = localStorage.getItem('allSheets');
+  if (legacyRaw !== null) {
+    let legacyData = {};
+    try {
+      legacyData = JSON.parse(legacyRaw) || {};
+    } catch (e) {
+      console.warn('Legacy allSheets corrupted – skipping migration', e);
+    }
+
+    // Load current canonical index
+    let currentData = {};
+    const currentRaw = localStorage.getItem('all-sheets');
+    if (currentRaw) {
+      try {
+        const parsed = JSON.parse(currentRaw);
+        if (parsed && typeof parsed === 'object') currentData = parsed;
+      } catch (e) {
+        console.warn('Current all-sheets corrupted – starting fresh', e);
+        currentData = {};
+      }
+    }
+
+    // Migrate any missing valid sheets
+    let migrated = 0;
+    for (const [name, meta] of Object.entries(legacyData)) {
+      if (/^sheet\d+$/.test(name) && !(name in currentData)) {
+        currentData[name] = {
+          ts: meta.ts || new Date().toISOString(),
+          title: meta.title || name
+        };
+        migrated++;
+        changes++;
+      }
+    }
+
+    // Write back only if we added something
+    if (migrated > 0) {
+      try {
+        localStorage.setItem('all-sheets', JSON.stringify(currentData));
+      } catch (e) {
+        console.error('Failed to save migrated all-sheets', e);
+        return; // abort cleanup of legacy key if write fails
+      }
+    }
+
+    // Finally remove the old key
+    try {
+      localStorage.removeItem('allSheets');
+      console.log('Removed legacy allSheets key');
+    } catch (e) { /* ignore */ }
+  }
+
+  if (changes > 0) {
+    console.log(`Legacy storage cleanup complete – ${changes} item(s) removed/migrated`);
+  }
+}
+cleanupLegacyStorage();
+
+export { saveSheet, retrieveSheet, getAllSheetNames, removeStoredSheet, getCurrentSheet, setCurrentSheet, touchSheetStatus };
