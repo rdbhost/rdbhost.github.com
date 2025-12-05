@@ -161,9 +161,10 @@ function getLocalStorageSheetNames() {
 }
 
 /**
- * Removes the stored sheet from localStorage and archives it using
- * `deleted-sheet-01...` keys. Returns a Promise for consistency with async
- * storage backends.
+ * Removes the stored sheet from localStorage. Returns a Promise for
+ * consistency with async storage backends.
+ * Note: deleted-sheet archival (the deletion history) is maintained in
+ * IndexedDB (`indexeddb_db.js`) and not in localStorage.
  * @param {string} name - The name of the sheet to remove.
  * @returns {Promise<void>}
  */
@@ -176,4 +177,25 @@ function removeStoredSheet(name) {
   });
 }
 
-export { saveSheet, retrieveSheet, getLocalStorageSheetNames, removeStoredSheet };
+/**
+ * Get the currently selected sheet key from localStorage.
+ * Synchronous helper.
+ * @returns {string|null}
+ */
+function getCurrentSheet() {
+  return localStorage.getItem('current-sheet');
+}
+
+/**
+ * Set the currently selected sheet key in localStorage.
+ * Synchronous helper.
+ * @param {string} name
+ */
+function setCurrentSheet(name) {
+  if (name === null || name === undefined) {
+    localStorage.removeItem('current-sheet');
+  } else {
+    localStorage.setItem('current-sheet', name);
+  }
+}
+export { saveSheet, retrieveSheet, getLocalStorageSheetNames, removeStoredSheet, getCurrentSheet, setCurrentSheet };

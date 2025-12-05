@@ -3,6 +3,7 @@
 
 import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet, 
   retrieveSheet, removeStoredSheet } from './sheet_loader.js';
+import { getCurrentSheet, setCurrentSheet } from './localstorage_db.js';
 
 /**
  * Sets up the project menu by populating sheet selectors and loading the
@@ -34,8 +35,8 @@ function setupProjectMenu() {
     projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
   });
 
-  // Retrieve current-sheet from localStorage
-  let currentSheet = localStorage.getItem('current-sheet') || 'sheet00';
+  // Retrieve current-sheet using helper (falls back to 'sheet00')
+  let currentSheet = getCurrentSheet() || 'sheet00';
   if (!Object.keys(sheetDict).includes(currentSheet))
     currentSheet = Object.keys(sheetDict)[0];
 
@@ -67,7 +68,7 @@ function handleSheetSelectClick(event) {
   const pubsub = table.pubsub;
 
   // Save current sheet
-  const current = localStorage.getItem('current-sheet');
+  const current = getCurrentSheet();
   if (current) {
     const currentData = scanSheet(table);
     // Fetch the title from the active span.sheet-selecter
@@ -84,7 +85,7 @@ function handleSheetSelectClick(event) {
   });
 
   // Save as current-sheet
-  localStorage.setItem('current-sheet', key);
+  setCurrentSheet(key);
 
   // Activate the selected span
   activateSheetSpan(span);
@@ -124,8 +125,8 @@ function deleteSheetButtonHandler() {
     deleteButton.textContent = 'Delete Sheet';
     deleteButton.classList.remove('confirm');
 
-    // Get current sheet identity from localStorage (assume a key like 'currentSheet' or similar is used)
-    let key = localStorage.getItem('current-sheet');
+    // Get current sheet identity using helper
+    let key = getCurrentSheet();
     const table = document.querySelector('table#main-sheet');
     const pubsub = table.pubsub;
     const projectMenu = document.querySelector('.project-menu');
@@ -149,7 +150,7 @@ function deleteSheetButtonHandler() {
     });
 
     // Save as current-sheet
-    localStorage.setItem('current-sheet', newCurrent);
+    setCurrentSheet(newCurrent);
 
     // Activate the new current span
     const newSpan = projectMenu.querySelector(`#${newCurrent}`);
@@ -166,7 +167,7 @@ function deleteSheetButtonHandler() {
  */
 function handleVisibilityChange() {
   const table = document.querySelector('table#main-sheet');
-  const current = localStorage.getItem('current-sheet');
+  const current = getCurrentSheet();
   if (current) {
     const currentData = scanSheet(table);
     // Fetch the title from the active span.sheet-selecter
@@ -214,7 +215,7 @@ function handleNewSheetClick(event) {
   loadSheet(table, {header: [null], rows: []});
 
   // Save as current-sheet
-  localStorage.setItem('current-sheet', newKey);
+  setCurrentSheet(newKey);
 
   // Activate new span
   activateSheetSpan(newSpan);
