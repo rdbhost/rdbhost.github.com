@@ -1,0 +1,18 @@
+
+
+Add a module 'js/indexeddb_db.js' that stores data in an indexeddb.  This module should have functions saveSheet(name, data), 
+retrieveSheet(name), removeSheet(name) and getDeletedInOrder().
+
+removeSheet(name) should move sheet to a deleted sheet storage system, which tracks the deletion order.  Make
+this work similarly to code in localstorage_db.js.
+
+Timestamps are NOT necessary for savedSheets.
+
+
+maintain a queue of 10 deleted sheets in the database.  call them deleted-sheet-01, 
+deleted-sheet-02, etc.  when removeStoredSheet is called, the item is retrieved, parsed, a 
+deleted-timestamp is added, and it is resaived on one of the above names.  then deleted on the given name. 
+revise saving algorithm, so that only one deleted-sheet is read at a time.. save deleted-sheet-09 
+to deleted-sheet-10, then deleted-sheet-08 to deleted-sheet-09, etc
+
+getDeletedInOrder() returns a list of deleted_sheet* names, for all deleted sheets, in reverse order.

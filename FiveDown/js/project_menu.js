@@ -1,93 +1,154 @@
 
 // js/project_menu.js
 
+import { getCurrentSheet, setCurrentSheet, getAllSheetNames } from './localstorage_db.js';  // only for metadata
 import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet, 
   retrieveSheet, removeStoredSheet } from './sheet_loader.js';
 
 /**
- * Sets up the project menu by populating sheet selectors and loading the
- * current sheet.
+ * Sets up the project menu: up to 4 recent tabs + dropdown for the rest
  */
 function setupProjectMenu() {
   const projectMenu = document.querySelector('.project-menu');
   const table = document.querySelector('table#main-sheet');
   const pubsub = table.pubsub;
 
-  // Save original sheet-selecter span
-  const sheetSelecters = projectMenu.querySelectorAll('.sheet-selecter');
-  const origSpan = sheetSelecters[0].cloneNode(true);
-  projectMenu.setAttribute('data-orig', origSpan.outerHTML);
-
-  // Remove all sheet-selecter spans
-  sheetSelecters.forEach(span => span.remove());
-
-  // Get all sheet names as dictionary
-  let sheetDict = allSheetNames();
-  if (Object.keys(sheetDict).length === 0)
-    sheetDict = { 'sheet00': 'Sheet 00' };
-
-  // Add spans for each sheet entry
-  Object.entries(sheetDict).forEach(([key, title]) => {
-    const newSpan = origSpan.cloneNode(true);
-    newSpan.querySelector('span').textContent = title;
-    newSpan.id = key.replace(/\s+/g, '_'); // Sanitize id
-    projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
+  const templateSpan = document.querySelector('#sheet-template');
+  if (!templateSpan) {
+    console.error('Sheet template not found');
+    return;
+  }
+  // Save original template (we'll clone it for new tabs)
+  projectMenu.setAttribute('data-orig', templateSpan);
+  // Clear visible tabs (keep template and controls)
+  projectMenu.querySelectorAll('.sheet-selecter').forEach(el => {
+    if (el.id !== 'sheet-template') el.remove();
   });
 
-  // Retrieve current-sheet from localStorage
-  let currentSheet = localStorage.getItem('current-sheet') || 'sheet00';
-  if (!Object.keys(sheetDict).includes(currentSheet))
-    currentSheet = Object.keys(sheetDict)[0];
+  // === Get list of sheet keys from sheet_loader.js (authoritative source) ===
+  const sheetDict = allSheetNames(); // e.g., { sheet00: "Sheet 00", sheet01: "My Calc", ... }
 
-  // Load the current sheet
-  const sheetData = retrieveSheet(currentSheet);
-  if (sheetData)
-    loadSheet(table, sheetData);
-
-  // Move current span to leftmost and activate
-  const currentSpan = projectMenu.querySelector(`#${currentSheet}`);
-  if (currentSpan) {
-    projectMenu.insertBefore(currentSpan, projectMenu.firstChild);
-    activateSheetSpan(currentSpan);
+  // If no sheets, fallback to default
+  if (Object.keys(sheetDict).length === 0) {
+    sheetDict['sheet00'] = 'Sheet 00';
   }
 
-  // Publish recalc
+  // Get metadata (timestamps + titles) from localstorage_db
+  const sheetMeta = getAllSheetNames(); // { sheet00: { ts: "...", title: "..." }, ... }
+
+  // Build full entries with fallback titles
+  const entries = Object.keys(sheetDict).map(key => {
+    const meta = sheetMeta[key] || {};
+    return [
+      key,
+      {
+        title: (meta.title || sheetDict[key] || key),
+        ts: meta.ts || '1970-01-01T00:00:00Z' // old timestamp if missing
+      }
+    ];
+  });
+
+  // Sort by timestamp descending (most recent first)
+  entries.sort((a, b) => (b[1].ts || '').localeCompare(a[1].ts || ''));
+
+  // Determine current sheet
+  let currentSheet = getCurrentSheet();
+  if (!currentSheet || !sheetDict[currentSheet]) {
+    currentSheet = entries[0][0];
+    setCurrentSheet(currentSheet);
+  }
+
+  // Promote current sheet to top 4 if not already there
+  const top4 = entries.slice(0, 4);
+  const currentInTop4 = top4.some(([k]) => k === currentSheet);
+  if (!currentInTop4) {
+    const currentEntry = entries.find(([k]) => k === currentSheet);
+    if (currentEntry) {
+      top4.pop();
+      top4.unshift(currentEntry);
+    }
+  }
+
+  // === Insert the 4 most recent tabs BEFORE the dropdown ===
+  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
+
+  // First, clear any old visible tabs
+  projectMenu.querySelectorAll('.sheet-selecter').forEach(el => {
+    if (el.id !== 'sheet-template') el.remove();
+  });
+
+  top4.forEach(([key, data]) => {
+    const newSpan = templateSpan.cloneNode(true);
+    newSpan.id = key.replace(/\s+/g, '_');
+    newSpan.style.display = '';
+    newSpan.querySelector('span').textContent = data.title;
+    projectMenu.insertBefore(newSpan, insertBeforeEl);
+  });
+
+  // === Populate dropdown with older sheets ===
+  const dropdown = projectMenu.querySelector('#sheet-dropdown');
+  dropdown.innerHTML = '<option value="" disabled selected>More sheets...</option>';
+
+  if (entries.length > 4) {
+    entries.slice(4).forEach(([key, data]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = data.title;
+      dropdown.appendChild(opt);
+    });
+    dropdown.style.display = 'inline-block';
+  } else {
+    dropdown.style.display = 'none';
+  }
+
+  // Load current sheet
+  retrieveSheet(currentSheet).then(sheetData => {
+    if (sheetData) loadSheet(null, sheetData);
+  });
+
+  // Activate current tab
+  const currentSpan = projectMenu.querySelector(`#${currentSheet.replace(/\s+/g, '_')}`);
+  activateSheetSpan(currentSpan);
+
   pubsub.publish('recalculation', 'go');
 }
 
+
 /**
- * Handles click on sheet selector to switch sheets.
- * @param {Event} event - The click event.
+ * Handle click on sheet selector or dropdown change
  */
-function handleSheetSelectClick(event) {
-  const span = event.target.closest('.sheet-selecter');
-  const key = span.id.replace(/_/g, ' '); // Restore key from id
+function handleSheetSelect(event) {
+  let key;
+  if (event.target.closest('.sheet-selecter')) {
+    const span = event.target.closest('.sheet-selecter');
+    key = span.id.replace(/_/g, ' ');
+  } else if (event.type === 'change' && event.target.id === 'sheet-dropdown') {
+    key = event.target.value;
+    event.target.selectedIndex = 0; // reset dropdown
+  } else {
+    return;
+  }
+
   const table = document.querySelector('table#main-sheet');
   const pubsub = table.pubsub;
 
-  // Save current sheet
-  const current = localStorage.getItem('current-sheet');
+  // Save current
+  const current = getCurrentSheet();
   if (current) {
     const currentData = scanSheet(table);
-    // Fetch the title from the active span.sheet-selecter
     const activeSpan = document.querySelector('.sheet-selecter.active span');
-    if (activeSpan) 
-      currentData.title = activeSpan.textContent.trim();
+    if (activeSpan) currentData.title = activeSpan.textContent.trim();
     saveSheet(current, currentData);
   }
 
-  // Load new sheet
-  const newData = retrieveSheet(key);
-  if (newData)
-    loadSheet(table, newData);
+  // Load new
+  retrieveSheet(key).then(newData => {
+    if (newData) loadSheet(null, newData);
+  });
 
-  // Save as current-sheet
-  localStorage.setItem('current-sheet', key);
-
-  // Activate the selected span
-  activateSheetSpan(span);
-
-  // Publish recalc
+  setCurrentSheet(key);
+  //rebuildMenu(); // ensures new sheet moves into recent tabs
+  setupProjectMenu();
   pubsub.publish('recalculation', 'go');
 }
 
@@ -122,8 +183,8 @@ function deleteSheetButtonHandler() {
     deleteButton.textContent = 'Delete Sheet';
     deleteButton.classList.remove('confirm');
 
-    // Get current sheet identity from localStorage (assume a key like 'currentSheet' or similar is used)
-    let key = localStorage.getItem('current-sheet');
+    // Get current sheet identity using helper
+    let key = getCurrentSheet();
     const table = document.querySelector('table#main-sheet');
     const pubsub = table.pubsub;
     const projectMenu = document.querySelector('.project-menu');
@@ -141,12 +202,13 @@ function deleteSheetButtonHandler() {
     let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
 
     // Load new current
-    const newData = retrieveSheet(newCurrent);
-    if (newData)
-      loadSheet(table, newData);
+    retrieveSheet(newCurrent).then(newData => {
+      if (newData)
+        loadSheet(null, newData);
+    });
 
     // Save as current-sheet
-    localStorage.setItem('current-sheet', newCurrent);
+    setCurrentSheet(newCurrent);
 
     // Activate the new current span
     const newSpan = projectMenu.querySelector(`#${newCurrent}`);
@@ -163,7 +225,7 @@ function deleteSheetButtonHandler() {
  */
 function handleVisibilityChange() {
   const table = document.querySelector('table#main-sheet');
-  const current = localStorage.getItem('current-sheet');
+  const current = getCurrentSheet();
   if (current) {
     const currentData = scanSheet(table);
     // Fetch the title from the active span.sheet-selecter
@@ -196,27 +258,48 @@ function handleNewSheetClick(event) {
   const table = document.querySelector('table#main-sheet');
   const pubsub = table.pubsub;
 
-  // Get next id
-  let newKey = getNextSheetName();
+  // Get the hidden template
+  const templateSpan = document.querySelector('#sheet-template');
+  if (!templateSpan) {
+    console.error('Sheet template not found');
+    return;
+  }
 
-  // Create new span
-  const origHTML = projectMenu.getAttribute('data-orig');
-  const origSpan = new DOMParser().parseFromString(origHTML, 'text/html').body.firstChild;
-  const newSpan = origSpan.cloneNode(true);
-  newSpan.querySelector('span').textContent = `${newKey.charAt(0).toUpperCase() + newKey.slice(1)}`;
-  newSpan.id = newKey;
-  projectMenu.insertBefore(newSpan, projectMenu.querySelector('#new-sheet'));
+  // Generate new sheet key and default title
+  const newKey = getNextSheetName();
+  const defaultTitle = newKey.charAt(0).toUpperCase() + newKey.slice(1).replace(/\d+/g, ' $&').trim();
 
-  // Clear sheet (load empty data)
-  loadSheet(table, {header: [null], rows: []});
+  // Clone the template for the new tab
+  const newSpan = templateSpan.cloneNode(true);
+  newSpan.id = newKey.replace(/\s+/g, '_');  // sanitized ID
+  newSpan.style.display = '';                // make visible
+  newSpan.querySelector('span').textContent = defaultTitle;
 
-  // Save as current-sheet
-  localStorage.setItem('current-sheet', newKey);
+  // Insert the new tab before the dropdown (same position as recent tabs)
+  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
+  projectMenu.insertBefore(newSpan, insertBeforeEl);
 
-  // Activate new span
+  // Create empty sheet data
+  const emptyData = {
+    header: [null],
+    rows: [],
+    title: defaultTitle
+  };
+
+  // Save it immediately so it has a timestamp and appears in allSheetNames()
+  saveSheet(newKey, emptyData);
+
+  // Switch to the new sheet
+  setCurrentSheet(newKey);
+  loadSheet(null, emptyData);
+
+  // Activate the new tab visually
   activateSheetSpan(newSpan);
 
-  // Publish recalc
+  // Rebuild menu to ensure correct recency order and dropdown state
+  rebuildMenu();
+
+  // Trigger recalculation
   pubsub.publish('recalculation', 'go');
 }
 
@@ -249,10 +332,15 @@ document.addEventListener('DOMContentLoaded', () => {
   projectMenu.addEventListener('click', (e) => {
     const target = e.target;
     if (target.closest('.sheet-selecter') && !target.closest('.sheet-delete'))
-      handleSheetSelectClick(e);
+      handleSheetSelect(e);
     if (target.closest('#new-sheet'))
       handleNewSheetClick(e);
   });
+
+  // --- CRITICAL FIX: Properly attach dropdown change handler ---
+  const dropdown = document.querySelector('#sheet-dropdown');
+  if (dropdown) 
+    dropdown.addEventListener('change', handleSheetSelect);
 
   const deleteButton = document.querySelector('#delete-sheet');
   deleteButton.addEventListener('click', deleteSheetButtonHandler);
@@ -263,4 +351,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
-export { setupProjectMenu, handleSheetSelectClick, handleVisibilityChange, handleNewSheetClick, tabEditHandler };
+export { setupProjectMenu, handleSheetSelect, handleVisibilityChange, handleNewSheetClick, tabEditHandler };

@@ -49,3 +49,6 @@ make sheet delete a two-stage operation, similar to the plot button. on first cl
 changes to 'Please Confirm', and a setTimeout for 90 seconds reverts to its default state.  a second 
 click while the button is in confirm mode will actually delete the sheet.
 
+=============
+
+

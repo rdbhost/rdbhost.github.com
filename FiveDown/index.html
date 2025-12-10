@@ -19,10 +19,23 @@
     <div class="outer-box">
         <div class="topbox">
             <div class="project-menu">
+                <!-- Template for sheet tabs - hidden and used for cloning -->
+                <span id="sheet-template" class="sheet-selecter" style="display:none;">
+                    <span>Sheet Name</span>
+                </span>      
+                          
+                <!-- Dropdown for the rest -->
+                <select id="sheet-dropdown" style="display:none;">
+                    <option value="" disabled selected>Select another sheet...</option>
+                </select>
+                <span id="new-sheet">[new sheet]</span>
+            </div>
+
+            <!-- div class="project-menu">
                 <span id="sheet00" class="sheet-selecter active">
                     <span>Sheet 00</span></span>
                 <span id="new-sheet">[new sheet]</span>
-            </div>
+            </div -->
             <button id="plot-btn" class="plot-btn-top" disabled>Plot</button>
             <button id="import-btn" class="plot-btn-top">Import/Export</button>
             <!-- button id="undelete-sheet" class="plot-btn-top" title="Restore">Restore Deleted</button -->

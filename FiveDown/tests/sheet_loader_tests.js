@@ -1,6 +1,6 @@
 // tests.js
 
-import { loadSample, loadSheet, scanSheet } from '../js/sheet_loader.js';
+import { loadSheet, scanSheet } from '../js/sheet_loader.js';
 import { formatFormula as originalFormatFormula, formatResult as originalFormatResult } from './js/dim_data.js'
 import { enforceRowRules as originalEnforceRowRules } from '../js/sheet_interface.js';
 import { RowCollection } from '../js/row_collection.js';
@@ -150,46 +150,7 @@ QUnit.module('loadSheet row_collection integration', {
   }
 });
 
-QUnit.test('adds named rows to row_collection', function(assert) {
-  loadSample(this.table, mockSamples, 'testSample');
-
-  assert.equal(this.table.row_collection.rows.size, 2, 'Two named rows added');
-  assert.ok(this.table.row_collection.getRow('name1') instanceof TableRow, 'name1 added');
-  assert.equal(this.table.row_collection.getRow('name1').name(), 'name1', 'name1 matches');
-  assert.ok(this.table.row_collection.getRow('name2') instanceof TableRow, 'name2 added');
-  assert.equal(this.table.row_collection.getRow('name2').name(), 'name2', 'name2 matches');
-});
-
-QUnit.test('handles duplicate names with prefix', function(assert) {
-  loadSample(this.table, mockSamples, 'duplicateNameSample');
-
-  assert.equal(this.table.row_collection.rows.size, 3, 'Three rows added');
-  assert.ok(this.table.row_collection.getRow('dup') instanceof TableRow, 'First dup added as dup');
-  assert.equal(this.table.row_collection.getRow('dup').name(), 'dup', 'First name dup');
-  assert.ok(this.table.row_collection.getRow('_dup') instanceof TableRow, 'Second dup added as _dup');
-  assert.equal(this.table.row_collection.getRow('_dup').name(), '_dup', 'Second name _dup');
-  assert.ok(this.table.row_collection.getRow('__dup') instanceof TableRow, 'Third dup added as __dup');
-  assert.equal(this.table.row_collection.getRow('__dup').name(), '__dup', 'Third name __dup');
-
-  const rows = this.table.tBodies[0].rows;
-  assert.equal(rows[0].querySelector('.name').textContent, 'dup', 'First row name updated to dup');
-  assert.equal(rows[0].querySelector('.name').getAttribute('data-value'), 'dup', 'First row data-value dup');
-  assert.equal(rows[1].querySelector('.name').textContent, '_dup', 'Second row name updated to _dup');
-  assert.equal(rows[1].querySelector('.name').getAttribute('data-value'), '_dup', 'Second row data-value _dup');
-  assert.equal(rows[2].querySelector('.name').textContent, '__dup', 'Third row name updated to __dup');
-  assert.equal(rows[2].querySelector('.name').getAttribute('data-value'), '__dup', 'Third row data-value __dup');
-});
-
-QUnit.test('does not add rows without names', function(assert) {
-  loadSample(this.table, mockSamples, 'noNameSample');
-
-  assert.equal(this.table.row_collection.rows.size, 0, 'No rows added to collection');
-  const rows = this.table.tBodies[0].rows;
-  assert.equal(rows[1].querySelector('.name').textContent, '', 'Second row name blank');
-  assert.equal(rows[1].querySelector('.name').getAttribute('data-value'), null, 'Second row no data-value');
-  assert.equal(rows[3].querySelector('.name').textContent, '', 'Fourth row name blank');
-  assert.equal(rows[3].querySelector('.name').getAttribute('data-value'), null, 'Fourth row no data-value');
-});
+// Removed tests that depended on deprecated `loadSample` function
 
 QUnit.test('handles mixed named and unnamed rows', function(assert) {
   const mixedSample = {
