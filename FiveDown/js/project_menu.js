@@ -10,9 +10,7 @@ import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet,
  */
 function setupProjectMenu() {
   const projectMenu = document.querySelector('.project-menu');
-  const table = document.querySelector('table#main-sheet');
-  const pubsub = table.pubsub;
-
+ 
   const templateSpan = document.querySelector('#sheet-template');
   if (!templateSpan) {
     console.error('Sheet template not found');
@@ -100,17 +98,26 @@ function setupProjectMenu() {
   } else {
     dropdown.style.display = 'none';
   }
+}
+
+function loadCurrentSheet() {
+
+  let currentSheet = getCurrentSheet();
+  const table = document.querySelector('table#main-sheet');
+  const pubsub = table.pubsub;
 
   // Load current sheet
   retrieveSheet(currentSheet).then(sheetData => {
     if (sheetData) loadSheet(null, sheetData);
+    pubsub.publish('recalculation', 'go');    
   });
+
+  const projectMenu = document.querySelector('.project-menu');
 
   // Activate current tab
   const currentSpan = projectMenu.querySelector(`#${currentSheet.replace(/\s+/g, '_')}`);
   activateSheetSpan(currentSpan);
 
-  pubsub.publish('recalculation', 'go');
 }
 
 
@@ -144,12 +151,14 @@ function handleSheetSelect(event) {
   // Load new
   retrieveSheet(key).then(newData => {
     if (newData) loadSheet(null, newData);
+
+    setCurrentSheet(key);
+    //rebuildMenu(); // ensures new sheet moves into recent tabs
+    setupProjectMenu();
+    loadCurrentSheet();
+    // pubsub.publish('recalculation', 'go');
   });
 
-  setCurrentSheet(key);
-  //rebuildMenu(); // ensures new sheet moves into recent tabs
-  setupProjectMenu();
-  pubsub.publish('recalculation', 'go');
 }
 
 /**
@@ -297,10 +306,11 @@ function handleNewSheetClick(event) {
   activateSheetSpan(newSpan);
 
   // Rebuild menu to ensure correct recency order and dropdown state
-  rebuildMenu();
+  setupProjectMenu();
+  loadCurrentSheet()
 
   // Trigger recalculation
-  pubsub.publish('recalculation', 'go');
+  // pubsub.publish('recalculation', 'go');
 }
 
 // Enable contenteditable on double-click for project-menu spans
@@ -327,6 +337,7 @@ function tabEditHandler(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
   setupProjectMenu();
+  loadCurrentSheet();
 
   const projectMenu = document.querySelector('.project-menu');
   projectMenu.addEventListener('click', (e) => {
