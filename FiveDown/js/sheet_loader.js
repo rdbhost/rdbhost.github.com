@@ -244,21 +244,33 @@ function scanSheet(table) {
 }
 
 /**
- * Retrieves all sheet names from samples and localStorage, consolidated
- * uniquely.
- * @returns {Object} Dictionary with keys as sheet names and values as titles.
+ * Retrieves all sheet names from samples and localStorage/IndexedDB,
+ * preserving title and lastAccessed timestamp where available.
+ * @returns {Object} Dictionary where key = sheet name, value = {title: string, lastAccessed?: number}
  */
 function allSheetNames() {
   const nameDict = {};
+  const EPOCH_1970 = 0; // Unix timestamp 0 → 1970-01-01T00:00:00Z
+
+  // 1. Start with built-in samples (title only, no timestamp)
   Object.keys(samples).forEach(key => {
-    const obj = samples[key];
-    nameDict[key] = obj.title || key;
+    const sample = samples[key];
+    nameDict[key] = {
+      title: sample.title || key,
+      lastAccessed: EPOCH_1970,   // Ensures samples are always oldest    
+    };
   });
 
-  const localNames = getAllSheetNames();
-  Object.keys(localNames).forEach(key => {
-    const nm = localNames[key].title || key;
-    nameDict[key] = nm;        // or null, or anything you want
+  // 2. Overlay user-saved sheets from localStorage (via getAllSheetNames)
+  //     This provides both title and lastAccessed timestamp
+  const storedSheets = getAllSheetNames(); // → { sheet01: {title, lastAccessed}, ... }
+
+  Object.keys(storedSheets).forEach(key => {
+    const info = storedSheets[key];
+    nameDict[key] = {
+      title: info.title || key,
+      lastAccessed: info.lastAccessed // may be undefined for older entries
+    };
   });
 
   return nameDict;

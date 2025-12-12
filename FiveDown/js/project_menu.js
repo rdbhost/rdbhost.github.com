@@ -1,128 +1,107 @@
-
 // js/project_menu.js
 
-import { getCurrentSheet, setCurrentSheet, getAllSheetNames } from './localstorage_db.js';  // only for metadata
-import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet, 
-  retrieveSheet, removeStoredSheet } from './sheet_loader.js';
+import { setCurrentSheet } from './localstorage_db.js';
+import { 
+  allSheetNames, 
+  getNextSheetName, 
+  loadSheet, 
+  scanSheet, 
+  saveSheet, 
+  retrieveSheet, 
+  removeStoredSheet 
+} from './sheet_loader.js';
 
 /**
  * Sets up the project menu: up to 4 recent tabs + dropdown for the rest
  */
 function setupProjectMenu() {
   const projectMenu = document.querySelector('.project-menu');
- 
   const templateSpan = document.querySelector('#sheet-template');
   if (!templateSpan) {
     console.error('Sheet template not found');
     return;
   }
-  // Save original template (we'll clone it for new tabs)
-  projectMenu.setAttribute('data-orig', templateSpan);
-  // Clear visible tabs (keep template and controls)
+
+  // Clear existing visible tabs (keep template)
   projectMenu.querySelectorAll('.sheet-selecter').forEach(el => {
     if (el.id !== 'sheet-template') el.remove();
   });
 
-  // === Get list of sheet keys from sheet_loader.js (authoritative source) ===
-  const sheetDict = allSheetNames(); // e.g., { sheet00: "Sheet 00", sheet01: "My Calc", ... }
+  // Get full list with titles and optional timestamps
+  const sheetDict = allSheetNames(); // → { sheet01: { title: "My Project", lastAccessed?: 1734023456789 }, ... }
 
-  // If no sheets, fallback to default
-  if (Object.keys(sheetDict).length === 0) {
-    sheetDict['sheet00'] = 'Sheet 00';
-  }
+  // Convert to array and sort by lastAccessed (most recent first)
+  const entries = Object.keys(sheetDict).map(key => ({
+    key,
+    title: sheetDict[key].title || key,
+    lastAccessed: sheetDict[key].lastAccessed || 0  // 0 for samples or old entries
+  }));
 
-  // Get metadata (timestamps + titles) from localstorage_db
-  const sheetMeta = getAllSheetNames(); // { sheet00: { ts: "...", title: "..." }, ... }
+  entries.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
 
-  // Build full entries with fallback titles
-  const entries = Object.keys(sheetDict).map(key => {
-    const meta = sheetMeta[key] || {};
-    return [
-      key,
-      {
-        title: (meta.title || sheetDict[key] || key),
-        ts: meta.ts || '1970-01-01T00:00:00Z' // old timestamp if missing
-      }
-    ];
-  });
-
-  // Sort by timestamp descending (most recent first)
-  entries.sort((a, b) => (b[1].ts || '').localeCompare(a[1].ts || ''));
-
-  // Determine current sheet
-  let currentSheet = getCurrentSheet();
+  // Determine current sheet (stored in localStorage as 'current-sheet')
+  let currentSheet = localStorage.getItem('current-sheet');
   if (!currentSheet || !sheetDict[currentSheet]) {
-    currentSheet = entries[0][0];
-    setCurrentSheet(currentSheet);
+    currentSheet = entries.length > 0 ? entries[0].key : 'sheet01';
+    localStorage.setItem('current-sheet', currentSheet);
   }
 
-  // Promote current sheet to top 4 if not already there
+  // Ensure current sheet appears in top 4
   const top4 = entries.slice(0, 4);
-  const currentInTop4 = top4.some(([k]) => k === currentSheet);
-  if (!currentInTop4) {
-    const currentEntry = entries.find(([k]) => k === currentSheet);
-    if (currentEntry) {
-      top4.pop();
-      top4.unshift(currentEntry);
-    }
+  const currentInTop4 = top4.some(e => e.key === currentSheet);
+  if (!currentInTop4 && entries.some(e => e.key === currentSheet)) {
+    const currentEntry = entries.find(e => e.key === currentSheet);
+    top4.pop();
+    top4.unshift(currentEntry);
   }
 
-  // === Insert the 4 most recent tabs BEFORE the dropdown ===
+  // Insert top 4 tabs
   const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
 
-  // First, clear any old visible tabs
-  projectMenu.querySelectorAll('.sheet-selecter').forEach(el => {
-    if (el.id !== 'sheet-template') el.remove();
-  });
-
-  top4.forEach(([key, data]) => {
+  top4.forEach(entry => {
     const newSpan = templateSpan.cloneNode(true);
-    newSpan.id = key.replace(/\s+/g, '_');
+    newSpan.id = entry.key.replace(/\s+/g, '_');
     newSpan.style.display = '';
-    newSpan.querySelector('span').textContent = data.title;
+    newSpan.querySelector('span').textContent = entry.title;
     projectMenu.insertBefore(newSpan, insertBeforeEl);
   });
 
-  // === Populate dropdown with older sheets ===
+  // Populate dropdown with the rest
   const dropdown = projectMenu.querySelector('#sheet-dropdown');
   dropdown.innerHTML = '<option value="" disabled selected>More sheets...</option>';
 
   if (entries.length > 4) {
-    entries.slice(4).forEach(([key, data]) => {
+    entries.slice(4).forEach(entry => {
       const opt = document.createElement('option');
-      opt.value = key;
-      opt.textContent = data.title;
+      opt.value = entry.key;
+      opt.textContent = entry.title;
       dropdown.appendChild(opt);
     });
     dropdown.style.display = 'inline-block';
   } else {
     dropdown.style.display = 'none';
   }
+
+  // Activate current tab
+  const activeSpan = projectMenu.querySelector(`#${currentSheet.replace(/\s+/g, '_')}`);
+  activateSheetSpan(activeSpan);
 }
 
 function loadCurrentSheet() {
-
-  let currentSheet = getCurrentSheet();
+  const currentSheet = localStorage.getItem('current-sheet') || 'sheet01';
   const table = document.querySelector('table#main-sheet');
-  const pubsub = table.pubsub;
+  if (!table?.pubsub) return;
 
-  // Load current sheet
   retrieveSheet(currentSheet).then(sheetData => {
-    if (sheetData) loadSheet(null, sheetData);
-    pubsub.publish('recalculation', 'go');    
+    if (sheetData) {
+      loadSheet(null, sheetData);
+      table.pubsub.publish('recalculation', 'go');
+    }
   });
-
-  const projectMenu = document.querySelector('.project-menu');
-
-  // Activate current tab
-  const currentSpan = projectMenu.querySelector(`#${currentSheet.replace(/\s+/g, '_')}`);
-  activateSheetSpan(currentSpan);
-
 }
 
-
 /**
- * Handle click on sheet selector or dropdown change
+ * Handle click on sheet tab or dropdown selection
  */
 function handleSheetSelect(event) {
   let key;
@@ -131,235 +110,165 @@ function handleSheetSelect(event) {
     key = span.id.replace(/_/g, ' ');
   } else if (event.type === 'change' && event.target.id === 'sheet-dropdown') {
     key = event.target.value;
-    event.target.selectedIndex = 0; // reset dropdown
+    event.target.selectedIndex = 0;
   } else {
     return;
   }
 
   const table = document.querySelector('table#main-sheet');
-  const pubsub = table.pubsub;
+  if (!table?.pubsub) return;
 
-  // Save current
-  const current = getCurrentSheet();
-  if (current) {
+  const current = localStorage.getItem('current-sheet');
+
+  // Save current sheet if exists
+  if (current && current !== key) {
     const currentData = scanSheet(table);
     const activeSpan = document.querySelector('.sheet-selecter.active span');
     if (activeSpan) currentData.title = activeSpan.textContent.trim();
     saveSheet(current, currentData);
   }
 
-  // Load new
-  retrieveSheet(key).then(newData => {
-    if (newData) loadSheet(null, newData);
-
+  // Switch to new sheet
+  retrieveSheet(key).then(data => {
+    if (data) loadSheet(null, data);
     setCurrentSheet(key);
-    //rebuildMenu(); // ensures new sheet moves into recent tabs
-    setupProjectMenu();
+    setupProjectMenu();  // Rebuild to update recency
     loadCurrentSheet();
-    // pubsub.publish('recalculation', 'go');
   });
-
 }
-
-/**
- * Handler for the delete-sheet button click event.
- */
 
 let deleteSheetConfirmTimeout = null;
 
 function deleteSheetButtonHandler() {
   const deleteButton = document.querySelector('#delete-sheet');
   if (deleteButton.dataset.confirmMode !== 'true') {
-    // First click: enter confirm mode
     deleteButton.dataset.confirmMode = 'true';
-    deleteButton.textContent = 'Please Confirm';
+    deleteButton.textContent = 'Confirm Delete';
     deleteButton.classList.add('confirm');
-    // Set timeout to revert after 90 seconds
+
     deleteSheetConfirmTimeout = setTimeout(() => {
-    deleteButton.dataset.confirmMode = 'false';
-    deleteButton.textContent = 'Delete Sheet';
-    deleteButton.classList.remove('confirm');
-    }, 1500);
-
+      deleteButton.dataset.confirmMode = 'false';
+      deleteButton.textContent = 'Delete Sheet';
+      deleteButton.classList.remove('confirm');
+    }, 5000);
   } else {
-
-    // Second click: actually delete
-    if (deleteSheetConfirmTimeout) {
-      clearTimeout(deleteSheetConfirmTimeout);
-      deleteSheetConfirmTimeout = null;
-    }
+    clearTimeout(deleteSheetConfirmTimeout);
     deleteButton.dataset.confirmMode = 'false';
     deleteButton.textContent = 'Delete Sheet';
     deleteButton.classList.remove('confirm');
 
-    // Get current sheet identity using helper
-    let key = getCurrentSheet();
-    const table = document.querySelector('table#main-sheet');
-    const pubsub = table.pubsub;
-    const projectMenu = document.querySelector('.project-menu');
-    const span = document.querySelector('#'+key)
-    
-    // Remove from localStorage
+    const key = localStorage.getItem('current-sheet');
+    if (!key) return;
+
     removeStoredSheet(key);
 
-    // Remove the span from the project menu
-    if (span) 
-      span.parentElement.removeChild(span);
-
-    // Choose first remaining
-    const remainingSpans = projectMenu.querySelectorAll('.sheet-selecter');
-    let newCurrent = remainingSpans.length > 0 ? remainingSpans[0].id : 'sheet00';
-
-    // Load new current
-    retrieveSheet(newCurrent).then(newData => {
-      if (newData)
-        loadSheet(null, newData);
-    });
-
-    // Save as current-sheet
-    setCurrentSheet(newCurrent);
-
-    // Activate the new current span
-    const newSpan = projectMenu.querySelector(`#${newCurrent}`);
-    activateSheetSpan(newSpan);
-
-    // Publish recalc
-    pubsub.publish('recalculation', 'go');
+    // Rebuild menu and switch to another sheet
+    setupProjectMenu();
+    const newCurrent = localStorage.getItem('current-sheet') || 'sheet01';
+    loadCurrentSheet();
   }
 }
 
-
-/**
- * Handles visibility change to save current sheet.
- */
 function handleVisibilityChange() {
-  const table = document.querySelector('table#main-sheet');
-  const current = getCurrentSheet();
-  if (current) {
-    const currentData = scanSheet(table);
-    // Fetch the title from the active span.sheet-selecter
-    const activeSpan = document.querySelector('.sheet-selecter.active span');
-    if (activeSpan) 
-      currentData.title = activeSpan.textContent.trim();
-    saveSheet(current, currentData);
+  if (document.visibilityState === 'hidden') {
+    const table = document.querySelector('table#main-sheet');
+    const current = localStorage.getItem('current-sheet');
+    if (current && table) {
+      const data = scanSheet(table);
+      const activeSpan = document.querySelector('.sheet-selecter.active span');
+      if (activeSpan) data.title = activeSpan.textContent.trim();
+      saveSheet(current, data);
+    }
   }
 }
 
-/**
- * Removes 'active' class from all sheet-selecter spans and adds it to the
- * specified one.
- * @param {HTMLElement} activeSpan - The span to activate.
- */
 function activateSheetSpan(activeSpan) {
-  document.querySelectorAll('.sheet-selecter').forEach(span => {
-    span.classList.remove('active');
+  document.querySelectorAll('.sheet-selecter').forEach(el => {
+    el.classList.remove('active');
   });
-  if (activeSpan)
-    activeSpan.classList.add('active');
+  if (activeSpan) activeSpan.classList.add('active');
 }
 
-/**
- * Handles click on new-sheet to create a new sheet.
- * @param {Event} event - The click event.
- */
-function handleNewSheetClick(event) {
-  const projectMenu = document.querySelector('.project-menu');
-  const table = document.querySelector('table#main-sheet');
-  const pubsub = table.pubsub;
-
-  // Get the hidden template
-  const templateSpan = document.querySelector('#sheet-template');
-  if (!templateSpan) {
-    console.error('Sheet template not found');
-    return;
-  }
-
-  // Generate new sheet key and default title
+function handleNewSheetClick() {
   const newKey = getNextSheetName();
-  const defaultTitle = newKey.charAt(0).toUpperCase() + newKey.slice(1).replace(/\d+/g, ' $&').trim();
+  const defaultTitle = newKey.charAt(0).toUpperCase() + newKey.slice(1).replace(/(\d+)/, ' $1');
 
-  // Clone the template for the new tab
-  const newSpan = templateSpan.cloneNode(true);
-  newSpan.id = newKey.replace(/\s+/g, '_');  // sanitized ID
-  newSpan.style.display = '';                // make visible
-  newSpan.querySelector('span').textContent = defaultTitle;
-
-  // Insert the new tab before the dropdown (same position as recent tabs)
-  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
-  projectMenu.insertBefore(newSpan, insertBeforeEl);
-
-  // Create empty sheet data
   const emptyData = {
-    header: [null],
-    rows: [],
-    title: defaultTitle
+    title: defaultTitle,
+    header: ['Result'],
+    rows: []
   };
 
-  // Save it immediately so it has a timestamp and appears in allSheetNames()
-  saveSheet(newKey, emptyData);
+  saveSheet(newKey, emptyData); // This triggers timestamp via touchSheetStatus internally
 
-  // Switch to the new sheet
-  setCurrentSheet(newKey);
+  localStorage.setItem('current-sheet', newKey);
   loadSheet(null, emptyData);
-
-  // Activate the new tab visually
-  activateSheetSpan(newSpan);
-
-  // Rebuild menu to ensure correct recency order and dropdown state
   setupProjectMenu();
-  loadCurrentSheet()
-
-  // Trigger recalculation
-  // pubsub.publish('recalculation', 'go');
 }
 
-// Enable contenteditable on double-click for project-menu spans
+// Allow inline editing of tab titles
 function tabEditHandler(e) {
   const selecter = e.target.closest('.sheet-selecter');
-  if (selecter) {
-    // Find the child span (the label span inside .sheet-selecter)
-    const labelSpan = selecter.querySelector('span');
-    if (labelSpan) {
-      labelSpan.contentEditable = 'true';
-      labelSpan.focus();
-      const removeEditable = () => {
-        // Remove <br> tags and excess whitespace
-        let text = labelSpan.innerText.replace(/\n/g, ' ');
-        text = text.replace(/\s+/g, ' ').trim();
-        labelSpan.textContent = text;
-        labelSpan.contentEditable = 'false';
-        labelSpan.removeEventListener('focusout', removeEditable);
-      };
-      labelSpan.addEventListener('focusout', removeEditable);
-  }
-  }
+  if (!selecter) return;
+  const label = selecter.querySelector('span');
+  if (!label) return;
+
+  label.contentEditable = 'true';
+  label.focus();
+
+  const save = () => {
+    let text = label.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) text = label.dataset.original || 'Sheet';
+    label.textContent = text;
+    label.contentEditable = 'false';
+
+    // Update stored title on next save
+    const key = localStorage.getItem('current-sheet');
+    if (key) {
+      // Title will be picked up on next save (visibilitychange or switch)
+      label.dataset.dirtyTitle = text;
+    }
+  };
+
+  label.addEventListener('blur', save, { once: true });
+  label.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      label.blur();
+    }
+  });
 }
 
+// === DOM Ready ===
 document.addEventListener('DOMContentLoaded', () => {
   setupProjectMenu();
   loadCurrentSheet();
 
   const projectMenu = document.querySelector('.project-menu');
   projectMenu.addEventListener('click', (e) => {
-    const target = e.target;
-    if (target.closest('.sheet-selecter') && !target.closest('.sheet-delete'))
+    if (e.target.closest('.sheet-selecter') && !e.target.closest('.sheet-delete')) {
       handleSheetSelect(e);
-    if (target.closest('#new-sheet'))
-      handleNewSheetClick(e);
+    }
+    if (e.target.closest('#new-sheet')) {
+      handleNewSheetClick();
+    }
   });
 
-  // --- CRITICAL FIX: Properly attach dropdown change handler ---
   const dropdown = document.querySelector('#sheet-dropdown');
-  if (dropdown) 
-    dropdown.addEventListener('change', handleSheetSelect);
+  if (dropdown) dropdown.addEventListener('change', handleSheetSelect);
 
-  const deleteButton = document.querySelector('#delete-sheet');
-  deleteButton.addEventListener('click', deleteSheetButtonHandler);
+  const deleteBtn = document.querySelector('#delete-sheet');
+  if (deleteBtn) deleteBtn.addEventListener('click', deleteSheetButtonHandler);
 
-  const projectSpans = document.querySelector('div.project-menu');
-  projectSpans.addEventListener('dblclick', tabEditHandler);
+  projectMenu.addEventListener('dblclick', tabEditHandler);
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
-export { setupProjectMenu, handleSheetSelect, handleVisibilityChange, handleNewSheetClick, tabEditHandler };
+export { 
+  setupProjectMenu, 
+  loadCurrentSheet, 
+  handleSheetSelect, 
+  handleNewSheetClick, 
+  handleVisibilityChange 
+};
