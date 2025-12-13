@@ -1,15 +1,7 @@
 // js/project_menu.js
 
-import { setCurrentSheet } from './localstorage_db.js';
-import { 
-  allSheetNames, 
-  getNextSheetName, 
-  loadSheet, 
-  scanSheet, 
-  saveSheet, 
-  retrieveSheet, 
-  removeStoredSheet 
-} from './sheet_loader.js';
+import { setCurrentSheet, setCurrentSheet, getCurrentSheet } from './localstorage_db.js';
+import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet, retrieveSheet, removeStoredSheet } from './sheet_loader.js';
 
 /**
  * Sets up the project menu: up to 4 recent tabs + dropdown for the rest
@@ -40,10 +32,10 @@ function setupProjectMenu() {
   entries.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
 
   // Determine current sheet (stored in localStorage as 'current-sheet')
-  let currentSheet = localStorage.getItem('current-sheet');
+  let currentSheet = getCurrentSheet;
   if (!currentSheet || !sheetDict[currentSheet]) {
     currentSheet = entries.length > 0 ? entries[0].key : 'sheet01';
-    localStorage.setItem('current-sheet', currentSheet);
+    setCurrentSheet(currentSheet);
   }
 
   // Ensure current sheet appears in top 4
@@ -88,7 +80,7 @@ function setupProjectMenu() {
 }
 
 function loadCurrentSheet() {
-  const currentSheet = localStorage.getItem('current-sheet') || 'sheet01';
+  const currentSheet = getCurrentSheet();
   const table = document.querySelector('table#main-sheet');
   if (!table?.pubsub) return;
 
@@ -118,7 +110,7 @@ function handleSheetSelect(event) {
   const table = document.querySelector('table#main-sheet');
   if (!table?.pubsub) return;
 
-  const current = localStorage.getItem('current-sheet');
+  const current = getCurrentSheet
 
   // Save current sheet if exists
   if (current && current !== key) {
@@ -157,14 +149,14 @@ function deleteSheetButtonHandler() {
     deleteButton.textContent = 'Delete Sheet';
     deleteButton.classList.remove('confirm');
 
-    const key = localStorage.getItem('current-sheet');
+    const key = getCurrentSheet;
     if (!key) return;
 
     removeStoredSheet(key);
 
     // Rebuild menu and switch to another sheet
     setupProjectMenu();
-    const newCurrent = localStorage.getItem('current-sheet') || 'sheet01';
+    const newCurrent = getCurrentSheet;
     loadCurrentSheet();
   }
 }
@@ -172,7 +164,7 @@ function deleteSheetButtonHandler() {
 function handleVisibilityChange() {
   if (document.visibilityState === 'hidden') {
     const table = document.querySelector('table#main-sheet');
-    const current = localStorage.getItem('current-sheet');
+    const current = getCurrentSheet();
     if (current && table) {
       const data = scanSheet(table);
       const activeSpan = document.querySelector('.sheet-selecter.active span');
@@ -201,7 +193,7 @@ function handleNewSheetClick() {
 
   saveSheet(newKey, emptyData); // This triggers timestamp via touchSheetStatus internally
 
-  localStorage.setItem('current-sheet', newKey);
+  setCurrentSheet(newKey);
   loadSheet(null, emptyData);
   setupProjectMenu();
 }
@@ -223,7 +215,7 @@ function tabEditHandler(e) {
     label.contentEditable = 'false';
 
     // Update stored title on next save
-    const key = localStorage.getItem('current-sheet');
+    const key = getCurrentSheet;
     if (key) {
       // Title will be picked up on next save (visibilitychange or switch)
       label.dataset.dirtyTitle = text;
