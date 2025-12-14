@@ -160,7 +160,7 @@ function handleSheetSelect(event) {
     if (data) loadSheet(null, data);
     setCurrentSheet(key);
     setupProjectMenu();
-    loadCurrentSheet
+    table.pubsub.publish('recalculation', 'go');
   });
 }
 
@@ -293,10 +293,5 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
-export { 
-  setupProjectMenu, 
-  loadCurrentSheet, 
-  handleSheetSelect, 
-  handleNewSheetClick, 
-  handleVisibilityChange 
+export { setupProjectMenu, loadCurrentSheet, handleSheetSelect, handleNewSheetClick, handleVisibilityChange 
 };
