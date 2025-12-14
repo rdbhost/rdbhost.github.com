@@ -70,16 +70,18 @@ function retrieveSheet(name) {
  * @param {string} name - Sheet name
  * @param {string} title - Sheet title
  */
-function updateSheetStatus(name, title) {
+function updateSheetStatus(name, title=null) {
   try {
     const allSheetsRaw = localStorage.getItem('all-sheets');
     let allSheets = {};
     if (allSheetsRaw) {
       try { allSheets = JSON.parse(allSheetsRaw) || {}; } catch (e) { allSheets = {}; }
     }
+    if (title === null) 
+      title = allSheets[name] ? allSheets[name].title : name;
     allSheets[name] = {
       ts: new Date().toISOString(),
-      title: title || name
+      title: title 
     };
     localStorage.setItem('all-sheets', JSON.stringify(allSheets));
   } catch (e) {
@@ -231,7 +233,7 @@ function setCurrentSheet(name) {
  * @param {string} name
  * @param {string} title
  */
-function touchSheetStatus(name, title) {
+function touchSheetStatus(name, title=null) {
   try { updateSheetStatus(name, title); } catch (e) { }
 }
 

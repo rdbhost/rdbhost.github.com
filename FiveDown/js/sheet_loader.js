@@ -309,6 +309,7 @@ function retrieveSheet(name) {
   }
   // Try localStorage first, then fall back to IndexedDB
   return retrieveSheetLocal(name).then(localRes => {
+    try { touchSheetStatus(name); } catch (e) { }
     if (localRes) return localRes;
     return retrieveSheetDb(name);
   });
