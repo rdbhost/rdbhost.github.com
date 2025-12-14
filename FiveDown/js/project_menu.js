@@ -42,11 +42,9 @@ function setupProjectMenu() {
     top4.unshift(currentEntry);
   }
 
-  // Sort top4 by key for stable display order
-  top4.sort((a, b) => a.key.localeCompare(b.key));
-
   const top4Keys = top4.map(e => e.key);
   const top4Ids = top4.map(e => e.key.replace(/\s+/g, '_'));
+  const top4Map = new Map(top4.map(e => [e.key, e]));
 
   // Get existing sheet-selecters
   const existing = Array.from(projectMenu.querySelectorAll('.sheet-selecter:not(#sheet-template)'));
@@ -58,25 +56,38 @@ function setupProjectMenu() {
     }
   });
 
-  // Now, add or move the top4 in order
-  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
-  top4.forEach(entry => {
-    const id = entry.key.replace(/\s+/g, '_');
-    let span = existing.find(el => el.id === id);
-    if (!span) {
-      span = templateSpan.cloneNode(true);
-      span.id = id;
-      span.style.display = '';
-      span.querySelector('span').textContent = entry.title;
-    } else {
-      // Update title if needed
-      const currentTitle = span.querySelector('span').textContent;
+  // Get existing after remove
+  const existingAfterRemove = Array.from(projectMenu.querySelectorAll('.sheet-selecter:not(#sheet-template)'));
+
+  // Update titles for remaining existing
+  existingAfterRemove.forEach(el => {
+    const key = el.id.replace(/_/g, ' ');
+    const entry = top4Map.get(key);
+    if (entry) {
+      const currentTitle = el.querySelector('span').textContent;
       if (currentTitle !== entry.title) {
-        span.querySelector('span').textContent = entry.title;
+        el.querySelector('span').textContent = entry.title;
       }
     }
-    // Insert (moves if already present)
-    projectMenu.insertBefore(span, insertBeforeEl);
+  });
+
+  // Get missing entries
+  const missingEntries = top4.filter(e => !existingAfterRemove.some(el => el.id === e.key.replace(/\s+/g, '_')));
+
+  // Sort missing by lastAccessed desc (newest first)
+  missingEntries.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+
+  // Insert point for new additions (before first existing or dropdown)
+  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
+  const insertPoint = existingAfterRemove[0] || insertBeforeEl;
+
+  // Add missing to the left in order
+  missingEntries.forEach(entry => {
+    const newSpan = templateSpan.cloneNode(true);
+    newSpan.id = entry.key.replace(/\s+/g, '_');
+    newSpan.style.display = '';
+    newSpan.querySelector('span').textContent = entry.title;
+    projectMenu.insertBefore(newSpan, insertPoint);
   });
 
   // Populate dropdown with the rest
@@ -148,8 +159,8 @@ function handleSheetSelect(event) {
   retrieveSheet(key).then(data => {
     if (data) loadSheet(null, data);
     setCurrentSheet(key);
-    setupProjectMenu();  // Rebuild to update recency
-    loadCurrentSheet();
+    setupProjectMenu();
+    loadCurrentSheet
   });
 }
 
@@ -176,12 +187,14 @@ function deleteSheetButtonHandler() {
     const key = getCurrentSheet();
     if (!key) return;
 
-    removeStoredSheet(key);
+    removeStoredSheet(key).then(() => {
 
-    // Rebuild menu and switch to another sheet
-    setupProjectMenu();
-    const newCurrent = getCurrentSheet();
-    loadCurrentSheet();
+      // Rebuild menu and switch to another sheet
+      setupProjectMenu();
+      const newCurrent = getCurrentSheet();
+      loadCurrentSheet();
+    });
+
   }
 }
 

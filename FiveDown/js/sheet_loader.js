@@ -257,7 +257,7 @@ function allSheetNames() {
     const sample = samples[key];
     nameDict[key] = {
       title: sample.title || key,
-      lastAccessed: EPOCH_1970,   // Ensures samples are always oldest    
+      lastAccessed: new Date(EPOCH_1970),   // Ensures samples are always oldest    
     };
   });
 
@@ -269,7 +269,8 @@ function allSheetNames() {
     const info = storedSheets[key];
     nameDict[key] = {
       title: info.title || key,
-      lastAccessed: info.lastAccessed // may be undefined for older entries
+      lastAccessed: info.ts ? new Date(info.ts) : new Date(EPOCH_1970) // may be undefined for older entries
+      // lastAccessed: info.ts 
     };
   });
 
