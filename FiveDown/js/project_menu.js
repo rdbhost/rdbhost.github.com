@@ -14,11 +14,6 @@ function setupProjectMenu() {
     return;
   }
 
-  // Clear existing visible tabs (keep template)
-  projectMenu.querySelectorAll('.sheet-selecter').forEach(el => {
-    if (el.id !== 'sheet-template') el.remove();
-  });
-
   // Get full list with titles and optional timestamps
   const sheetDict = allSheetNames(); // → { sheet01: { title: "My Project", lastAccessed?: 1734023456789 }, ... }
 
@@ -39,7 +34,7 @@ function setupProjectMenu() {
   }
 
   // Ensure current sheet appears in top 4
-  const top4 = entries.slice(0, 4);
+  let top4 = entries.slice(0, 4);
   const currentInTop4 = top4.some(e => e.key === currentSheet);
   if (!currentInTop4 && entries.some(e => e.key === currentSheet)) {
     const currentEntry = entries.find(e => e.key === currentSheet);
@@ -47,23 +42,52 @@ function setupProjectMenu() {
     top4.unshift(currentEntry);
   }
 
-  // Insert top 4 tabs
-  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
+  // Sort top4 by key for stable display order
+  top4.sort((a, b) => a.key.localeCompare(b.key));
 
+  const top4Keys = top4.map(e => e.key);
+  const top4Ids = top4.map(e => e.key.replace(/\s+/g, '_'));
+
+  // Get existing sheet-selecters
+  const existing = Array.from(projectMenu.querySelectorAll('.sheet-selecter:not(#sheet-template)'));
+
+  // Remove those not in top4
+  existing.forEach(el => {
+    if (!top4Ids.includes(el.id)) {
+      el.remove();
+    }
+  });
+
+  // Now, add or move the top4 in order
+  const insertBeforeEl = projectMenu.querySelector('#sheet-dropdown');
   top4.forEach(entry => {
-    const newSpan = templateSpan.cloneNode(true);
-    newSpan.id = entry.key.replace(/\s+/g, '_');
-    newSpan.style.display = '';
-    newSpan.querySelector('span').textContent = entry.title;
-    projectMenu.insertBefore(newSpan, insertBeforeEl);
+    const id = entry.key.replace(/\s+/g, '_');
+    let span = existing.find(el => el.id === id);
+    if (!span) {
+      span = templateSpan.cloneNode(true);
+      span.id = id;
+      span.style.display = '';
+      span.querySelector('span').textContent = entry.title;
+    } else {
+      // Update title if needed
+      const currentTitle = span.querySelector('span').textContent;
+      if (currentTitle !== entry.title) {
+        span.querySelector('span').textContent = entry.title;
+      }
+    }
+    // Insert (moves if already present)
+    projectMenu.insertBefore(span, insertBeforeEl);
   });
 
   // Populate dropdown with the rest
+  const rest = entries.filter(e => !top4Keys.includes(e.key));
+  rest.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+
   const dropdown = projectMenu.querySelector('#sheet-dropdown');
   dropdown.innerHTML = '<option value="" disabled selected>More sheets...</option>';
 
-  if (entries.length > 4) {
-    entries.slice(4).forEach(entry => {
+  if (rest.length > 0) {
+    rest.forEach(entry => {
       const opt = document.createElement('option');
       opt.value = entry.key;
       opt.textContent = entry.title;
@@ -218,7 +242,6 @@ function tabEditHandler(e) {
     const key = getCurrentSheet();
     if (key) {
       // Title will be picked up on next save (visibilitychange or switch)
-      label.dataset.dirtyTitle = text;
     }
   };
 
