@@ -337,8 +337,10 @@ function setupTableInterface(table) {
             td.classList.add('error');
           }
           else {
-            // td.setAttribute('data-value', data.val());
-            td.setAttribute('data-value', JSON.stringify(data.val()));
+            if (data.val() === '') 
+              td.setAttribute('data-value', data.val());
+            else
+              td.setAttribute('data-value', JSON.stringify(data.val()));
             td.textContent = formatResult(data.val());
           }
         } catch (e) {
