@@ -265,9 +265,11 @@ function setupTableInterface(table) {
     const td = e.target;
     if (td.contentEditable !== 'true') return;
     const raw = td.getAttribute('data-value');
-    if (raw !== null && (td.classList.contains('formula') || td.classList.contains('result') 
-                          || td.classList.contains('unit'))) {
+    if (raw !== null && (td.classList.contains('formula') || td.classList.contains('unit'))) {
       td.textContent = raw;
+    }
+    else if (td.classList.contains('result')) {
+      td.textContent = JSON.parse(raw);
     }
   });
 
@@ -307,8 +309,18 @@ function setupTableInterface(table) {
       td.setAttribute('data-value', newRaw);
       const formatted = formatFormula(newRaw);
       td.textContent = formatted;
-      if (newRaw !== oldRaw) 
-         table.pubsub.publish('recalculation', 'go');
+      if (newRaw !== oldRaw) {
+
+        const resultTds = row.querySelectorAll('.result');
+        for (let td of resultTds) {
+          if (td.classList.contains('error')) {
+            td.textContent = '';
+            td.removeAttribute('data-value');
+            td.classList.remove('error', 'output');
+          }
+        }
+        table.pubsub.publish('recalculation', 'go');
+      }
     } else if (td.classList.contains('result')) {
       if (newRaw === oldRaw) {
         let d;
