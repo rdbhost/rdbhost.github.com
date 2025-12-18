@@ -272,6 +272,18 @@ function setupTableInterface(table) {
   });
 
   tbody.addEventListener('focusout', (e) => {
+
+    function showTransientError(cell, oldValue, setDataValue=false, delay=1500) {
+      cell.classList.add('input-error');
+      setTimeout(() => {
+        cell.classList.remove('input-error');
+        cell.textContent = oldValue;
+        if (setDataValue) {
+          cell.setAttribute('data-value', oldValue);
+        }
+      }, delay);
+    }
+
     if (e.target.tagName !== 'TD') return;
     const td = e.target;
     if (td.contentEditable !== 'true') return;
@@ -334,7 +346,8 @@ function setupTableInterface(table) {
             else
               td.textContent = data.message;
             td.removeAttribute('data-value');
-            td.classList.add('error');
+
+            showTransientError(td, oldRaw, true);
           }
           else {
             if (data.val() === '') 
@@ -381,14 +394,7 @@ function setupTableInterface(table) {
         convertFromTitle(row);
       }
       if (!valid) {
-        // Show error, keep bad value, then revert after timeout
-        td.classList.add('input-error');
-        const badValue = td.textContent;
-        setTimeout(() => {
-          td.textContent = oldRaw;
-          td.setAttribute('data-value', oldRaw);
-          td.classList.remove('input-error');
-        }, 1500);
+        showTransientError(td, oldRaw, true);
         return;
       }
       if (newRaw !== oldRaw) 
