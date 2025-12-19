@@ -237,6 +237,52 @@ function touchSheetStatus(name, title=null) {
   try { updateSheetStatus(name, title); } catch (e) { }
 }
 
+// New functions for Firestore credentials
+/**
+ * Saves Firestore credentials to localStorage.
+ * @param {Object} creds - The credentials object to save.
+ */
+function saveCredentials(creds) {
+  if (typeof creds !== 'object' || creds === null) {
+    throw new Error('Credentials must be a non-null object');
+  }
+  localStorage.setItem('firestore_credentials', JSON.stringify(creds));
+}
+
+/**
+ * Retrieves Firestore credentials from localStorage.
+ * @returns {Object|null} The credentials object or null if not found.
+ */
+function retrieveCredentials() {
+  const stored = localStorage.getItem('firestore_credentials');
+  if (stored) {
+    try {
+      return JSON.parse(stored);
+    } catch (e) {
+      console.error('Error parsing Firestore credentials:', e);
+      return null;
+    }
+  }
+  return null;
+}
+
+// Also add last-accessed handling
+/**
+ * Saves the last-accessed timestamp to localStorage.
+ * @param {string} ts - The timestamp (ISO string or milliseconds).
+ */
+function saveLastAccessed(ts) {
+  localStorage.setItem('firestore_last_accessed', ts);
+}
+
+/**
+ * Retrieves the last-accessed timestamp from localStorage.
+ * @returns {string} The timestamp or '0' if not found.
+ */
+function retrieveLastAccessed() {
+  return localStorage.getItem('firestore_last_accessed') || '0';
+}
+
 /**
  * Comprehensive legacy storage cleanup – run once at app startup.
  * Removes all historical garbage keys that are no longer used:
@@ -331,4 +377,5 @@ function cleanupLegacyStorage() {
 }
 cleanupLegacyStorage();
 
-export { saveSheet, retrieveSheet, getAllSheetNames, removeStoredSheet, getCurrentSheet, setCurrentSheet, touchSheetStatus };
+export { saveSheet, retrieveSheet, getAllSheetNames, removeStoredSheet, getCurrentSheet, setCurrentSheet, touchSheetStatus,
+  saveCredentials, retrieveCredentials, saveLastAccessed, retrieveLastAccessed };
