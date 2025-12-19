@@ -1,4 +1,4 @@
-.plot-btn-top {
+.btn-top {
 	margin-left: 1em;
 	align-self: flex-start;
 	padding: 0.3em 1.1em;
@@ -14,15 +14,18 @@
 	text-align: center;
 	box-sizing: border-box;
 }
-.plot-btn-top:hover {
+
+.btn-top:hover {
 	background: #e0e0e0;
 }
+
 /* Topbox layout for project menu and delete button */
 .topbox {
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
 }
+
 #delete-sheet.confirm {
 	border: solid darkgreen 2px;
 }
@@ -34,20 +37,21 @@
 	color: red;
 	transition: background 0.2s;
 }
-  .outer-box {
+
+.outer-box {
 	margin-left: auto;
 	margin-right: auto;
 	width: 92%;
-  
-  }
+}
+
 /* Remove styling for the page close button */
-  .outer-box .project-menu .sheet-delete{
+.outer-box .project-menu .sheet-delete {
 	border: none;
 	background-color: transparent;
-  }	
-  
-  /* Project menu styling */
-  .project-menu {
+}
+
+/* Project menu styling */
+.project-menu {
 	margin-bottom: 0;
 	display: flex;
 	flex-wrap: wrap;
@@ -55,109 +59,112 @@
 	gap: 0.1em;
 	position: relative;
 	margin: 0.25rem;
-  }
+}
 
-  .project-menu .active span {
+.project-menu .active span {
 	font-weight: 600;
 	padding-right: 0;
-  }
+}
 
-  #sheet-dropdown {
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 2.05em;
-    padding: 0 2.4em 0 0.9em;     /* more room for the bold caret */
-    margin: 0;
-    line-height: 1;
-    vertical-align: middle;
+#sheet-dropdown {
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 2.05em;
+	padding: 0 2.4em 0 0.9em;
+	/* more room for the bold caret */
+	margin: 0;
+	line-height: 1;
+	vertical-align: middle;
 
-    background: blanchedalmond;
-    color: #000;
-    font: 500 0.9375rem 'Roboto', sans-serif;
-    border: 1px solid #e8c8a0;
-    border-radius: 0.75em;
-    cursor: pointer;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);   /* subtle “sunken” look */
+	background: blanchedalmond;
+	color: #000;
+	font: 500 0.9375rem 'Roboto', sans-serif;
+	border: 1px solid #e8c8a0;
+	border-radius: 0.75em;
+	cursor: pointer;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+	/* subtle “sunken” look */
 
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
 
-    /* Bold, crisp down caret */
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.65em center;
-    background-size: 13px;
-  }
+	/* Bold, crisp down caret */
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+	background-repeat: no-repeat;
+	background-position: right 0.65em center;
+	background-size: 13px;
+}
 
-  #sheet-dropdown:hover {
-    background-color: #ffe4b3;
-    border-color: #d8b080;
-  }
+#sheet-dropdown:hover {
+	background-color: #ffe4b3;
+	border-color: #d8b080;
+}
 
-  #sheet-dropdown:focus {
-    outline: none;
-    border-color: #c8a070;
-    box-shadow: 0 0 0 3px rgba(200,160,112,0.35), inset 0 1px 3px rgba(0,0,0,0.1);
-  }
+#sheet-dropdown:focus {
+	outline: none;
+	border-color: #c8a070;
+	box-shadow: 0 0 0 3px rgba(200, 160, 112, 0.35), inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
 
-  #sheet-dropdown option {
-    padding: 0.6em 0.9em;
-    background: white;
-    color: #333;
-  }
+#sheet-dropdown option {
+	padding: 0.6em 0.9em;
+	background: white;
+	color: #333;
+}
 
-  .project-menu .sheet-delete {
+.project-menu .sheet-delete {}
 
-  }
-
-  .project-menu span {
-	background-color: blanchedalmond  /* ugly, choose better */;
+.project-menu span {
+	background-color: blanchedalmond
+		/* ugly, choose better */
+	;
 	border-radius: 0.75em;
 	border: 1px solid blanchedalmond;
 	border-bottom: none;
 	padding: 0.25em;
 	font: 500 0.9375rem 'Roboto', sans-serif;
-	color: black;	
+	color: black;
 	min-width: 4em;
 	height: 1.5em;
 	padding-right: .875em;
-  }
-  
+}
 
-  #new-sheet {
+
+#new-sheet {
 	font-size: 0.875rem;
 	border: none;
 	min-width: 3em;
-	color: rgb(75 85 99 );
-  }
+	color: rgb(75 85 99);
+}
 
 
-  /* Overall table style */
-  
-  table {
+/* Overall table style */
+
+table {
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 1.25rem;
 	margin-bottom: 1.25rem;
-	width: 100%; /* 91.666667%; */
+	width: 100%;
+	/* 91.666667%; */
 	border-collapse: collapse;
-/*	border-radius: 1.25rem; */
+	/*	border-radius: 1.25rem; */
 	background-color: rgb(255 255 255);
 	border-color: rgb(209 213 219);
 	/* Softer border color */
-  }
-  
-  /* Header style */
-  
-  thead {
-	background-color: rgb(250 245 255 );
+}
+
+/* Header style */
+
+thead {
+	background-color: rgb(250 245 255);
 	font-size: 0.875rem;
 	line-height: 1.25rem;
 	font-weight: 600;
 	text-transform: uppercase;
-	color: rgb(31 41 55 );
+	color: rgb(31 41 55);
 	border-top-left-radius: 1.25rem;
 	border-top-right-radius: 1.25rem;
 	/* Rounded corners for the table header */
@@ -168,199 +175,206 @@
 	position: sticky;
 	top: 0;
 	z-index: 1;
-  }
-  
-  th {
+}
+
+th {
 	padding-left: 1rem;
 	padding-right: 1rem;
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
 	text-align: left;
-	
-	border-color: rgb(229 231 235 );
+
+	border-color: rgb(229 231 235);
 	/* Softer border color */
-  }
-  
-  /* Specific column width settings */
-  
-  th.handle, th.delete, th.add-result {
+}
+
+/* Specific column width settings */
+
+th.handle,
+th.delete,
+th.add-result {
 	width: 3rem;
 	text-align: center;
-  }
-  
-  th.handle, th.unit {
+}
+
+th.handle,
+th.unit {
 
 	border-top-left-radius: 1.2rem;
-  }
-  th.delete, th.formula {
+}
+
+th.delete,
+th.formula {
 
 	border-top-right-radius: 1.2rem;
-  }
+}
 
-  th.result {
+th.result {
 	cursor: pointer;
 	text-align: center;
 	border-top-left-radius: 1.2rem;
 	border-top-right-radius: 1.2rem;
-	
-	background-color: rgb(239 246 255 );
-	
-	color: rgb(37 99 235 );
-	/* Subtle shadow effect */
-  }
 
-  th.result .close-res{
+	background-color: rgb(239 246 255);
+
+	color: rgb(37 99 235);
+	/* Subtle shadow effect */
+}
+
+th.result .close-res {
 	border: none;
 	background-color: transparent;
 	font-size: 1.25rem;
-	color: rgb(75 85 99 );
+	color: rgb(75 85 99);
 
-  }
+}
 
-  th.result .close-res::before {
+th.result .close-res::before {
 	content: "✕";
 	font-size: .8rem;
-  }
-  
-  th.add-result {
-	
+}
+
+th.add-result {
+
 	border-top-left-radius: 1.2rem;
 	border-top-right-radius: 1.2rem;
-	
+
 	text-align: center;
-	background-color: rgb(239 246 255 );
-	color: rgb(37 99 235 );
+	background-color: rgb(239 246 255);
+	color: rgb(37 99 235);
 	/* Subtle shadow effect */
-  }
+}
 
-  th.add-result button {
+th.add-result button {
 
-    line-height: 1em;
+	line-height: 1em;
 	border: none;
 	background-color: transparent;
-  }
-  th.add-result button::before {
+}
+
+th.add-result button::before {
 	content: "+";
 	font-size: 1.5rem;
-  }
-  
-  /* Table body style */
-  
-  tbody tr {
-	
-	background-color: rgb(255 255 255 );
+}
+
+/* Table body style */
+
+tbody tr {
+
+	background-color: rgb(255 255 255);
 	/* Uniform background color for all rows */
-  }
-  
-  td {
+}
+
+td {
 	padding-left: 1rem;
 	padding-right: 1rem;
 	padding-top: 0.25rem;
 	padding-bottom: 0.25rem;
-	border: 1px solid whitesmoke; /* rgb(229 231 235 ); */
+	border: 1px solid whitesmoke;
+	/* rgb(229 231 235 ); */
 	/* Softer border color */
 	vertical-align: middle;
 	/* Vertically align content */
-  }
+}
 
-  /* Setting the description to fixed wit a width of 20rem */
-  td.description{
+/* Setting the description to fixed wit a width of 20rem */
+td.description {
 	table-layout: fixed;
-	width: 20rem; 
-  }
-  
-  /* Redesign for left and right columns */
-  
-  td.handle, td.delete {
+	width: 20rem;
+}
+
+/* Redesign for left and right columns */
+
+td.handle,
+td.delete {
 	cursor: pointer;
-	
-	background-color: rgb(243 244 246 );
+
+	background-color: rgb(243 244 246);
 	text-align: center;
 	font-weight: 700;
-	color: rgb(75 85 99 );
+	color: rgb(75 85 99);
 	padding: 0;
-  }
-  
-  td.handle::before {
+}
+
+td.handle::before {
 	content: "≡";
 	font-size: 1.5rem;
-  }
-  
-  td.delete::before {
+}
+
+td.delete::before {
 	content: "✕";
 	/* Replaced with icon symbol */
 
-/*	color: rgb(75 85 99); */
-  }
+	/*	color: rgb(75 85 99); */
+}
 
-  /* when dragging a UI element, styling to keep it ontop */
-  .ui-draggable-dragging{
+/* when dragging a UI element, styling to keep it ontop */
+.ui-draggable-dragging {
 	z-index: 999;
-  }
+}
 
-  /* Show data-value attribute as tooltip on hover for td.result */
-  td.result {
-    position: relative;
-  }
+/* Show data-value attribute as tooltip on hover for td.result */
+td.result {
+	position: relative;
+}
 
-  td.result[data-value]:not(:empty):hover::after {
-    content: attr(data-value);
-    position: absolute;
-    left: 0;
-    top: 100%;
-    transform: translateX(-80%) translateY(8px);
+td.result[data-value]:not(:empty):hover::after {
+	content: attr(data-value);
+	position: absolute;
+	left: 0;
+	top: 100%;
+	transform: translateX(-80%) translateY(8px);
 	background: #008000;
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.9em;
-    white-space: nowrap;
-    z-index: 1000;
-    pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  }
+	color: #fff;
+	padding: 4px 8px;
+	border-radius: 4px;
+	font-size: 0.9em;
+	white-space: nowrap;
+	z-index: 1000;
+	pointer-events: none;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
 
-  /* Non-editable cells */
-  
-  td.readonly {
-	
-	background-color: rgb(243 244 246 );
-	
-	color: rgb(107 114 128 );
+/* Non-editable cells */
+
+td.readonly {
+
+	background-color: rgb(243 244 246);
+	color: rgb(107 114 128);
 	/* border-radius: 0.375rem; */
-  }
-  
-  /* Output result cells */
-  
-  td.output {
-	
-	background-color: rgb(240 253 244 );
+}
+
+/* Output result cells */
+
+td.output {
+
+	background-color: rgb(240 253 244);
 	font-weight: 600;
-	
-	color: rgb(22 163 74 );
+
+	color: rgb(22 163 74);
 	/* border-radius: 0.375rem; */
-  }
-  
-  td.error {
+}
+
+td.error {
 	background-color: pink;
 	color: red;
-  }
-  
-  td.fail {
+}
+
+td.fail {
 	color: yellowgreen;
-  }
+}
 
-  td.unit.unit-empty::after {
-	 content: attr(data-computed-unit);
-	 color: blue;
-  }
+td.unit.unit-empty::after {
+	content: attr(data-computed-unit);
+	color: blue;
+}
 
-  td.formula.converted::after {
+td.formula.converted::after {
 
-	 content: ' (*unit-conv)';
-	 color: blue;
+	content: ' (*unit-conv)';
+	color: blue;
 	font-size: smaller;
-  }
+}
 
 /* Show data-computed-unit as tooltip on hover for td.unit, only if not empty */
 td.unit[data-computed-unit]:not(:empty):hover::after {
@@ -369,8 +383,8 @@ td.unit[data-computed-unit]:not(:empty):hover::after {
 	left: 0;
 	top: 100%;
 	transform: translateX(-80%) translateY(8px);
-				background: #888;
-				color: #fff;
+	background: #888;
+	color: #fff;
 	color: #fff;
 	padding: 4px 8px;
 	border-radius: 4px;
@@ -378,46 +392,50 @@ td.unit[data-computed-unit]:not(:empty):hover::after {
 	white-space: nowrap;
 	z-index: 1000;
 	pointer-events: none;
-	box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
+
 td.unit {
 	position: relative;
 }
-  
- /* Title/subtitle/subsubtitle styles for description cells, up to 6 levels */
+
+/* Title/subtitle/subsubtitle styles for description cells, up to 6 levels */
 .title_c {
 	font-size: 1.5em;
 	font-weight: bold;
 	text-align: center;
 }
+
 .subtitle_c {
 	font-size: 1.25em;
 	font-weight: 600;
 	text-align: center;
 	color: darkslategray
 }
+
 .subsubtitle_c {
 	font-size: 1em;
 	font-weight: 500;
 	text-align: center;
 	color: darkslateblue
 }
+
 .title_l {
 	font-size: 1.5em;
 	font-weight: bold;
 	text-align: left;
 }
+
 .subtitle_l {
 	font-size: 1.25em;
 	font-weight: 600;
 	text-align: left;
 	color: darkslategray
 }
+
 .subsubtitle_l {
 	font-size: 1em;
 	font-weight: 500;
 	text-align: left;
 	color: darkslateblue;
 }
-
-

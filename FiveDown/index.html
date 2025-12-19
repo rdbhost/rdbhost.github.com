@@ -31,15 +31,11 @@
                 <span id="new-sheet">[new sheet]</span>
             </div>
 
-            <!-- div class="project-menu">
-                <span id="sheet00" class="sheet-selecter active">
-                    <span>Sheet 00</span></span>
-                <span id="new-sheet">[new sheet]</span>
-            </div -->
-            <button id="plot-btn" class="plot-btn-top" disabled>Plot</button>
-            <button id="import-btn" class="plot-btn-top">Import/Export</button>
+            <button id="plot-btn" class="btn-top" disabled>Plot</button>
+            <button id="import-btn" class="btn-top">Import/Export</button>
+            <button id="firebase-btn" class="btn-top" disabled>Firebase</button>
             <!-- button id="undelete-sheet" class="plot-btn-top" title="Restore">Restore Deleted</button -->
-            <button id="delete-sheet" class="plot-btn-top" title="Delete Table">Delete Sheet</button>
+            <button id="delete-sheet" class="btn-top" title="Delete Table">Delete Sheet</button>
         </div>
         <table id="main-sheet">
             <thead>
@@ -160,6 +156,16 @@
             <p><button id="export-data-url">Generate Data URL</button>
                <button id="download-json">Download JSON</button>
                <div id="data-url-display" class="data-url-display"></div></p>
+        </div>
+    </div>
+    <div id="firebase-overlay" class="firebase-overlay">
+        <button id="firebase-overlay-close" class="firebase-overlay-close" title="Close">&#10005;</button>
+        <div class="firebase-overlay-content">
+            <p><h2>Firestore Credentials</h2>
+               <textarea id="firebase-credentials" rows="10" cols="50"></textarea>
+               <button id="import-submit">Test and Store Credentials</button>
+            <div id="import-message"></div></p>
+            
         </div>
     </div>
 </body>    
