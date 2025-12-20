@@ -1,0 +1,22 @@
+
+Create a new module, patterned after indexeddb_db.js, to store data in a FireStore database. The access data will be stored in 
+localStorage, in a json object called firestore_credentials. A last-accessed timestamp will also be stored there.
+ 
+The functionality will be the same as the indexeddb module, but with additional event handling for online events.
+ 
+Write two new functions for localstorage_db, that save and retrieve the credentials.
+
+Write the new module, firestore_db.js. It will behave as follows:
+
+1) a save function will save a sheet to the remote db, using credentials provided as arguments.
+2) an all-sheets function will get all sheets stored in firestore. an all-new-sheets(last-accessed) function will get new sheets stored from other clients.
+3) a retrieve function will fetch a sheet by name.
+4) an event handler watching for changes in the online store will call a callback function to be defined elsewhere.
+
+
+
+create a module, 'firebase_interface.js' that onDOMLoad, checks for firebase credentials using the localstorage_db functions, and 
+enables the firebase button if not found.
+
+in this new module, create a click handler that shows the firebase-overlay when clicked. When the overlay is displayed, a one-shot 
+click handler should be created on the close button to hide the overlay.
