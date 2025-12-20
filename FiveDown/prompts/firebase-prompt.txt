@@ -19,4 +19,11 @@ create a module, 'firebase_interface.js' that onDOMLoad, checks for firebase cre
 enables the firebase button if not found.
 
 in this new module, create a click handler that shows the firebase-overlay when clicked. When the overlay is displayed, a one-shot 
-click handler should be created on the close button to hide the overlay.
+click handler should be created on the close button to hide the overlay.  The div#firebase-message should be cleared.
+
+
+write a click-handler for the firebase-overlay firebase-submit button, that reads the textarea field, validates that it 
+contains 200 - 800 characters of text including 'apiKey', then uses regular expressions to extract each of the fields and stores a 
+firebase-credential object in localstorage, using functions in localstorage_db module.
+
+If no valid data found, add an error message to div#firebase-message.
