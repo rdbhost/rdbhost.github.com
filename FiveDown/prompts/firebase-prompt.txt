@@ -34,5 +34,5 @@ If no valid data found, add an error message to div#firebase-message.
 change sheet_loader.js to save to firebase whenever saving to indexeddb and a firebase config is available. Also create an empty 
 callback to provide to the firebase watcher function.
 
-retrieve should look to firestore first (if creds available) then to indexeddb.
+retrieve should look to localdb first, then indexeddb, then firestore, if creds available.
 
