@@ -15,7 +15,6 @@ let _dbPromiseCache = new Map(); // Keyed by JSON.stringify(credentials)
 
 // Module-level variables for current watcher and sheet data
 let currentUnsubscribe = null;
-let currentSheetData = null;
 
 /**
  * Initializes and returns the Firestore DB instance using provided credentials.
@@ -134,7 +133,7 @@ async function saveSheet(name, data, credentials) {
  * @param {Function} onUpdate - Callback for data updates (receives transformed data or null; called on changes after initial).
  * @returns {Promise<Object|null>} Promise resolving with initial sheet data (or null if not found).
  */
-async function retrieveSheet(name, credentials, onUpdate) {
+async function retrieveSheetAndWatch(name, credentials, onUpdate) {
   const db = await getDb(credentials);
   const sheetRef = doc(collection(db, 'sheets'), name);
 
@@ -142,7 +141,6 @@ async function retrieveSheet(name, credentials, onUpdate) {
   if (currentUnsubscribe) {
     currentUnsubscribe();
     currentUnsubscribe = null;
-    currentSheetData = null;
   }
 
   return new Promise((resolve, reject) => {
@@ -153,9 +151,6 @@ async function retrieveSheet(name, credentials, onUpdate) {
         const retrieved = snap.data().data;
         data = transformForRetrieve(retrieved);
       }
-
-      // Save copy for later diffing
-      currentSheetData = data;
 
       if (isInitial) {
         // Resolve Promise with initial data
@@ -234,7 +229,4 @@ async function getNewSheets(lastAccessed, credentials) {
 }
 
 
-// Export currentSheetData for later diffing (if needed externally)
-export { currentSheetData };
-
-export { saveSheet, retrieveSheet, removeSheet, getAllSheetNames, getNewSheets };
+export { saveSheet, retrieveSheetAndWatch, removeSheet, getAllSheetNames, getNewSheets };

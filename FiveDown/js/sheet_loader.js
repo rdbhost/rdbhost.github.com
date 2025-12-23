@@ -7,8 +7,10 @@ import { formatResult, formatFormula, Data } from './dim_data.js'
 import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getAllSheetNames, removeStoredSheet as removeStoredSheetLocal, 
   touchSheetStatus, retrieveCredentials, saveCredentials } from './localstorage_db.js';
 import { saveSheet as saveSheetDb, retrieveSheet as retrieveSheetDb, removeSheet as removeSheetDb } from './indexeddb_db.js';
-import { saveSheet as saveSheetFs, retrieveSheet as retrieveSheetFs } from './firestore_db.js';
+import { saveSheet as saveSheetFs, retrieveSheetAndWatch as retrieveSheetAndWatchFs } from './firestore_db.js';
 
+// keeps data from last loadSheet call, for diffing with update
+let currentSheetData = null;
 
 /**
  * Tests if the given data matches the expected JSON sheet structure.
@@ -47,6 +49,9 @@ function testSheetJson(data) {
  * @param {Object} data - The data object with title, header and rows.
  */
 function loadSheetOnEvent(table, data) {
+
+  currentSheetData = data;
+
   const tbody = table.tBodies[0];
   const theadRow = table.tHead.rows[0];
   const addTh = theadRow.querySelector('.add-result');
@@ -346,7 +351,7 @@ function retrieveSheet(name) {
 
     const creds = retrieveCredentials();
     if (creds) {
-      retrieveSheetFs(name, creds, onSheetUpdate).then(dataFs => {
+      retrieveSheetAndWatchFs(name, creds, onSheetUpdate).then(dataFs => {
         if (dataFs) {
           touchSheetStatus(name, dataFs.title || name);
           resolve(dataFs);
@@ -450,13 +455,10 @@ async function migrateLocalToIndexedDB() {
 
 /**
  * Public loader wrapper.
- * - If called as `loadSheet(table, data)` it will directly invoke the
- *   internal loader (backwards-compatible).
- * - If called as `loadSheet(data)` it will emit a 'load-sheet' event on
+ * - If called as `loadSheet(table, data)` it will emit a 'load-sheet' event on
  *   the main table's pubsub (preferred asynchronous path).
  */
-function loadSheet(a, b) {
-  const data = b;
+function loadSheet(a, data) {
   const table = document.querySelector('table#main-sheet');
   if (!table) return;
   const pubsub = table.pubsub;
@@ -492,4 +494,5 @@ function setupSheetLoader() {
 setupSheetLoader();
 
 
-export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, setupSheetLoader as setupLoadSheetPubsub, migrateLocalToIndexedDB };
+export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, 
+  setupSheetLoader as setupLoadSheetPubsub, migrateLocalToIndexedDB };
