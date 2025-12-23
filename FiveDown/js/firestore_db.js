@@ -38,13 +38,15 @@ async function getDb(credentials) {
     appId: credentials.appId
   });
 
-  const auth = getAuth(app);
-  try {
-    await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
-  } catch (e) {
-    throw new Error(`Authentication failed: ${e.message}`);
+  if (credentials.email && credentials.password) {
+    const auth = getAuth(app);
+    try {
+      await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+    } catch (e) {
+      throw new Error(`Authentication failed: ${e.message}`);
+    }
   }
-
+  
   const db = getFirestore(app);
   _dbPromiseCache.set(credKey, db);
   return db;
