@@ -27,3 +27,12 @@ contains 200 - 800 characters of text including 'apiKey', then uses regular expr
 firebase-credential object in localstorage, using functions in localstorage_db module.
 
 If no valid data found, add an error message to div#firebase-message.
+
+
+--------------------
+
+change sheet_loader.js to save to firebase whenever saving to indexeddb and a firebase config is available. Also create an empty 
+callback to provide to the firebase watcher function.
+
+retrieve should look to firestore first (if creds available) then to indexeddb.
+
