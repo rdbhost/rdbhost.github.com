@@ -4,8 +4,10 @@ import { samples } from './samples.js';
 import { TableRow, convertToTitle } from './table_row.js';
 import { RowCollection } from './row_collection.js';
 import { formatResult, formatFormula, Data } from './dim_data.js'
-import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getAllSheetNames, removeStoredSheet as removeStoredSheetLocal, touchSheetStatus } from './localstorage_db.js';
+import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getAllSheetNames, removeStoredSheet as removeStoredSheetLocal, 
+  touchSheetStatus, retrieveCredentials, saveCredentials } from './localstorage_db.js';
 import { saveSheet as saveSheetDb, retrieveSheet as retrieveSheetDb, removeSheet as removeSheetDb } from './indexeddb_db.js';
+import { saveSheet as saveSheetFs, watchChanges } from './firestore_db.js';
 
 
 /**
@@ -285,42 +287,117 @@ function getNextSheetName() {
   return `sheet${String(i).padStart(2, '0')}`;
 }
 
-// Delegate localStorage operations to `localstorage_db.js`
-function saveSheet(name, object) {
-  // Prefer built-in samples over writing to stores
-  if (samples[name]) return Promise.resolve(false);
-  if (!name.match(/^sheet\d+$/)) return Promise.resolve(false);
-  if (!object.title) object.title = name;
-  // Write to both localStorage and IndexedDB. Return a Promise<boolean>
-  const pLocal = saveSheetLocal(name, object).catch(e => { console.error('local save failed', e); return false; });
-  const pDb = saveSheetDb(name, object).catch(e => { console.error('indexeddb save failed', e); return false; });
-  return Promise.allSettled([pLocal, pDb]).then(results => {
-    // Consider success if either store fulfilled with truthy value
-    const ok = results.some(r => r.status === 'fulfilled' && r.value);
-    return ok;
+/**
+ * Saves the sheet under the given name, first to IndexedDB, then to Firestore if config available.
+ * Returns true if saved to at least IndexedDB.
+ * @param {string} name - The name to save under.
+ * @param {Object} data - The data object to save.
+ * @returns {Promise<boolean>} True if saved successfully to IndexedDB.
+ */
+function saveSheet(name, data) {
+  return new Promise((resolve, reject) => {
+    if (samples[name]) {
+      resolve(false);
+      return;
+    }
+    if (!name.match(/^sheet\d+$/)) {
+      resolve(false);
+      return;
+    }
+    if (!data.title) data.title = name;
+
+    saveSheetLocal(name, data);
+
+    // Save to IndexedDB
+    saveSheetDb(name, data).then(savedDb => {
+      touchSheetStatus(name, data.title);
+
+      // If Firebase credentials available, save to Firestore
+      const creds = retrieveCredentials();
+      if (creds) {
+        saveSheetFs(name, data, creds).catch(e => {
+          console.error('Failed to save to Firestore:', e);
+        });
+      }
+
+      resolve(savedDb);
+    }).catch(reject);
   });
 }
 
+/**
+ * Retrieves the sheet by name, checking samples first, then localStorage, then IndexedDB, then Firestore if creds available.
+ * @param {string} name - The name to retrieve.
+ * @returns {Promise<Object|null>} The sheet data or null.
+ */
 function retrieveSheet(name) {
-  // Return sample immediately if present, wrapped in a Promise for consistency
-  if (samples[name]) {
-    // Record read timestamp for sample sheets in localStorage 'all-sheets'
-    try { touchSheetStatus(name, (samples[name] && samples[name].title) ? samples[name].title : name); } catch (e) { }
-    return Promise.resolve(samples[name]);
-  }
-  // Try localStorage first, then fall back to IndexedDB
-  return retrieveSheetLocal(name).then(localRes => {
-    try { touchSheetStatus(name); } catch (e) { }
-    if (localRes) return localRes;
-    return retrieveSheetDb(name);
+  return new Promise((resolve, reject) => {
+    // Check samples first (in-memory, synchronous)
+    if (samples[name]) {
+      const sampleData = samples[name];
+      touchSheetStatus(name, sampleData.title || name);
+      resolve(sampleData);
+      return;
+    }
+
+    // LocalStorage first
+    retrieveSheetLocal(name).then(dataLocal => {
+      if (dataLocal) {
+        touchSheetStatus(name, dataLocal.title || name);
+        resolve(dataLocal);
+        return;
+      }
+
+      // Then IndexedDB
+      retrieveSheetDb(name).then(dataDb => {
+        if (dataDb) {
+          touchSheetStatus(name, dataDb.title || name);
+          resolve(dataDb);
+          return;
+        }
+
+        // Then Firestore if creds available
+        const creds = retrieveCredentials();
+        if (creds) {
+          retrieveSheetFs(name, creds).then(dataFs => {
+            if (dataFs) {
+              touchSheetStatus(name, dataFs.title || name);
+              resolve(dataFs);
+            } else {
+              resolve(null);
+            }
+          }).catch(e => {
+            console.error('Failed to retrieve from Firestore:', e);
+            resolve(null);
+          });
+        } else {
+          resolve(null);
+        }
+      }).catch(reject);
+    }).catch(reject);
   });
 }
 
+/**
+ * Removes the stored sheet by name from localStorage, IndexedDB, and Firestore if config available.
+ * @param {string} name - The name to remove.
+ * @returns {Promise<boolean>} True if removed from IndexedDB.
+ */
 function removeStoredSheet(name) {
-  // Remove from both localStorage and IndexedDB
-  const pLocal = removeStoredSheetLocal(name).catch(e => { console.error('local remove failed', e); });
-  const pDb = removeSheetDb(name).catch(e => { console.error('indexeddb remove failed', e); });
-  return Promise.allSettled([pLocal, pDb]).then(() => true);
+  return new Promise((resolve, reject) => {
+    // Remove from localStorage (synchronous, ignore return)
+    removeStoredSheetLocal(name);
+
+    removeSheetDb(name).then(removedDb => {
+      const creds = retrieveCredentials();
+      if (creds) {
+        removeSheetFs(name, creds).catch(e => {
+          console.error('Failed to remove from Firestore:', e);
+        });
+      }
+      resolve(removedDb);
+    }).catch(reject);
+  });
 }
 
 /**
@@ -391,7 +468,8 @@ function loadSheet(a, b) {
  * The handler is registered after DOMContentLoaded (or immediately if
  * the document is already loaded).
  */
-function setupLoadSheetPubsub() {
+function setupSheetLoader() {
+
   const register = () => {
     const table = document.querySelector('table#main-sheet');
     if (!table || !table.pubsub) return;
@@ -407,10 +485,22 @@ function setupLoadSheetPubsub() {
 
     pubsub.subscribe('load-sheet', handler);
   };
-
   document.addEventListener('DOMContentLoaded', register);
+
+  // Empty callback for Firebase watcher
+  function onFirebase(changes) {
+    // Empty as specified
+  }
+
+  // Setup Firebase watcher if credentials available
+  document.addEventListener('DOMContentLoaded', () => {
+    const creds = retrieveCredentials();
+    if (creds) {
+      watchChanges(onFirebase, creds);
+    }
+  });
 }
-setupLoadSheetPubsub();
+setupSheetLoader();
 
 
-export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, setupLoadSheetPubsub, migrateLocalToIndexedDB };
+export { loadSheet, scanSheet, saveSheet, retrieveSheet, allSheetNames, getNextSheetName, removeStoredSheet, setupSheetLoader as setupLoadSheetPubsub, migrateLocalToIndexedDB };

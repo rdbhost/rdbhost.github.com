@@ -53,6 +53,57 @@ async function getDb(credentials) {
 }
 
 /**
+ * Recursively transforms data to avoid nested arrays by converting arrays to maps with numeric keys.
+ * @param {*} data - The data to transform.
+ * @returns {*} Transformed data.
+ */
+function transformForSave(data) {
+  if (typeof data === 'object' && data !== null) {
+    if (Array.isArray(data)) {
+      const map = {};
+      data.forEach((v, i) => {
+        map[i] = transformForSave(v);
+      });
+      return map;
+    } else {
+      const map = {};
+      for (const [k, v] of Object.entries(data)) {
+        map[k] = transformForSave(v);
+      }
+      return map;
+    }
+  }
+  return data;
+}
+
+/**
+ * Recursively transforms retrieved data back to original structure with arrays.
+ * @param {*} data - The retrieved data.
+ * @returns {*} Original data.
+ */
+function transformForRetrieve(data) {
+  if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
+    // Check if it's a transformed array (keys are '0', '1', ...)
+    const keys = Object.keys(data);
+    if (keys.length > 0 && keys.every(k => !isNaN(parseInt(k)))) {
+      const maxKey = Math.max(...keys.map(Number));
+      const arr = new Array(maxKey + 1);
+      for (const k of keys) {
+        arr[parseInt(k)] = transformForRetrieve(data[k]);
+      }
+      return arr;
+    } else {
+      const obj = {};
+      for (const [k, v] of Object.entries(data)) {
+        obj[k] = transformForRetrieve(v);
+      }
+      return obj;
+    }
+  }
+  return data;
+}
+
+/**
  * Saves a sheet to Firestore.
  * @param {string} name - The name to save the sheet under.
  * @param {Object} data - The sheet data object to save.
@@ -62,8 +113,9 @@ async function getDb(credentials) {
 async function saveSheet(name, data, credentials) {
   const db = await getDb(credentials);
   const sheetRef = doc(collection(db, 'sheets'), name);
+  const transformedData = transformForSave(data);
   await setDoc(sheetRef, {
-    data,
+    data: transformedData,
     timestamp: Timestamp.now()
   });
   return true;
@@ -80,7 +132,8 @@ async function retrieveSheet(name, credentials) {
   const sheetRef = doc(collection(db, 'sheets'), name);
   const snap = await getDoc(sheetRef);
   if (snap.exists()) {
-    return snap.data().data;
+    const retrieved = snap.data().data;
+    return transformForRetrieve(retrieved);
   }
   return null;
 }
