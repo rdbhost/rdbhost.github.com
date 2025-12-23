@@ -7,7 +7,7 @@ import { formatResult, formatFormula, Data } from './dim_data.js'
 import { saveSheet as saveSheetLocal, retrieveSheet as retrieveSheetLocal, getAllSheetNames, removeStoredSheet as removeStoredSheetLocal, 
   touchSheetStatus, retrieveCredentials, saveCredentials } from './localstorage_db.js';
 import { saveSheet as saveSheetDb, retrieveSheet as retrieveSheetDb, removeSheet as removeSheetDb } from './indexeddb_db.js';
-import { saveSheet as saveSheetFs, watchChanges } from './firestore_db.js';
+import { saveSheet as saveSheetFs, retrieveSheet as retrieveSheetFs } from './firestore_db.js';
 
 
 /**
@@ -325,8 +325,12 @@ function saveSheet(name, data) {
   });
 }
 
+function onSheetUpdate(name, data) {
+  return true;
+};
+
 /**
- * Retrieves the sheet by name, checking samples first, then localStorage, then IndexedDB, then Firestore if creds available.
+ * Retrieves the sheet by name, checking samples first, then Firestore if creds available, then IndexedDB, then localStorage.
  * @param {string} name - The name to retrieve.
  * @returns {Promise<Object|null>} The sheet data or null.
  */
@@ -340,42 +344,39 @@ function retrieveSheet(name) {
       return;
     }
 
-    // LocalStorage first
-    retrieveSheetLocal(name).then(dataLocal => {
-      if (dataLocal) {
-        touchSheetStatus(name, dataLocal.title || name);
-        resolve(dataLocal);
-        return;
-      }
-
-      // Then IndexedDB
-      retrieveSheetDb(name).then(dataDb => {
-        if (dataDb) {
-          touchSheetStatus(name, dataDb.title || name);
-          resolve(dataDb);
+    const creds = retrieveCredentials();
+    if (creds) {
+      retrieveSheetFs(name, creds, onSheetUpdate).then(dataFs => {
+        if (dataFs) {
+          touchSheetStatus(name, dataFs.title || name);
+          resolve(dataFs);
           return;
         }
-
-        // Then Firestore if creds available
-        const creds = retrieveCredentials();
-        if (creds) {
-          retrieveSheetFs(name, creds).then(dataFs => {
-            if (dataFs) {
-              touchSheetStatus(name, dataFs.title || name);
-              resolve(dataFs);
-            } else {
-              resolve(null);
-            }
-          }).catch(e => {
-            console.error('Failed to retrieve from Firestore:', e);
-            resolve(null);
-          });
-        } else {
-          resolve(null);
-        }
-      }).catch(reject);
-    }).catch(reject);
+        retrieveFallback(name).then(resolve).catch(reject);
+      }).catch(e => {
+        console.error('Failed to retrieve from Firestore:', e);
+        retrieveFallback(name).then(resolve).catch(reject);
+      });
+    } else {
+      retrieveFallback(name).then(resolve).catch(reject);
+    }
   });
+
+  // Helper for IndexedDB and localStorage fallback
+  function retrieveFallback(name) {
+    return retrieveSheetDb(name).then(data => {
+      if (data) {
+        touchSheetStatus(name, data.title || name);
+        return data;
+      }
+      return retrieveSheetLocal(name).then(data => {
+        if (data) {
+          touchSheetStatus(name, data.title || name);
+        }
+        return data;
+      });
+    });
+  }
 }
 
 /**
@@ -487,18 +488,6 @@ function setupSheetLoader() {
   };
   document.addEventListener('DOMContentLoaded', register);
 
-  // Empty callback for Firebase watcher
-  function onFirebase(changes) {
-    // Empty as specified
-  }
-
-  // Setup Firebase watcher if credentials available
-  document.addEventListener('DOMContentLoaded', () => {
-    const creds = retrieveCredentials();
-    if (creds) {
-      watchChanges(onFirebase, creds);
-    }
-  });
 }
 setupSheetLoader();
 

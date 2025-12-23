@@ -13,6 +13,10 @@ import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, o
 // Cache for initialized DB (per credentials, but since credentials are app-wide, simple cache)
 let _dbPromiseCache = new Map(); // Keyed by JSON.stringify(credentials)
 
+// Module-level variables for current watcher and sheet data
+let currentUnsubscribe = null;
+let currentSheetData = null;
+
 /**
  * Initializes and returns the Firestore DB instance using provided credentials.
  * Handles authentication with email/password.
@@ -39,14 +43,14 @@ async function getDb(credentials) {
   });
 
   if (credentials.email && credentials.password) {
-    const auth = getAuth(app);
-    try {
-      await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
-    } catch (e) {
-      throw new Error(`Authentication failed: ${e.message}`);
+  const auth = getAuth(app);
+  try {
+    await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+  } catch (e) {
+    throw new Error(`Authentication failed: ${e.message}`);
     }
   }
-  
+
   const db = getFirestore(app);
   _dbPromiseCache.set(credKey, db);
   return db;
@@ -86,7 +90,7 @@ function transformForRetrieve(data) {
     // Check if it's a transformed array (keys are '0', '1', ...)
     const keys = Object.keys(data);
     if (keys.length > 0 && keys.every(k => !isNaN(parseInt(k)))) {
-      const maxKey = Math.max(...keys.map(Number));
+      const maxKey = Math.max(...keys.map(k => parseInt(k)));
       const arr = new Array(maxKey + 1);
       for (const k of keys) {
         arr[parseInt(k)] = transformForRetrieve(data[k]);
@@ -122,20 +126,58 @@ async function saveSheet(name, data, credentials) {
 }
 
 /**
- * Retrieves a sheet from Firestore.
- * @param {string} name - The name of the sheet to retrieve.
+ * Retrieves and monitors a sheet from Firestore using onSnapshot.
+ * Returns a Promise resolving with the initial data, and calls onUpdate on changes.
+ * Manages only one watcher at a time.
+ * @param {string} name - The name of the sheet to retrieve/monitor.
  * @param {Object} credentials - Firebase credentials for auth and config.
- * @returns {Promise<Object|null>} The sheet data or null if not found.
+ * @param {Function} onUpdate - Callback for data updates (receives transformed data or null; called on changes after initial).
+ * @returns {Promise<Object|null>} Promise resolving with initial sheet data (or null if not found).
  */
-async function retrieveSheet(name, credentials) {
+async function retrieveSheet(name, credentials, onUpdate) {
   const db = await getDb(credentials);
   const sheetRef = doc(collection(db, 'sheets'), name);
-  const snap = await getDoc(sheetRef);
-  if (snap.exists()) {
-    const retrieved = snap.data().data;
-    return transformForRetrieve(retrieved);
+
+  // Unsubscribe from any previous watcher
+  if (currentUnsubscribe) {
+    currentUnsubscribe();
+    currentUnsubscribe = null;
+    currentSheetData = null;
   }
-  return null;
+
+  return new Promise((resolve, reject) => {
+    let isInitial = true;
+    const unsubscribe = onSnapshot(sheetRef, (snap) => {
+      let data = null;
+      if (snap.exists()) {
+        const retrieved = snap.data().data;
+        data = transformForRetrieve(retrieved);
+      }
+
+      // Save copy for later diffing
+      currentSheetData = data;
+
+      if (isInitial) {
+        // Resolve Promise with initial data
+        resolve(data);
+        isInitial = false;
+      } else {
+        // Call user-provided callback for subsequent updates
+        if (typeof onUpdate === 'function') {
+          onUpdate(data);
+        }
+      }
+    }, (error) => {
+      if (isInitial) {
+        reject(error);
+      } else {
+        console.error('Snapshot error:', error);
+      }
+    });
+
+    // Store the current unsubscribe
+    currentUnsubscribe = unsubscribe;
+  });
 }
 
 /**
@@ -154,7 +196,7 @@ async function removeSheet(name, credentials) {
 
 /**
  * Retrieves metadata for all sheets in Firestore, similar to getAllSheetNames in localstorage_db.
- * @param {Object} credentials - Firebase credentials for auth and config.
+ * @param {Object} credentials - Firebase config and auth details.
  * @returns {Promise<Object>} Dict of {name: {title: string, lastAccessed: number}}.
  */
 async function getAllSheetNames(credentials) {
@@ -163,10 +205,10 @@ async function getAllSheetNames(credentials) {
   const snaps = await getDocs(q);
   const dict = {};
   snaps.forEach(snap => {
-    const sheetData = snap.data();
+    const sheetData = transformForRetrieve(snap.data().data);
     dict[snap.id] = {
-      title: sheetData.data.title || snap.id,
-      lastAccessed: sheetData.timestamp.toDate().getTime()
+      title: sheetData.title || snap.id,
+      lastAccessed: snap.data().timestamp.toDate().getTime()
     };
   });
   return dict;
@@ -185,36 +227,14 @@ async function getNewSheets(lastAccessed, credentials) {
   const snaps = await getDocs(q);
   const sheets = {};
   snaps.forEach(snap => {
-    sheets[snap.id] = snap.data().data;
+    const retrieved = snap.data().data;
+    sheets[snap.id] = transformForRetrieve(retrieved);
   });
   return sheets;
 }
 
-/**
- * Sets up a real-time listener for changes in the 'sheets' collection.
- * Calls the callback with an array of changes: [{type: 'added'|'modified'|'removed', name: string, data?: Object}, ...]
- * @param {Function} callback - Function to call on changes.
- * @param {Object} credentials - Firebase credentials for auth and config.
- * @returns {Function} Unsubscribe function to stop listening.
- */
-async function watchChanges(callback, credentials) {
-  const db = await getDb(credentials);
-  const col = collection(db, 'sheets');
-  const unsubscribe = onSnapshot(col, (snapshot) => {
-    const changes = [];
-    snapshot.docChanges().forEach((change) => {
-      const changeObj = {
-        type: change.type,
-        name: change.doc.id
-      };
-      if (change.type !== 'removed') {
-        changeObj.data = change.doc.data().data;
-      }
-      changes.push(changeObj);
-    });
-    callback(changes);
-  });
-  return unsubscribe;
-}
 
-export { saveSheet, retrieveSheet, removeSheet, getAllSheetNames, getNewSheets, watchChanges };
+// Export currentSheetData for later diffing (if needed externally)
+export { currentSheetData };
+
+export { saveSheet, retrieveSheet, removeSheet, getAllSheetNames, getNewSheets };
