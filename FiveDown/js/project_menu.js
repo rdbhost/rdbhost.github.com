@@ -1,6 +1,6 @@
 // js/project_menu.js
 
-import { setCurrentSheet, getCurrentSheet } from './localstorage_db.js';
+import { setCurrentSheet, getCurrentSheet, touchSheetStatus } from './localstorage_db.js';
 import { allSheetNames, getNextSheetName, loadSheet, scanSheet, saveSheet, retrieveSheet, removeStoredSheet } from './sheet_loader.js';
 
 /**
@@ -228,8 +228,8 @@ function handleNewSheetClick() {
     rows: []
   };
 
-  saveSheet(newKey, emptyData); // This triggers timestamp via touchSheetStatus internally
-
+  saveSheet(newKey, emptyData); 
+  touchSheetStatus(newKey);
   setCurrentSheet(newKey);
   loadSheet(null, emptyData);
   setupProjectMenu();
