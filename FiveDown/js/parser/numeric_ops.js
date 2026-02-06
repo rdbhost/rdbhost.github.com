@@ -1,6 +1,6 @@
 // js/num_partial.js
 import { Data } from '../dim_data.js';
-import { default as unit } from '../lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
+import { default as unitMath } from '../lib/UnitMath.js'; // Adjust path based on your setup (e.g., CDN or local file)
 
 
 /**
@@ -25,7 +25,7 @@ function parseDims(unt) {
       const exp = parseFloat(expStr) || 1;
       // Validate unit with UnitMath
       try {
-        unit(1, base);
+        unitMath(1, base);
         dims.set(base, (dims.get(base) || 0) + sign * exp);
       } catch (e) {
         throw new Error(`Invalid unit: ${base}`);
@@ -37,7 +37,7 @@ function parseDims(unt) {
         const exp = match[2] ? parseInt(match[2]) : 1;
         // Validate unit with UnitMath
         try {
-          unit(1, base);
+          unitMath(1, base);
           dims.set(base, (dims.get(base) || 0) + sign * exp);
         } catch (e) {
           throw new Error(`Invalid unit: ${base}`);
@@ -45,7 +45,7 @@ function parseDims(unt) {
       } else {
         // Validate unit with UnitMath
         try {
-          unit(1, part);
+          unitMath(1, part);
           dims.set(part, (dims.get(part) || 0) + sign * 1);
         } catch (e) {
           throw new Error(`Invalid unit: ${part}`);
