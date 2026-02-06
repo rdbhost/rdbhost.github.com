@@ -245,6 +245,17 @@ function tabEditHandler(e) {
   label.contentEditable = 'true';
   label.focus();
 
+  const current = getCurrentSheet()
+
+  // Save current sheet if exists
+  if (current) {
+    const currentData = scanSheet(table);
+    const activeSpan = document.querySelector('.sheet-selecter.active span');
+    if (activeSpan) 
+      currentData.title = activeSpan.textContent.trim();
+    saveSheet(current, currentData);
+  }
+
   const save = () => {
     let text = label.innerText.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     if (!text) text = label.dataset.original || 'Sheet';
