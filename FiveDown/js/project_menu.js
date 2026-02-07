@@ -148,7 +148,7 @@ function handleSheetSelect(event) {
   const current = getCurrentSheet()
 
   // Save current sheet if exists
-  if (current && current !== key) {
+  if (current) {
     const currentData = scanSheet(table);
     const activeSpan = document.querySelector('.sheet-selecter.active span');
     if (activeSpan) currentData.title = activeSpan.textContent.trim();
@@ -249,6 +249,7 @@ function tabEditHandler(e) {
 
   // Save current sheet if exists
   if (current) {
+    const table = document.querySelector('table#main-sheet');
     const currentData = scanSheet(table);
     const activeSpan = document.querySelector('.sheet-selecter.active span');
     if (activeSpan) 
