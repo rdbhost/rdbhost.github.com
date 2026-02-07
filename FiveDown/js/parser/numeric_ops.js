@@ -163,7 +163,11 @@ const binaryOps = {
   },
   '*': (a, b) => {
     const aBase = a.asBaseUnit();
+    if (aBase.unit() === 'rad' || aBase.unit() === 'radians' || aBase.unit() === 'radians')
+      aBase.unit('')
     const bBase = b.asBaseUnit();
+    if (bBase.unit() === 'rad' || bBase.unit() === 'radians' || bBase.unit() === 'radians')
+      bBase.unit('')
     const aType = aBase.type();
     const bType = bBase.type();
     let siResult;
@@ -190,7 +194,11 @@ const binaryOps = {
   },
   '/': (a, b) => {
     const aBase = a.asBaseUnit();
+    if (aBase.unit() === 'rad' || aBase.unit() === 'radians' || aBase.unit() === 'radians')
+      aBase.unit('')
     const bBase = b.asBaseUnit();
+    if (bBase.unit() === 'rad' || bBase.unit() === 'radians' || bBase.unit() === 'radians')
+      bBase.unit('')
     const aType = aBase.type();
     const bType = bBase.type();
     let siResult;
@@ -231,6 +239,8 @@ const binaryOps = {
     if (aTyp !== 'number' || b.type() !== 'number') throw new Error('^ for numbers only');
     if (b.unit()) throw new Error('Exponent must be unitless');
     const aBase = a.asBaseUnit();
+    if (aBase.unit() === 'rad' || aBase.unit() === 'radians' || aBase.unit() === 'radians')
+      aBase.unit('')
     const siA = aBase.val();
     const power = b.val();
     const siResult = Math.pow(siA, power);
