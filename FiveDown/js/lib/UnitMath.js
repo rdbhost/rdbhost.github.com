@@ -817,7 +817,7 @@ const units = {
         prefixGroup: 'LONG',
         formatPrefixes: ['micro', 'milli', '', 'kilo'],
         value: '1 A',
-        aliases: ['amperes']
+        aliases: ['amperes', 'amp', 'amps']
     },
     // Temperature
     // K(C) = °C + 273.15
