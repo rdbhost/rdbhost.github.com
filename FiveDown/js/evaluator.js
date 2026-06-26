@@ -131,17 +131,27 @@ function buildDependencyTree(rows) {
       const ast = parseFormula(formula);
       // Recursively collect all variable names from AST
       const deps = new Set();
+
+      // New walk function (lines ~134-150 in the current file)
       function walk(node) {
         if (!node) return;
         if (typeof node.type === 'string' && node.type.toLowerCase() === 'variable' && node.name !== row.name()) {
           deps.add(node.name);
         }
+        // Handle all possible child nodes recursively
         if (node.arguments && Array.isArray(node.arguments)) {
           for (const arg of node.arguments) walk(arg);
         }
+        if (node.elements && Array.isArray(node.elements)) {
+          for (const el of node.elements) walk(el);
+        }
         if (node.left) walk(node.left);
         if (node.right) walk(node.right);
-        if (node.argument) walk(node.argument);
+        if (node.operand) walk(node.operand);  // Unary uses 'operand'
+        if (node.argument) walk(node.argument); // fallback for any old code
+        if (node.condition) walk(node.condition);
+        if (node.trueExpr) walk(node.trueExpr);
+        if (node.falseExpr) walk(node.falseExpr);
       }
       walk(ast.root);
       return Array.from(deps);
