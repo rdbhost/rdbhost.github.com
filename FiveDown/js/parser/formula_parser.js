@@ -231,7 +231,6 @@ class Parser {
         return this.parsePrimary();
     }
 
-    // Parse primary expressions (literals, variables, functions, vectors, grouped expressions, strings)
     /**
      * Parses primary expressions such as literals (numbers, booleans, strings), variables, function calls, vectors, or grouped expressions.
      * @returns {Object} The AST node for the primary expression.
@@ -285,7 +284,8 @@ class Parser {
             if (!this.match(')')) {
                 throw new Error(`Expected ')' at position ${this.index}`);
             }
-            return expr;
+            // Support indexing after a parenthesized expression: (v1 + v0)[0]
+            return this.parsePostfix(expr);
         }
 
         // Variable or function names
@@ -305,35 +305,43 @@ class Parser {
                 }
                 // Check if known function or unary op
                 if (Object.keys(functions).includes(name) || Object.keys(unaryOps).includes(name)) {
-                    return {
+                    return this.parsePostfix({
                         type: 'FunctionCall',
                         name,
                         arguments: args
-                    };
+                    });
                 }
                 throw new Error(`Unknown function '${name}' at position ${this.index}`);
             }
 
-            // Array indexing
-            if (this.match('[')) {
-                const index = this.parseTernary();
-                if (!this.match(']')) {
-                    throw new Error(`Expected ']' at position ${this.index}`);
-                }
-                return {
-                    type: 'Binary',
-                    operator: '[',
-                    left: { type: 'Variable', name },
-                    right: index
-                };
-            }
-
-            // Variable
-            return { type: 'Variable', name };
+            // Variable (may be followed by indexing)
+            return this.parsePostfix({ type: 'Variable', name });
         }
 
         throw new Error(`Unexpected token at position ${this.index}: '${this.peek()}'`);
     }
+
+    /**
+     * Helper: Handles postfix operators (currently only array indexing [index])
+     * that can follow any primary expression (variable, group, function call, etc.).
+     */
+    parsePostfix(baseExpr) {
+        // Array indexing: expr[index]
+        if (this.match('[')) {
+            const index = this.parseTernary();
+            if (!this.match(']')) {
+                throw new Error(`Expected ']' at position ${this.index}`);
+            }
+            return {
+                type: 'Binary',
+                operator: '[',
+                left: baseExpr,
+                right: index
+            };
+        }
+        return baseExpr;
+    }
+
 
     // Parse a string literal (single or double quoted)
     /**
